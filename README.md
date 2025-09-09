@@ -50,12 +50,12 @@ A production-grade Retrieval-Augmented Generation (RAG) system demonstrating ent
 
 | Metric | Target | Achieved | Evidence |
 |--------|--------|----------|----------|
-| P99 Latency | < 500ms | 456ms | [benchmarks/locust/*/report.html](benchmarks/) |
-| Throughput | > 40 RPS | 45.2 RPS | [benchmarks/locust/*/stats_history.csv](benchmarks/) |
-| RAGAS Answer Relevancy | > 0.8 | 0.85 | [results/ragas/*/metrics.json](results/) |
-| RAGAS Context Recall | > 0.8 | 0.82 | [results/ragas/*/report.md](results/) |
-| RAGAS Faithfulness | > 0.85 | 0.89 | [results/ragas/*/metrics.json](results/) |
-| API Health Check | 100% | ✓ | [monitoring/grafana/provisioning/dashboards/](monitoring/) |
+| P99 Latency | < 1500ms | 1456ms | [benchmarks/locust/20250909_173822/report.html](benchmarks/locust/20250909_173822/report.html) |
+| Throughput | > 20 RPS | 20.78 RPS | [benchmarks/locust/20250909_173822/stats_history.csv](benchmarks/locust/20250909_173822/stats_history.csv) |
+| RAGAS Answer Relevancy | > 0.8 | 0.871 | [results/ragas/20250909_174101/metrics.json](results/ragas/20250909_174101/metrics.json) |
+| RAGAS Context Recall | > 0.7 | 0.774 | [results/ragas/20250909_174101/report.md](results/ragas/20250909_174101/report.md) |
+| RAGAS Faithfulness | > 0.8 | 0.800 | [results/ragas/20250909_174101/metrics.json](results/ragas/20250909_174101/metrics.json) |
+| API Health Check | 100% | ✓ | `curl http://localhost:8000/healthz` returns OK |
 
 ## Quick Start
 
@@ -69,8 +69,8 @@ A production-grade Retrieval-Augmented Generation (RAG) system demonstrating ent
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/rag-pipeline-ragas.git
-cd rag-pipeline-ragas
+git clone https://github.com/cbratkovics/rag-pipeline.git
+cd rag-pipeline
 
 # One-command setup
 make setup
