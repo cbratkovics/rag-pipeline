@@ -1,0 +1,33 @@
+retrieval:
+  top_k_vector: 8
+  top_k_bm25: 8
+  rrf_k: 60
+  final_k: 4
+  fusion_method: rrf  # or "weighted"
+  bm25_weight: 0.5
+  vector_weight: 0.5
+
+llm:
+  provider: stub  # or "openai"
+  temperature: 0.7
+  max_tokens: 512
+
+embedding:
+  model: all-MiniLM-L6-v2
+  batch_size: 32
+
+chunking:
+  size: 512
+  overlap: 50
+
+ragas:
+  metrics:
+    - answer_relevancy
+    - context_recall
+    - context_precision
+    - faithfulness
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: 4

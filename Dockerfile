@@ -37,9 +37,11 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
+COPY api/ ./api/
 COPY src/ ./src/
 COPY configs/ ./configs/
 COPY scripts/ ./scripts/
+COPY data/ ./data/
 
 # Create non-root user
 RUN useradd -m -u 1000 raguser && chown -R raguser:raguser /app
@@ -54,7 +56,7 @@ EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/v1/health || exit 1
+    CMD curl -f http://localhost:8000/healthz || exit 1
 
 # Run the application
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

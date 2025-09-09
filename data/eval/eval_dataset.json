@@ -1,0 +1,54 @@
+{
+  "questions": [
+    {
+      "question": "What is machine learning?",
+      "ground_truth": "Machine learning is a subset of artificial intelligence that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.",
+      "contexts": ["Machine learning is a subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed."]
+    },
+    {
+      "question": "What are the types of machine learning?",
+      "ground_truth": "The three main types of machine learning are: Supervised Learning, Unsupervised Learning, and Reinforcement Learning.",
+      "contexts": ["Types of Machine Learning: 1. Supervised Learning: The algorithm learns from labeled training data, and makes predictions based on that data. 2. Unsupervised Learning: The algorithm learns from unlabeled data and finds hidden patterns or intrinsic structures in input data. 3. Reinforcement Learning: The algorithm learns to perform an action from experience."]
+    },
+    {
+      "question": "What is Natural Language Processing?",
+      "ground_truth": "Natural Language Processing (NLP) is a branch of artificial intelligence that helps computers understand, interpret and manipulate human language.",
+      "contexts": ["Natural Language Processing (NLP) is a branch of artificial intelligence that helps computers understand, interpret and manipulate human language. NLP draws from many disciplines, including computer science and computational linguistics."]
+    },
+    {
+      "question": "What is tokenization in NLP?",
+      "ground_truth": "Tokenization is the process of breaking text into words, phrases, symbols, or other meaningful elements called tokens. It is typically the first step in NLP pipeline.",
+      "contexts": ["Tokenization: Breaking text into words, phrases, symbols, or other meaningful elements called tokens. This is typically the first step in NLP pipeline."]
+    },
+    {
+      "question": "What is Named Entity Recognition?",
+      "ground_truth": "Named Entity Recognition (NER) is the process of locating and classifying named entities mentioned in unstructured text into pre-defined categories such as person names, organizations, locations, etc.",
+      "contexts": ["Named Entity Recognition (NER): Locating and classifying named entities mentioned in unstructured text into pre-defined categories such as person names, organizations, locations, medical codes, time expressions, quantities, monetary values, percentages, etc."]
+    },
+    {
+      "question": "What are the applications of NLP?",
+      "ground_truth": "Applications of NLP include Machine Translation, Chatbots and Virtual Assistants, Text Summarization, and Information Extraction.",
+      "contexts": ["Applications: Machine Translation: Automatically translating text from one language to another. Chatbots and Virtual Assistants: Understanding and responding to human queries. Text Summarization: Automatically generating concise summaries of longer documents. Information Extraction: Extracting structured information from unstructured text."]
+    },
+    {
+      "question": "What is supervised learning?",
+      "ground_truth": "Supervised Learning is a type of machine learning where the algorithm learns from labeled training data and makes predictions based on that data. Common algorithms include linear regression, decision trees, and neural networks.",
+      "contexts": ["Supervised Learning: The algorithm learns from labeled training data, and makes predictions based on that data. Common algorithms include linear regression, decision trees, and neural networks."]
+    },
+    {
+      "question": "What challenges does NLP face?",
+      "ground_truth": "NLP faces challenges including understanding context and ambiguity, handling multiple languages and dialects, processing informal language and slang, and dealing with sarcasm and irony.",
+      "contexts": ["Despite significant advances, NLP still faces challenges including: Understanding context and ambiguity, Handling multiple languages and dialects, Processing informal language and slang, Dealing with sarcasm and irony."]
+    },
+    {
+      "question": "What is sentiment analysis?",
+      "ground_truth": "Sentiment Analysis is the use of natural language processing to systematically identify, extract, quantify, and study affective states and subjective information.",
+      "contexts": ["Sentiment Analysis: The use of natural language processing to systematically identify, extract, quantify, and study affective states and subjective information."]
+    },
+    {
+      "question": "How does reinforcement learning work?",
+      "ground_truth": "Reinforcement Learning is a type of machine learning where the algorithm learns to perform an action from experience. It learns from the consequences of its actions, rather than from being explicitly taught.",
+      "contexts": ["Reinforcement Learning: The algorithm learns to perform an action from experience. It learns from the consequences of its actions, rather than from being explicitly taught."]
+    }
+  ]
+}

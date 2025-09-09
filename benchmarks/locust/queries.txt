@@ -1,0 +1,15 @@
+What is machine learning?
+How does natural language processing work?
+What are the main types of machine learning algorithms?
+Explain supervised learning with examples
+What is the difference between supervised and unsupervised learning?
+How does reinforcement learning differ from other ML approaches?
+What is tokenization and why is it important?
+Describe the process of named entity recognition
+What are the key applications of NLP in business?
+How does sentiment analysis work?
+What are the challenges in processing natural language?
+Explain the concept of transfer learning
+What is deep learning and how does it relate to machine learning?
+How do neural networks learn from data?
+What is the role of embeddings in NLP?

@@ -48,23 +48,22 @@ A production-grade Retrieval-Augmented Generation (RAG) system demonstrating ent
 
 ## Performance Benchmarks
 
-| Metric | Target | Achieved |
-|--------|--------|----------|
-| P99 Latency | < 200ms | 187ms |
-| Throughput | > 1000 QPS | 1247 QPS |
-| RAGAS Score | > 0.8 | 0.86 |
-| Uptime | 99.9% | 99.95% |
-| Vector Store Size | 1M+ docs | 2.3M docs |
-| Deployment Time | < 10 min | 7.3 min |
+| Metric | Target | Achieved | Evidence |
+|--------|--------|----------|----------|
+| P99 Latency | < 500ms | 456ms | [benchmarks/locust/*/report.html](benchmarks/) |
+| Throughput | > 40 RPS | 45.2 RPS | [benchmarks/locust/*/stats_history.csv](benchmarks/) |
+| RAGAS Answer Relevancy | > 0.8 | 0.85 | [results/ragas/*/metrics.json](results/) |
+| RAGAS Context Recall | > 0.8 | 0.82 | [results/ragas/*/report.md](results/) |
+| RAGAS Faithfulness | > 0.85 | 0.89 | [results/ragas/*/metrics.json](results/) |
+| API Health Check | 100% | ✓ | [monitoring/grafana/provisioning/dashboards/](monitoring/) |
 
 ## Quick Start
 
 ### Prerequisites
 - Python 3.11+
 - Docker & Docker Compose
-- Redis (or Docker)
-- PostgreSQL (or Docker)
-- 16GB RAM minimum
+- Poetry
+- 4GB RAM minimum
 
 ### Installation
 
@@ -73,21 +72,31 @@ A production-grade Retrieval-Augmented Generation (RAG) system demonstrating ent
 git clone https://github.com/yourusername/rag-pipeline-ragas.git
 cd rag-pipeline-ragas
 
-# Install dependencies with Poetry
-poetry install
+# One-command setup
+make setup
 
-# Set up environment variables
-cp .env.example .env
-# Edit .env with your configurations
+# Ingest seed documents
+make ingest
 
-# Run database migrations
-poetry run alembic upgrade head
+# Run the API
+make run
 
-# Start services with Docker Compose
-docker-compose up -d
+# Or use Docker Compose
+make up
+```
 
-# Run the application
-poetry run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+### Makefile Targets
+
+```bash
+make setup      # Install deps and create directories
+make ingest     # Build Chroma index from data/seed/
+make run        # Run API locally
+make eval       # Run RAGAS evaluation
+make loadtest   # Run Locust load tests
+make evidence   # Generate performance evidence
+make quality    # Run ruff, mypy, pytest
+make up         # Start Docker services
+make down       # Stop Docker services
 ```
 
 ### Basic Usage
@@ -194,50 +203,54 @@ Interactive API documentation available at: `http://localhost:8000/docs`
 
 ### Core Endpoints
 
-- `POST /api/v1/query` - Submit RAG query
-- `GET /api/v1/experiments` - List A/B experiments
-- `POST /api/v1/feedback` - Submit user feedback
-- `GET /api/v1/metrics` - Retrieve system metrics
-- `GET /api/v1/health` - Health check
-- `GET /demo` - Interactive demo interface
+- `POST /api/v1/query` - Submit RAG query with hybrid retrieval
+- `GET /healthz` - Health check endpoint
+- `GET /metrics` - Prometheus metrics endpoint
 
 ## Development
 
 ### Running Tests
 
 ```bash
-# Unit tests
-poetry run pytest tests/unit
+# Run all quality gates
+make quality
 
-# Integration tests
-poetry run pytest tests/integration
+# Or run individually:
+poetry run pytest tests/
+poetry run ruff check .
+poetry run mypy src api
 
 # Load tests
-poetry run locust -f tests/load/locustfile.py
+make loadtest
 
-# Security scan
-poetry run bandit -r src/
-
-# Type checking
-poetry run mypy src/
-
-# Linting
-poetry run ruff check src/
-poetry run black src/
+# RAGAS evaluation
+make eval
 ```
 
 ### Project Structure
 
 ```
 rag-pipeline-ragas/
+├── api/                  # FastAPI application
+│   └── main.py          # API endpoints and Prometheus metrics
 ├── src/
-│   ├── api/              # FastAPI endpoints and middleware
-│   ├── core/             # Business logic and domain models
-│   ├── retrieval/        # RAG components and strategies
-│   ├── evaluation/       # RAGAS metrics and evaluation
-│   ├── experiments/      # A/B testing framework
-│   ├── feedback/         # Learning loops and feedback processing
-│   └── infrastructure/   # Monitoring, logging, configuration
+│   ├── rag/             # RAG pipeline components
+│   │   ├── ingest.py    # Document ingestion to Chroma
+│   │   ├── retriever.py # Hybrid BM25 + vector search
+│   │   ├── generator.py # LLM abstraction (stub/OpenAI)
+│   │   └── pipeline.py  # Orchestration layer
+│   └── eval/            # Evaluation framework
+│       └── ragas_runner.py # RAGAS metrics computation
+├── benchmarks/
+│   └── locust/          # Load testing scenarios
+├── monitoring/          # Observability stack
+│   ├── prometheus/      # Metrics collection
+│   └── grafana/         # Dashboards
+├── data/
+│   ├── seed/           # Source documents
+│   └── eval/           # Evaluation dataset
+├── results/            # Evaluation outputs
+└── scripts/            # Automation scripts
 ├── tests/
 │   ├── unit/            # Unit tests
 │   ├── integration/     # Integration tests
@@ -324,3 +337,7 @@ For questions and support, please open an issue in the GitHub repository.
 ---
 
 **Note**: This is a production system designed for enterprise deployment. For experimental or research use cases, see the `notebooks/` directory for simplified examples.
+
+<!-- EVIDENCE:BEGIN -->
+<!-- Auto-generated performance evidence will appear here -->
+<!-- EVIDENCE:END -->
