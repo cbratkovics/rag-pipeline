@@ -10,7 +10,7 @@ help:  ## Show this help message
 setup:  ## Install dependencies and pre-commit hooks
 	@echo "Setting up RAG pipeline..."
 	@echo "Installing Poetry dependencies..."
-	poetry install
+	@poetry install --sync
 	@echo "Creating necessary directories..."
 	@mkdir -p data/seed data/eval results/ragas benchmarks/locust mlruns .chroma
 	@echo "Setup complete!"
@@ -99,3 +99,25 @@ lint:  ## Run linting
 
 format:  ## Format code
 	poetry run ruff check --fix .
+
+# Poetry management
+install:  ## Install dependencies with Poetry
+	@echo "Installing dependencies with Poetry..."
+	@poetry install --sync
+	@echo "Dependencies installed!"
+
+update:  ## Update dependencies
+	@echo "Updating dependencies..."
+	@poetry update
+	@echo "Dependencies updated!"
+
+lock:  ## Regenerate poetry.lock
+	@echo "Regenerating poetry.lock..."
+	@poetry lock
+	@echo "Lock file regenerated!"
+
+shell:  ## Enter Poetry shell
+	@poetry shell
+
+show-deps:  ## Show dependency tree
+	@poetry show --tree
