@@ -1,0 +1,134 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+ENV/
+env/
+.venv/
+.virtualenv/
+
+# Poetry
+poetry.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# Data and Models
+.chroma/
+*.db
+*.sqlite
+*.h5
+*.pkl
+*.pickle
+*.npy
+*.npz
+
+# Logs
+*.log
+logs/
+*.out
+*.err
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# MLflow
+mlruns/
+mlflow_artifacts/
+
+# Results (keep structure but not all files)
+results/ragas/*/
+!results/ragas/.gitkeep
+benchmarks/locust/*/
+!benchmarks/locust/.gitkeep
+
+# Docker
+docker-compose.override.yml
+
+# Monitoring
+prometheus_data/
+grafana_data/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.old
+
+# Generated documentation
+docs/_build/
+site/
+
+# Package managers
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Secrets
+*.key
+*.pem
+*.crt
+*.p12
+secrets/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Output from tools
+/tmp/prometheus_multiproc/
