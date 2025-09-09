@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-config
+  labels:
+    app: rag-api
+data:
+  # Application Configuration
+  APP_NAME: "rag-pipeline-ragas"
+  LOG_LEVEL: "INFO"
+  
+  # Vector Store Configuration
+  VECTOR_STORE_TYPE: "chromadb"
+  CHROMADB_COLLECTION: "rag_documents"
+  EMBEDDING_MODEL: "all-MiniLM-L6-v2"
+  EMBEDDING_DIMENSION: "384"
+  EMBEDDING_BATCH_SIZE: "32"
+  
+  # Search Configuration
+  HYBRID_SEARCH_ALPHA: "0.5"
+  BM25_K1: "1.2"
+  BM25_B: "0.75"
+  SEARCH_TOP_K: "20"
+  FINAL_TOP_K: "5"
+  TOP_K_VECTOR: "8"
+  TOP_K_BM25: "8"
+  RRF_K: "60"
+  HYBRID_WEIGHT_VECTOR: "0.5"
+  HYBRID_WEIGHT_BM25: "0.5"
+  
+  # RAG Configuration
+  CHUNK_SIZE: "512"
+  CHUNK_OVERLAP: "50"
+  MAX_CONTEXT_LENGTH: "2048"
+  TEMPERATURE: "0.7"
+  MAX_TOKENS: "512"
+  
+  # A/B Testing Configuration
+  AB_TEST_ENABLED: "true"
+  AB_TEST_VARIANTS: '["baseline", "reranked", "hybrid"]'
+  AB_TEST_DEFAULT_VARIANT: "baseline"
+  AB_TEST_TRAFFIC_SPLIT: "[0.33, 0.33, 0.34]"
+  AB_TEST_MIN_SAMPLES: "100"
+  AB_TEST_CONFIDENCE_LEVEL: "0.95"
+  
+  # Monitoring Configuration
+  PROMETHEUS_ENABLED: "true"
+  OPENTELEMETRY_ENABLED: "true"
+  OTEL_SERVICE_NAME: "rag-pipeline"
+  
+  # MLflow Configuration
+  MLFLOW_TRACKING_URI: "file:/mlflow"
+  MLFLOW_EXPERIMENT_NAME: "rag-eval"
+  
+  # RAGAS Evaluation Configuration
+  RAGAS_ENABLED: "true"
+  RAGAS_METRICS: '["context_relevancy", "answer_faithfulness", "answer_relevancy", "context_recall"]'
+  RAGAS_THRESHOLD_CONTEXT_RELEVANCY: "0.8"
+  RAGAS_THRESHOLD_ANSWER_FAITHFULNESS: "0.8"
+  RAGAS_THRESHOLD_ANSWER_RELEVANCY: "0.8"
+  RAGAS_THRESHOLD_CONTEXT_RECALL: "0.7"
+  
+  # Performance Settings
+  MAX_WORKERS: "4"
+  CONNECTION_POOL_SIZE: "20"
+  REQUEST_TIMEOUT_SECONDS: "30"
+  BACKGROUND_TASK_TIMEOUT_SECONDS: "300"
+  
+  # Cache Settings
+  CACHE_TTL_SECONDS: "3600"
+  CACHE_MAX_SIZE: "1000"
+  
+  # Feature Flags
+  FEATURE_QUERY_EXPANSION: "true"
+  FEATURE_METADATA_FILTERING: "true"
+  FEATURE_DYNAMIC_CHUNKING: "true"
+  FEATURE_ONLINE_LEARNING: "false"
+  FEATURE_COST_TRACKING: "true"

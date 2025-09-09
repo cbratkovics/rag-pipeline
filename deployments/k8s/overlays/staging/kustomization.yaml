@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: rag-staging
+
+bases:
+- ../../base
+
+namePrefix: staging-
+
+patchesStrategicMerge:
+- deployment-patch.yaml
+
+configMapGenerator:
+- name: rag-config
+  behavior: merge
+  literals:
+  - APP_ENV=staging
+  - LOG_LEVEL=DEBUG
+  - MLFLOW_TRACKING_URI=http://mlflow-staging:5000
+
+replicas:
+- name: rag-api
+  count: 2
