@@ -13,6 +13,55 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: ${{ env.POETRY_VERSION }}
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+    
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+    
+    - name: Install dependencies
+      run: poetry install --no-interaction --with dev
+    
+    - name: Run linting
+      run: |
+        poetry run ruff format --check .
+        poetry run ruff check .
+        poetry run mypy src/ api/
+    
+    - name: Run security scan
+      run: poetry run bandit -r src/
+    
+    - name: Run tests
+      run: |
+        poetry run pytest tests/ -v -m "not integration" --cov=src --cov=api --cov-report=xml --cov-report=term
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      continue-on-error: true
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+        verbose: true
+
+  integration-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     
     services:
       postgres:
@@ -61,18 +110,9 @@ jobs:
         key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
     
     - name: Install dependencies
-      run: poetry install --no-interaction --no-root
+      run: poetry install --no-interaction --with dev
     
-    - name: Run linting
-      run: |
-        poetry run ruff check src/
-        poetry run black --check src/
-        poetry run mypy src/
-    
-    - name: Run security scan
-      run: poetry run bandit -r src/
-    
-    - name: Run tests
+    - name: Run integration tests
       env:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
@@ -82,13 +122,15 @@ jobs:
         REDIS_HOST: localhost
         REDIS_PORT: 6379
       run: |
-        poetry run pytest tests/ -v --cov=src --cov-report=xml
+        poetry run pytest tests/ -v -m "integration" --cov=src --cov=api --cov-report=xml
     
-    - name: Upload coverage
+    - name: Upload integration test coverage
       uses: codecov/codecov-action@v3
+      continue-on-error: true
       with:
         file: ./coverage.xml
-        fail_ci_if_error: true
+        flags: integration
+        fail_ci_if_error: false
 
   build:
     needs: test
