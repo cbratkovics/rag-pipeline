@@ -1,10 +1,9 @@
 """Vector store interfaces and implementations."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from uuid import UUID
 
-import numpy as np
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qdrant_models
 
@@ -23,27 +22,27 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    async def add_documents(self, documents: List[Document]) -> List[str]:
+    async def add_documents(self, documents: list[Document]) -> list[str]:
         """Add documents to the vector store."""
         pass
 
     @abstractmethod
     async def search(
         self,
-        query_embedding: List[float],
+        query_embedding: list[float],
         top_k: int = 10,
-        metadata_filter: Optional[Dict[str, Any]] = None,
-    ) -> List[RetrievedDocument]:
+        metadata_filter: dict[str, Any] | None = None,
+    ) -> list[RetrievedDocument]:
         """Search for similar documents."""
         pass
 
     @abstractmethod
-    async def delete_documents(self, ids: List[str]) -> bool:
+    async def delete_documents(self, ids: list[str]) -> bool:
         """Delete documents by IDs."""
         pass
 
     @abstractmethod
-    async def get_document(self, doc_id: str) -> Optional[Document]:
+    async def get_document(self, doc_id: str) -> Document | None:
         """Get a document by ID."""
         pass
 
@@ -64,7 +63,7 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
     def __init__(self):
         """Initialize Qdrant vector store."""
         self.settings = get_settings()
-        self.client: Optional[QdrantClient] = None
+        self.client: QdrantClient | None = None
         self.collection_name = self.settings.qdrant_collection
         self.dimension = self.settings.embedding_dimension
 
@@ -92,13 +91,15 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                 )
                 self.logger.info("Created Qdrant collection", collection=self.collection_name)
             else:
-                self.logger.info("Using existing Qdrant collection", collection=self.collection_name)
+                self.logger.info(
+                    "Using existing Qdrant collection", collection=self.collection_name
+                )
 
         except Exception as e:
             self.logger.error("Failed to initialize Qdrant", error=str(e))
             raise
 
-    async def add_documents(self, documents: List[Document]) -> List[str]:
+    async def add_documents(self, documents: list[Document]) -> list[str]:
         """Add documents to Qdrant."""
         if not self.client:
             await self.initialize()
@@ -125,7 +126,9 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                         "source_id": doc.source_id,
                         "title": doc.title,
                         "author": doc.author,
-                        "published_date": doc.published_date.isoformat() if doc.published_date else None,
+                        "published_date": doc.published_date.isoformat()
+                        if doc.published_date
+                        else None,
                         "url": doc.url,
                         "license": doc.license,
                         "chunk_id": doc.chunk_id,
@@ -151,10 +154,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
 
     async def search(
         self,
-        query_embedding: List[float],
+        query_embedding: list[float],
         top_k: int = 10,
-        metadata_filter: Optional[Dict[str, Any]] = None,
-    ) -> List[RetrievedDocument]:
+        metadata_filter: dict[str, Any] | None = None,
+    ) -> list[RetrievedDocument]:
         """Search for similar documents in Qdrant."""
         if not self.client:
             await self.initialize()
@@ -206,7 +209,9 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                     url=result.payload.get("url"),
                     license=result.payload.get("license"),
                     chunk_id=result.payload.get("chunk_id"),
-                    parent_id=UUID(result.payload["parent_id"]) if result.payload.get("parent_id") else None,
+                    parent_id=UUID(result.payload["parent_id"])
+                    if result.payload.get("parent_id")
+                    else None,
                 )
                 retrieved = RetrievedDocument(
                     document=doc,
@@ -222,7 +227,7 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             self.logger.error("Failed to search in Qdrant", error=str(e))
             raise
 
-    async def delete_documents(self, ids: List[str]) -> bool:
+    async def delete_documents(self, ids: list[str]) -> bool:
         """Delete documents from Qdrant."""
         if not self.client:
             await self.initialize()
@@ -243,7 +248,7 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             self.logger.error("Failed to delete documents from Qdrant", error=str(e))
             return False
 
-    async def get_document(self, doc_id: str) -> Optional[Document]:
+    async def get_document(self, doc_id: str) -> Document | None:
         """Get a document by ID from Qdrant."""
         if not self.client:
             await self.initialize()
@@ -271,7 +276,9 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                 url=result.payload.get("url"),
                 license=result.payload.get("license"),
                 chunk_id=result.payload.get("chunk_id"),
-                parent_id=UUID(result.payload["parent_id"]) if result.payload.get("parent_id") else None,
+                parent_id=UUID(result.payload["parent_id"])
+                if result.payload.get("parent_id")
+                else None,
             )
             return doc
 
@@ -305,7 +312,7 @@ class VectorStoreFactory:
     """Factory for creating vector store instances."""
 
     @staticmethod
-    def create(store_type: Optional[str] = None) -> VectorStore:
+    def create(store_type: str | None = None) -> VectorStore:
         """Create a vector store instance."""
         settings = get_settings()
         store_type = store_type or settings.vector_store_type

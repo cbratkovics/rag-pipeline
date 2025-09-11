@@ -1,11 +1,10 @@
 """Experiments API endpoints."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from src.core.models import ExperimentResult
 from src.experiments.ab_testing import ab_test_manager
 from src.infrastructure.logging import get_logger
 
@@ -17,14 +16,14 @@ class ExperimentStatsResponse(BaseModel):
     """Experiment statistics response."""
 
     experiment_id: str
-    results: List[Dict[str, Any]]
-    winning_variant: Optional[str]
+    results: list[dict[str, Any]]
+    winning_variant: str | None
 
 
 @router.get("/experiments/{experiment_id}/stats", response_model=ExperimentStatsResponse)
 async def get_experiment_stats(
     experiment_id: str,
-    min_samples: Optional[int] = None,
+    min_samples: int | None = None,
 ) -> ExperimentStatsResponse:
     """Get experiment statistics."""
     try:
@@ -80,12 +79,12 @@ async def get_experiment_stats(
         logger.error("Failed to get experiment stats", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get experiment stats: {str(e)}",
+            detail=f"Failed to get experiment stats: {e!s}",
         )
 
 
-@router.get("/experiments", response_model=List[str])
-async def list_experiments() -> List[str]:
+@router.get("/experiments", response_model=list[str])
+async def list_experiments() -> list[str]:
     """List all active experiments."""
     try:
         experiment_ids = list(ab_test_manager.active_experiments.keys())
@@ -95,5 +94,5 @@ async def list_experiments() -> List[str]:
         logger.error("Failed to list experiments", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list experiments: {str(e)}",
+            detail=f"Failed to list experiments: {e!s}",
         )

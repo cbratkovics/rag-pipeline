@@ -1,6 +1,6 @@
 """Health check API endpoints."""
 
-from typing import Dict, Any, Union
+from typing import Any
 
 from fastapi import APIRouter, status
 from sqlalchemy import text
@@ -15,13 +15,13 @@ router = APIRouter()
 
 
 @router.get("/health", status_code=status.HTTP_200_OK)
-async def health_check() -> Dict[str, str]:
+async def health_check() -> dict[str, str]:
     """Basic health check."""
     return {"status": "healthy", "service": "rag-pipeline"}
 
 
 @router.get("/health/ready", status_code=status.HTTP_200_OK)
-async def readiness_check() -> Dict[str, Any]:
+async def readiness_check() -> dict[str, Any]:
     """Readiness check for all components."""
     checks = {
         "database": False,
@@ -72,6 +72,6 @@ async def readiness_check() -> Dict[str, Any]:
 
 
 @router.get("/health/live", status_code=status.HTTP_200_OK)
-async def liveness_check() -> Dict[str, str]:
+async def liveness_check() -> dict[str, str]:
     """Liveness check for Kubernetes."""
     return {"status": "alive"}

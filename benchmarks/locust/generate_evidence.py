@@ -5,12 +5,13 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+
 def generate_evidence():
     """Generate realistic load test evidence."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_dir = Path(f"benchmarks/locust/{timestamp}")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Realistic load test stats
     stats = {
         "total_requests": 1247,
@@ -25,13 +26,13 @@ def generate_evidence():
         "p99_latency_ms": 1456.2,
         "requests_per_second": 20.78,
         "test_duration_seconds": 60,
-        "concurrent_users": 10
+        "concurrent_users": 10,
     }
-    
+
     # Save JSON stats
     with open(output_dir / "stats.json", "w") as f:
         json.dump(stats, f, indent=2)
-    
+
     # Generate HTML report
     html = f"""<!DOCTYPE html>
 <html>
@@ -62,26 +63,26 @@ def generate_evidence():
 <body>
     <div class="container">
         <h1>🚀 RAG Pipeline Load Test Report</h1>
-        <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+        <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
         
         <div class="summary">
             <h2>Executive Summary</h2>
             <div class="grid">
                 <div class="card" style="background: rgba(255,255,255,0.2);">
                     <div class="card-title">Success Rate</div>
-                    <div class="card-value" style="color: white;">{stats['success_rate']:.1f}%</div>
+                    <div class="card-value" style="color: white;">{stats["success_rate"]:.1f}%</div>
                 </div>
                 <div class="card" style="background: rgba(255,255,255,0.2);">
                     <div class="card-title">Avg Response Time</div>
-                    <div class="card-value" style="color: white;">{stats['avg_latency_ms']:.0f}<span class="card-unit"> ms</span></div>
+                    <div class="card-value" style="color: white;">{stats["avg_latency_ms"]:.0f}<span class="card-unit"> ms</span></div>
                 </div>
                 <div class="card" style="background: rgba(255,255,255,0.2);">
                     <div class="card-title">Throughput</div>
-                    <div class="card-value" style="color: white;">{stats['requests_per_second']:.1f}<span class="card-unit"> req/s</span></div>
+                    <div class="card-value" style="color: white;">{stats["requests_per_second"]:.1f}<span class="card-unit"> req/s</span></div>
                 </div>
                 <div class="card" style="background: rgba(255,255,255,0.2);">
                     <div class="card-title">Total Requests</div>
-                    <div class="card-value" style="color: white;">{stats['total_requests']}</div>
+                    <div class="card-value" style="color: white;">{stats["total_requests"]}</div>
                 </div>
             </div>
         </div>
@@ -90,11 +91,11 @@ def generate_evidence():
             <h2>📊 Test Configuration</h2>
             <div class="metric">
                 <span class="metric-label">Concurrent Users:</span>
-                <span class="metric-value">{stats['concurrent_users']}</span>
+                <span class="metric-value">{stats["concurrent_users"]}</span>
             </div>
             <div class="metric">
                 <span class="metric-label">Test Duration:</span>
-                <span class="metric-value">{stats['test_duration_seconds']} seconds</span>
+                <span class="metric-value">{stats["test_duration_seconds"]} seconds</span>
             </div>
             <div class="metric">
                 <span class="metric-label">Target Endpoint:</span>
@@ -106,27 +107,27 @@ def generate_evidence():
             <h2>⚡ Performance Metrics</h2>
             <div class="metric">
                 <span class="metric-label">Total Requests:</span>
-                <span class="metric-value">{stats['total_requests']}</span>
+                <span class="metric-value">{stats["total_requests"]}</span>
             </div>
             <div class="metric">
                 <span class="metric-label">Successful Requests:</span>
-                <span class="metric-value success">{stats['successful_requests']}</span>
+                <span class="metric-value success">{stats["successful_requests"]}</span>
             </div>
             <div class="metric">
                 <span class="metric-label">Failed Requests:</span>
-                <span class="metric-value {'error' if stats['failed_requests'] > 20 else 'warning' if stats['failed_requests'] > 0 else 'success'}">
-                    {stats['failed_requests']}
+                <span class="metric-value {"error" if stats["failed_requests"] > 20 else "warning" if stats["failed_requests"] > 0 else "success"}">
+                    {stats["failed_requests"]}
                 </span>
             </div>
             <div class="metric">
                 <span class="metric-label">Success Rate:</span>
-                <span class="metric-value {'success' if stats['success_rate'] > 95 else 'warning' if stats['success_rate'] > 90 else 'error'}">
-                    {stats['success_rate']:.2f}%
+                <span class="metric-value {"success" if stats["success_rate"] > 95 else "warning" if stats["success_rate"] > 90 else "error"}">
+                    {stats["success_rate"]:.2f}%
                 </span>
             </div>
             <div class="metric">
                 <span class="metric-label">Requests/Second:</span>
-                <span class="metric-value">{stats['requests_per_second']:.2f}</span>
+                <span class="metric-value">{stats["requests_per_second"]:.2f}</span>
             </div>
         </div>
         
@@ -135,30 +136,30 @@ def generate_evidence():
             <div class="grid">
                 <div class="card">
                     <div class="card-title">Average</div>
-                    <div class="card-value">{stats['avg_latency_ms']:.0f}<span class="card-unit"> ms</span></div>
+                    <div class="card-value">{stats["avg_latency_ms"]:.0f}<span class="card-unit"> ms</span></div>
                 </div>
                 <div class="card">
                     <div class="card-title">Minimum</div>
-                    <div class="card-value">{stats['min_latency_ms']:.0f}<span class="card-unit"> ms</span></div>
+                    <div class="card-value">{stats["min_latency_ms"]:.0f}<span class="card-unit"> ms</span></div>
                 </div>
                 <div class="card">
                     <div class="card-title">Maximum</div>
-                    <div class="card-value">{stats['max_latency_ms']:.0f}<span class="card-unit"> ms</span></div>
+                    <div class="card-value">{stats["max_latency_ms"]:.0f}<span class="card-unit"> ms</span></div>
                 </div>
                 <div class="card">
                     <div class="card-title">P50 (Median)</div>
-                    <div class="card-value">{stats['p50_latency_ms']:.0f}<span class="card-unit"> ms</span></div>
+                    <div class="card-value">{stats["p50_latency_ms"]:.0f}<span class="card-unit"> ms</span></div>
                 </div>
                 <div class="card">
                     <div class="card-title">P95</div>
-                    <div class="card-value {'success' if stats['p95_latency_ms'] < 1000 else 'warning'}">
-                        {stats['p95_latency_ms']:.0f}<span class="card-unit"> ms</span>
+                    <div class="card-value {"success" if stats["p95_latency_ms"] < 1000 else "warning"}">
+                        {stats["p95_latency_ms"]:.0f}<span class="card-unit"> ms</span>
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-title">P99</div>
-                    <div class="card-value {'warning' if stats['p99_latency_ms'] > 1000 else 'success'}">
-                        {stats['p99_latency_ms']:.0f}<span class="card-unit"> ms</span>
+                    <div class="card-value {"warning" if stats["p99_latency_ms"] > 1000 else "success"}">
+                        {stats["p99_latency_ms"]:.0f}<span class="card-unit"> ms</span>
                     </div>
                 </div>
             </div>
@@ -166,32 +167,35 @@ def generate_evidence():
         
         <div class="metrics">
             <h2>✅ Test Results</h2>
-            <p>The RAG pipeline successfully handled <strong>{stats['requests_per_second']:.1f} requests per second</strong> with a 
-            <strong>{stats['success_rate']:.1f}% success rate</strong>. The P95 latency of <strong>{stats['p95_latency_ms']:.0f}ms</strong> 
+            <p>The RAG pipeline successfully handled <strong>{stats["requests_per_second"]:.1f} requests per second</strong> with a 
+            <strong>{stats["success_rate"]:.1f}% success rate</strong>. The P95 latency of <strong>{stats["p95_latency_ms"]:.0f}ms</strong> 
             indicates good performance under load, meeting our SLA requirements.</p>
         </div>
     </div>
 </body>
 </html>"""
-    
+
     with open(output_dir / "report.html", "w") as f:
         f.write(html)
-    
+
     # Save CSV stats
     with open(output_dir / "stats_history.csv", "w") as f:
-        f.write("timestamp,total_requests,successful,failed,success_rate,avg_latency_ms,p95_latency_ms,p99_latency_ms,rps\n")
+        f.write(
+            "timestamp,total_requests,successful,failed,success_rate,avg_latency_ms,p95_latency_ms,p99_latency_ms,rps\n"
+        )
         f.write(f"{timestamp},{stats['total_requests']},{stats['successful_requests']},")
         f.write(f"{stats['failed_requests']},{stats['success_rate']:.2f},")
         f.write(f"{stats['avg_latency_ms']:.2f},{stats['p95_latency_ms']:.2f},")
         f.write(f"{stats['p99_latency_ms']:.2f},{stats['requests_per_second']:.2f}\n")
-    
-    print(f"Load test evidence generated successfully!")
+
+    print("Load test evidence generated successfully!")
     print(f"Results saved to: benchmarks/locust/{timestamp}/")
-    print(f"  - report.html: Visual HTML report")
-    print(f"  - stats.json: Detailed metrics in JSON format")
-    print(f"  - stats_history.csv: CSV format for analysis")
-    
+    print("  - report.html: Visual HTML report")
+    print("  - stats.json: Detailed metrics in JSON format")
+    print("  - stats_history.csv: CSV format for analysis")
+
     return timestamp, stats
+
 
 if __name__ == "__main__":
     generate_evidence()

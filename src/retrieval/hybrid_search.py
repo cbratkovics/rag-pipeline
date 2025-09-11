@@ -1,10 +1,7 @@
 """Hybrid search combining semantic and keyword-based retrieval."""
 
-import math
-from collections import Counter
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
-import numpy as np
 from rank_bm25 import BM25Okapi
 
 from src.core.config import get_settings
@@ -17,16 +14,16 @@ from src.retrieval.vector_store import vector_store
 class BM25Searcher(LoggerMixin):
     """BM25 keyword search implementation."""
 
-    def __init__(self, k1: Optional[float] = None, b: Optional[float] = None):
+    def __init__(self, k1: float | None = None, b: float | None = None):
         """Initialize BM25 searcher."""
         self.settings = get_settings()
         self.k1 = k1 or self.settings.bm25_k1
         self.b = b or self.settings.bm25_b
-        self.documents: List[Document] = []
-        self.tokenized_docs: List[List[str]] = []
-        self.bm25: Optional[BM25Okapi] = None
+        self.documents: list[Document] = []
+        self.tokenized_docs: list[list[str]] = []
+        self.bm25: BM25Okapi | None = None
 
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, text: str) -> list[str]:
         """Tokenize text for BM25."""
         # Simple tokenization - can be improved with NLTK or spaCy
         tokens = text.lower().split()
@@ -36,7 +33,7 @@ class BM25Searcher(LoggerMixin):
         tokens = [token for token in tokens if token]
         return tokens
 
-    def index_documents(self, documents: List[Document]) -> None:
+    def index_documents(self, documents: list[Document]) -> None:
         """Index documents for BM25 search."""
         self.documents = documents
         self.tokenized_docs = [self.tokenize(doc.content) for doc in documents]
@@ -51,8 +48,8 @@ class BM25Searcher(LoggerMixin):
         self,
         query: str,
         top_k: int = 10,
-        metadata_filter: Optional[Dict[str, Any]] = None,
-    ) -> List[Tuple[Document, float]]:
+        metadata_filter: dict[str, Any] | None = None,
+    ) -> list[tuple[Document, float]]:
         """Search documents using BM25."""
         if not self.bm25:
             self.logger.warning("BM25 index not initialized")
@@ -108,10 +105,10 @@ class HybridSearcher(LoggerMixin):
     async def search(
         self,
         query: str,
-        top_k: Optional[int] = None,
-        metadata_filter: Optional[Dict[str, Any]] = None,
-        alpha: Optional[float] = None,
-    ) -> List[RetrievedDocument]:
+        top_k: int | None = None,
+        metadata_filter: dict[str, Any] | None = None,
+        alpha: float | None = None,
+    ) -> list[RetrievedDocument]:
         """Perform hybrid search combining semantic and keyword search."""
         top_k = top_k or self.settings.search_top_k
         alpha = alpha if alpha is not None else self.alpha
@@ -155,10 +152,10 @@ class HybridSearcher(LoggerMixin):
 
     def _reciprocal_rank_fusion(
         self,
-        semantic_results: List[RetrievedDocument],
-        bm25_results: List[RetrievedDocument],
+        semantic_results: list[RetrievedDocument],
+        bm25_results: list[RetrievedDocument],
         alpha: float,
-    ) -> List[RetrievedDocument]:
+    ) -> list[RetrievedDocument]:
         """Merge results using reciprocal rank fusion."""
         # Create score dictionaries
         semantic_scores = {}
@@ -208,7 +205,7 @@ class HybridSearcher(LoggerMixin):
 
         return final_results
 
-    async def index_for_bm25(self, documents: List[Document]) -> None:
+    async def index_for_bm25(self, documents: list[Document]) -> None:
         """Index documents for BM25 search."""
         self.bm25_searcher.index_documents(documents)
 
@@ -220,7 +217,7 @@ class QueryExpander(LoggerMixin):
         """Initialize query expander."""
         self.settings = get_settings()
 
-    def expand_query(self, query: str) -> List[str]:
+    def expand_query(self, query: str) -> list[str]:
         """Expand query with synonyms and related terms."""
         expanded_queries = [query]
 
@@ -240,7 +237,7 @@ class QueryExpander(LoggerMixin):
 
         return expanded_queries
 
-    def reformulate_query(self, query: str, context: Optional[str] = None) -> str:
+    def reformulate_query(self, query: str, context: str | None = None) -> str:
         """Reformulate query based on context."""
         if context:
             # If we have context from previous interactions, use it

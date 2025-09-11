@@ -1,7 +1,7 @@
 """Configuration management for the RAG pipeline."""
 
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import Field, PostgresDsn, RedisDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     api_host: str = Field(default="0.0.0.0")
     api_port: int = Field(default=8000)
     api_key_header: str = Field(default="X-API-Key")
-    cors_origins: List[str] = Field(default=["*"])
+    cors_origins: list[str] = Field(default=["*"])
 
     # Database
     postgres_host: str = Field(default="localhost")
@@ -34,20 +34,20 @@ class Settings(BaseSettings):
     postgres_db: str = Field(default="rag_pipeline")
     postgres_user: str = Field(default="rag_user")
     postgres_password: str = Field(default="password")
-    database_url: Optional[PostgresDsn] = None
+    database_url: PostgresDsn | None = None
 
     # Redis
     redis_host: str = Field(default="localhost")
     redis_port: int = Field(default=6379)
-    redis_password: Optional[str] = Field(default=None)
+    redis_password: str | None = Field(default=None)
     redis_db: int = Field(default=0)
-    redis_url: Optional[RedisDsn] = None
+    redis_url: RedisDsn | None = None
 
     # Vector Store
     vector_store_type: str = Field(default="qdrant")
     qdrant_host: str = Field(default="localhost")
     qdrant_port: int = Field(default=6333)
-    qdrant_api_key: Optional[str] = Field(default=None)
+    qdrant_api_key: str | None = Field(default=None)
     qdrant_collection: str = Field(default="rag_documents")
     chromadb_host: str = Field(default="localhost")
     chromadb_port: int = Field(default=8000)
@@ -60,11 +60,11 @@ class Settings(BaseSettings):
 
     # LLM
     llm_provider: str = Field(default="openai")
-    openai_api_key: Optional[str] = Field(default=None)
+    openai_api_key: str | None = Field(default=None)
     openai_model: str = Field(default="gpt-3.5-turbo")
-    anthropic_api_key: Optional[str] = Field(default=None)
+    anthropic_api_key: str | None = Field(default=None)
     anthropic_model: str = Field(default="claude-3-haiku-20240307")
-    local_llm_url: Optional[str] = Field(default=None)
+    local_llm_url: str | None = Field(default=None)
     local_llm_model: str = Field(default="llama2-7b")
 
     # Reranking
@@ -87,17 +87,15 @@ class Settings(BaseSettings):
 
     # A/B Testing
     ab_test_enabled: bool = Field(default=True)
-    ab_test_variants: List[str] = Field(
-        default=["baseline", "reranked", "hybrid", "finetuned"]
-    )
+    ab_test_variants: list[str] = Field(default=["baseline", "reranked", "hybrid", "finetuned"])
     ab_test_default_variant: str = Field(default="baseline")
-    ab_test_traffic_split: List[float] = Field(default=[0.25, 0.25, 0.25, 0.25])
+    ab_test_traffic_split: list[float] = Field(default=[0.25, 0.25, 0.25, 0.25])
     ab_test_min_samples: int = Field(default=100)
     ab_test_confidence_level: float = Field(default=0.95)
 
     # RAGAS Evaluation
     ragas_enabled: bool = Field(default=True)
-    ragas_metrics: List[str] = Field(
+    ragas_metrics: list[str] = Field(
         default=[
             "context_relevancy",
             "answer_faithfulness",
@@ -180,7 +178,7 @@ class Settings(BaseSettings):
 
     @field_validator("database_url", mode="before")
     @classmethod
-    def assemble_db_connection(cls, v: Optional[str], info: Any) -> Any:
+    def assemble_db_connection(cls, v: str | None, info: Any) -> Any:
         """Construct database URL from components."""
         if isinstance(v, str):
             return v
@@ -196,7 +194,7 @@ class Settings(BaseSettings):
 
     @field_validator("redis_url", mode="before")
     @classmethod
-    def assemble_redis_connection(cls, v: Optional[str], info: Any) -> Any:
+    def assemble_redis_connection(cls, v: str | None, info: Any) -> Any:
         """Construct Redis URL from components."""
         if isinstance(v, str):
             return v
@@ -208,13 +206,13 @@ class Settings(BaseSettings):
 
     @field_validator("ab_test_traffic_split")
     @classmethod
-    def validate_traffic_split(cls, v: List[float]) -> List[float]:
+    def validate_traffic_split(cls, v: list[float]) -> list[float]:
         """Ensure traffic split sums to 1.0."""
         if abs(sum(v) - 1.0) > 0.001:
             raise ValueError("A/B test traffic split must sum to 1.0")
         return v
 
-    def get_vector_store_config(self) -> Dict[str, Any]:
+    def get_vector_store_config(self) -> dict[str, Any]:
         """Get vector store configuration based on type."""
         if self.vector_store_type == "qdrant":
             return {
@@ -234,7 +232,7 @@ class Settings(BaseSettings):
         else:
             raise ValueError(f"Unknown vector store type: {self.vector_store_type}")
 
-    def get_llm_config(self) -> Dict[str, Any]:
+    def get_llm_config(self) -> dict[str, Any]:
         """Get LLM configuration based on provider."""
         base_config = {
             "temperature": self.temperature,
@@ -266,7 +264,7 @@ class Settings(BaseSettings):
             raise ValueError(f"Unknown LLM provider: {self.llm_provider}")
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """Get cached settings instance."""
     return Settings()

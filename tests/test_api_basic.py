@@ -1,7 +1,8 @@
-import pytest
-from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -26,11 +27,11 @@ def test_metrics_endpoint(client):
     """Test metrics endpoint returns Prometheus format."""
     response = client.get("/metrics")
     assert response.status_code == 200
-    
+
     # Check content type
     content_type = response.headers.get("content-type", "")
     assert "text/plain" in content_type
-    
+
     # Check for Prometheus format markers
     content = response.text
     assert "# HELP" in content or "# TYPE" in content or "rag_requests_total" in content
@@ -44,23 +45,23 @@ def test_query_endpoint_schema(client):
         "top_k_bm25": 8,
         "top_k_vec": 8,
         "rrf_k": 60,
-        "provider": "stub"
+        "provider": "stub",
     }
-    
+
     response = client.post("/api/v1/query", json=payload)
-    
+
     # Should return 200 or 500 (if no index)
     assert response.status_code in [200, 500]
-    
+
     if response.status_code == 200:
         data = response.json()
-        
+
         # Check required fields
         assert "answer" in data
         assert "contexts" in data
         assert "scores" in data
         assert "latency_ms" in data
-        
+
         # Check types
         assert isinstance(data["answer"], str)
         assert isinstance(data["contexts"], list)
@@ -70,12 +71,10 @@ def test_query_endpoint_schema(client):
 
 def test_query_endpoint_default_params(client):
     """Test query endpoint with minimal params."""
-    payload = {
-        "question": "Test question"
-    }
-    
+    payload = {"question": "Test question"}
+
     response = client.post("/api/v1/query", json=payload)
-    
+
     # Should accept with defaults
     assert response.status_code in [200, 500]
 
@@ -83,8 +82,8 @@ def test_query_endpoint_default_params(client):
 def test_query_endpoint_invalid_request(client):
     """Test query endpoint with invalid request."""
     payload = {}  # Missing required question field
-    
+
     response = client.post("/api/v1/query", json=payload)
-    
+
     # Should return 422 for validation error
     assert response.status_code == 422

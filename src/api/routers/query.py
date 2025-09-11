@@ -1,6 +1,6 @@
 """Query API endpoints."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
@@ -21,18 +21,18 @@ class QueryRequest(BaseModel):
     """Query request model."""
 
     query: str = Field(..., description="The query text")
-    metadata_filters: Optional[Dict[str, Any]] = Field(
+    metadata_filters: dict[str, Any] | None = Field(
         default=None, description="Metadata filters for document retrieval"
     )
-    experiment_variant: Optional[str] = Field(
+    experiment_variant: str | None = Field(
         default=None, description="Specific experiment variant to use"
     )
     max_results: int = Field(default=5, ge=1, le=20, description="Maximum number of results")
     include_sources: bool = Field(default=True, description="Include source documents")
-    temperature: Optional[float] = Field(
+    temperature: float | None = Field(
         default=None, ge=0.0, le=2.0, description="LLM temperature"
     )
-    max_tokens: Optional[int] = Field(
+    max_tokens: int | None = Field(
         default=None, ge=1, le=4000, description="Maximum tokens for response"
     )
 
@@ -42,13 +42,13 @@ class QueryResponse(BaseModel):
 
     query_id: str
     answer: str
-    sources: Optional[list] = None
+    sources: list | None = None
     experiment_variant: str
     confidence_score: float
     processing_time_ms: float
     token_count: int
     cost_usd: float
-    evaluation_metrics: Optional[Dict[str, float]] = None
+    evaluation_metrics: dict[str, float] | None = None
 
 
 @router.post("/query", response_model=QueryResponse)
@@ -161,5 +161,5 @@ async def process_query(request: QueryRequest, req: Request) -> QueryResponse:
         logger.error("Query processing failed", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Query processing failed: {str(e)}",
+            detail=f"Query processing failed: {e!s}",
         )

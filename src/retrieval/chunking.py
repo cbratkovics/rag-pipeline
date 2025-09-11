@@ -1,10 +1,9 @@
 """Text chunking strategies for document processing."""
 
 import re
-from typing import List, Optional, Tuple
 
 import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import sent_tokenize
 
 from src.core.config import get_settings
 from src.infrastructure.logging import LoggerMixin
@@ -15,8 +14,8 @@ class ChunkingStrategy(LoggerMixin):
 
     def __init__(
         self,
-        chunk_size: Optional[int] = None,
-        chunk_overlap: Optional[int] = None,
+        chunk_size: int | None = None,
+        chunk_overlap: int | None = None,
     ):
         """Initialize chunking strategy."""
         self.settings = get_settings()
@@ -32,7 +31,7 @@ class ChunkingStrategy(LoggerMixin):
             self.logger.info("Downloading NLTK punkt tokenizer")
             nltk.download("punkt", quiet=True)
 
-    def chunk_text(self, text: str) -> List[str]:
+    def chunk_text(self, text: str) -> list[str]:
         """Chunk text into smaller pieces."""
         raise NotImplementedError
 
@@ -40,7 +39,7 @@ class ChunkingStrategy(LoggerMixin):
 class FixedSizeChunker(ChunkingStrategy):
     """Fixed-size chunking with character count."""
 
-    def chunk_text(self, text: str) -> List[str]:
+    def chunk_text(self, text: str) -> list[str]:
         """Chunk text into fixed-size pieces."""
         if not text:
             return []
@@ -76,14 +75,14 @@ class FixedSizeChunker(ChunkingStrategy):
 class SentenceChunker(ChunkingStrategy):
     """Sentence-based chunking."""
 
-    def chunk_text(self, text: str) -> List[str]:
+    def chunk_text(self, text: str) -> list[str]:
         """Chunk text by sentences."""
         if not text:
             return []
 
         sentences = sent_tokenize(text)
         chunks = []
-        current_chunk: List[str] = []
+        current_chunk: list[str] = []
         current_size = 0
 
         for sentence in sentences:
@@ -95,7 +94,7 @@ class SentenceChunker(ChunkingStrategy):
                 # Start new chunk with overlap
                 if self.chunk_overlap > 0:
                     # Keep last few sentences for overlap
-                    overlap_sentences: List[str] = []
+                    overlap_sentences: list[str] = []
                     overlap_size = 0
                     for sent in reversed(current_chunk):
                         overlap_size += len(sent)
@@ -121,7 +120,7 @@ class SentenceChunker(ChunkingStrategy):
 class SemanticChunker(ChunkingStrategy):
     """Semantic chunking based on content structure."""
 
-    def chunk_text(self, text: str) -> List[str]:
+    def chunk_text(self, text: str) -> list[str]:
         """Chunk text based on semantic boundaries."""
         if not text:
             return []
@@ -129,7 +128,7 @@ class SemanticChunker(ChunkingStrategy):
         # Split by paragraphs first
         paragraphs = re.split(r"\n\n+", text)
         chunks = []
-        current_chunk: List[str] = []
+        current_chunk: list[str] = []
         current_size = 0
 
         for paragraph in paragraphs:
@@ -171,7 +170,7 @@ class DynamicChunker(ChunkingStrategy):
         self,
         min_chunk_size: int = 256,
         max_chunk_size: int = 1024,
-        chunk_overlap: Optional[int] = None,
+        chunk_overlap: int | None = None,
     ):
         """Initialize dynamic chunker."""
         super().__init__(chunk_overlap=chunk_overlap)
@@ -189,7 +188,7 @@ class DynamicChunker(ChunkingStrategy):
         self,
         text: str,
         query_complexity: float = 0.5,
-    ) -> List[str]:
+    ) -> list[str]:
         """Chunk text with dynamic size based on query."""
         if not text:
             return []
@@ -208,8 +207,8 @@ class ChunkerFactory:
     @staticmethod
     def create(
         strategy: str = "semantic",
-        chunk_size: Optional[int] = None,
-        chunk_overlap: Optional[int] = None,
+        chunk_size: int | None = None,
+        chunk_overlap: int | None = None,
     ) -> ChunkingStrategy:
         """Create a chunking strategy."""
         if strategy == "fixed":

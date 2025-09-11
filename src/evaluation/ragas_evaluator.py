@@ -1,13 +1,12 @@
 """RAGAS evaluation framework for RAG pipeline assessment."""
 
 import time
-from typing import Dict, List, Optional
 
 import numpy as np
 from langchain_openai import ChatOpenAI
 
 from src.core.config import get_settings
-from src.core.models import EvaluationMetrics, QueryResult, RetrievedDocument
+from src.core.models import EvaluationMetrics, QueryResult
 from src.infrastructure.logging import LoggerMixin
 
 
@@ -34,7 +33,7 @@ class RAGASEvaluator(LoggerMixin):
     async def evaluate(
         self,
         result: QueryResult,
-        ground_truth: Optional[str] = None,
+        ground_truth: str | None = None,
     ) -> EvaluationMetrics:
         """Evaluate a query result using RAGAS metrics."""
         start_time = time.time()
@@ -87,7 +86,7 @@ class RAGASEvaluator(LoggerMixin):
     async def _calculate_context_relevancy(
         self,
         query: str,
-        contexts: List[str],
+        contexts: list[str],
     ) -> float:
         """Calculate context relevancy score."""
         if not contexts:
@@ -132,7 +131,7 @@ Contexts:
     async def _calculate_answer_faithfulness(
         self,
         answer: str,
-        contexts: List[str],
+        contexts: list[str],
     ) -> float:
         """Calculate answer faithfulness score."""
         if not contexts or not answer:
@@ -211,8 +210,8 @@ Relevancy score (0-1):"""
     async def _calculate_context_recall(
         self,
         query: str,
-        contexts: List[str],
-        ground_truth: Optional[str] = None,
+        contexts: list[str],
+        ground_truth: str | None = None,
     ) -> float:
         """Calculate context recall score."""
         if not contexts:
@@ -268,37 +267,43 @@ Recall score (0-1):"""
 
     async def batch_evaluate(
         self,
-        results: List[QueryResult],
-        ground_truths: Optional[List[str]] = None,
-    ) -> List[EvaluationMetrics]:
+        results: list[QueryResult],
+        ground_truths: list[str] | None = None,
+    ) -> list[EvaluationMetrics]:
         """Evaluate multiple query results."""
         evaluations = []
         if ground_truths is None:
             ground_truths = [None] * len(results)  # type: ignore[list-item]
 
-        for result, ground_truth in zip(results, ground_truths):
+        for result, ground_truth in zip(results, ground_truths, strict=False):
             evaluation = await self.evaluate(result, ground_truth)
             evaluations.append(evaluation)
 
         return evaluations
 
-    def check_thresholds(self, metrics: EvaluationMetrics) -> Dict[str, bool]:
+    def check_thresholds(self, metrics: EvaluationMetrics) -> dict[str, bool]:
         """Check if metrics meet configured thresholds."""
         return {
-            "context_relevancy": metrics.context_relevancy >= self.settings.ragas_threshold_context_relevancy,
-            "answer_faithfulness": metrics.answer_faithfulness >= self.settings.ragas_threshold_answer_faithfulness,
-            "answer_relevancy": metrics.answer_relevancy >= self.settings.ragas_threshold_answer_relevancy,
-            "context_recall": metrics.context_recall >= self.settings.ragas_threshold_context_recall,
+            "context_relevancy": metrics.context_relevancy
+            >= self.settings.ragas_threshold_context_relevancy,
+            "answer_faithfulness": metrics.answer_faithfulness
+            >= self.settings.ragas_threshold_answer_faithfulness,
+            "answer_relevancy": metrics.answer_relevancy
+            >= self.settings.ragas_threshold_answer_relevancy,
+            "context_recall": metrics.context_recall
+            >= self.settings.ragas_threshold_context_recall,
         }
 
-    def aggregate_metrics(self, evaluations: List[EvaluationMetrics]) -> Dict[str, float]:
+    def aggregate_metrics(self, evaluations: list[EvaluationMetrics]) -> dict[str, float]:
         """Aggregate multiple evaluation metrics."""
         if not evaluations:
             return {}
 
         return {
             "mean_context_relevancy": float(np.mean([e.context_relevancy for e in evaluations])),
-            "mean_answer_faithfulness": float(np.mean([e.answer_faithfulness for e in evaluations])),
+            "mean_answer_faithfulness": float(
+                np.mean([e.answer_faithfulness for e in evaluations])
+            ),
             "mean_answer_relevancy": float(np.mean([e.answer_relevancy for e in evaluations])),
             "mean_context_recall": float(np.mean([e.context_recall for e in evaluations])),
             "mean_overall_score": float(np.mean([e.overall_score for e in evaluations])),

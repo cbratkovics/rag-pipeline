@@ -3,7 +3,6 @@
 import hashlib
 import random
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from scipy import stats
@@ -20,7 +19,7 @@ class ABTestManager(LoggerMixin):
     def __init__(self):
         """Initialize A/B test manager."""
         self.settings = get_settings()
-        self.active_experiments: Dict[str, ExperimentConfig] = {}
+        self.active_experiments: dict[str, ExperimentConfig] = {}
 
     async def initialize(self) -> None:
         """Initialize A/B test manager."""
@@ -37,8 +36,8 @@ class ABTestManager(LoggerMixin):
 
     def assign_variant(
         self,
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
+        user_id: str | None = None,
+        session_id: str | None = None,
         experiment_id: str = "default",
     ) -> ExperimentVariant:
         """Assign user to experiment variant using hash-based assignment."""
@@ -64,7 +63,7 @@ class ABTestManager(LoggerMixin):
 
         # Determine variant based on traffic split
         cumulative_split = 0.0
-        for variant_name, split in zip(config.variants, config.traffic_split):
+        for variant_name, split in zip(config.variants, config.traffic_split, strict=False):
             cumulative_split += split
             if assignment_value < cumulative_split:
                 variant = ExperimentVariant(variant_name)
@@ -84,7 +83,7 @@ class ABTestManager(LoggerMixin):
         experiment_id: str,
         variant: ExperimentVariant,
         result: QueryResult,
-        metrics: Optional[Dict[str, float]] = None,
+        metrics: dict[str, float] | None = None,
     ) -> None:
         """Record experiment result."""
         # Create result key
@@ -121,8 +120,8 @@ class ABTestManager(LoggerMixin):
     async def calculate_statistics(
         self,
         experiment_id: str,
-        min_samples: Optional[int] = None,
-    ) -> List[ExperimentResult]:
+        min_samples: int | None = None,
+    ) -> list[ExperimentResult]:
         """Calculate experiment statistics."""
         min_samples = min_samples or self.settings.ab_test_min_samples
 
@@ -131,7 +130,7 @@ class ABTestManager(LoggerMixin):
         all_results = await cache_manager.get_pattern(pattern)
 
         # Group by variant
-        variant_data: Dict[str, List[Dict]] = {}
+        variant_data: dict[str, list[dict]] = {}
         for key, data in all_results.items():
             variant = data["variant"]
             if variant not in variant_data:
@@ -194,7 +193,7 @@ class ABTestManager(LoggerMixin):
         successes: int,
         trials: int,
         confidence_level: float,
-    ) -> Tuple[float, float]:
+    ) -> tuple[float, float]:
         """Calculate Wilson score confidence interval."""
         if trials == 0:
             return 0.0, 0.0
@@ -210,7 +209,7 @@ class ABTestManager(LoggerMixin):
 
     def _perform_significance_testing(
         self,
-        results: List[ExperimentResult],
+        results: list[ExperimentResult],
     ) -> None:
         """Perform statistical significance testing between variants."""
         # Find baseline
@@ -242,7 +241,7 @@ class ABTestManager(LoggerMixin):
     async def get_winning_variant(
         self,
         experiment_id: str,
-    ) -> Optional[ExperimentVariant]:
+    ) -> ExperimentVariant | None:
         """Determine winning variant based on success rate."""
         results = await self.calculate_statistics(experiment_id)
         if not results:
@@ -268,15 +267,15 @@ class MultiArmedBandit(LoggerMixin):
 
     def __init__(
         self,
-        variants: List[str],
+        variants: list[str],
         exploration_rate: float = 0.1,
     ):
         """Initialize multi-armed bandit."""
         self.settings = get_settings()
         self.variants = variants
         self.exploration_rate = exploration_rate
-        self.arm_counts = {v: 0 for v in variants}
-        self.arm_rewards = {v: 0.0 for v in variants}
+        self.arm_counts = dict.fromkeys(variants, 0)
+        self.arm_rewards = dict.fromkeys(variants, 0.0)
 
     def select_arm(self) -> str:
         """Select variant using epsilon-greedy strategy."""
@@ -286,8 +285,7 @@ class MultiArmedBandit(LoggerMixin):
         else:
             # Exploitation: select best performing
             avg_rewards = {
-                v: self.arm_rewards[v] / max(self.arm_counts[v], 1)
-                for v in self.variants
+                v: self.arm_rewards[v] / max(self.arm_counts[v], 1) for v in self.variants
             }
             return max(avg_rewards, key=lambda k: avg_rewards[k])
 
@@ -301,7 +299,7 @@ class MultiArmedBandit(LoggerMixin):
         self,
         experiment_id: str,
         manager: ABTestManager,
-    ) -> List[float]:
+    ) -> list[float]:
         """Adapt traffic split based on performance."""
         results = await manager.calculate_statistics(experiment_id)
         if not results:
@@ -326,7 +324,7 @@ class MultiArmedBandit(LoggerMixin):
         smoothing_factor = 0.7
         smoothed_split = [
             smoothing_factor * current + (1 - smoothing_factor) * new
-            for current, new in zip(current_split, new_split)
+            for current, new in zip(current_split, new_split, strict=False)
         ]
 
         # Normalize
@@ -342,10 +340,10 @@ class ExperimentConfig:
     def __init__(
         self,
         experiment_id: str,
-        variants: List[str],
-        traffic_split: List[float],
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        variants: list[str],
+        traffic_split: list[float],
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
     ):
         """Initialize experiment configuration."""
         self.experiment_id = experiment_id

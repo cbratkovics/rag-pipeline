@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_validator
@@ -51,23 +51,23 @@ class Document(BaseModel):
 
     id: UUID = Field(default_factory=uuid4)
     content: str
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     source: DocumentSource
-    source_id: Optional[str] = None
-    title: Optional[str] = None
-    author: Optional[str] = None
-    published_date: Optional[datetime] = None
-    url: Optional[str] = None
-    license: Optional[str] = None
-    embedding: Optional[List[float]] = None
-    chunk_id: Optional[int] = None
-    parent_id: Optional[UUID] = None
+    source_id: str | None = None
+    title: str | None = None
+    author: str | None = None
+    published_date: datetime | None = None
+    url: str | None = None
+    license: str | None = None
+    embedding: list[float] | None = None
+    chunk_id: int | None = None
+    parent_id: UUID | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     @field_validator("metadata")
     @classmethod
-    def validate_metadata(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+    def validate_metadata(cls, v: dict[str, Any]) -> dict[str, Any]:
         """Ensure metadata is JSON-serializable."""
         import json
 
@@ -83,14 +83,14 @@ class Query(BaseModel):
 
     id: UUID = Field(default_factory=uuid4)
     text: str
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
-    metadata_filters: Dict[str, Any] = Field(default_factory=dict)
-    experiment_variant: Optional[ExperimentVariant] = None
+    user_id: str | None = None
+    session_id: str | None = None
+    metadata_filters: dict[str, Any] = Field(default_factory=dict)
+    experiment_variant: ExperimentVariant | None = None
     max_results: int = Field(default=5, ge=1, le=20)
     include_sources: bool = Field(default=True)
-    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
-    max_tokens: Optional[int] = Field(default=None, ge=1, le=4000)
+    temperature: float | None = Field(default=None, ge=0.0, le=2.0)
+    max_tokens: int | None = Field(default=None, ge=1, le=4000)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -99,9 +99,9 @@ class RetrievedDocument(BaseModel):
 
     document: Document
     score: float = Field(ge=0.0, le=1.0)
-    rerank_score: Optional[float] = Field(default=None, ge=0.0, le=1.0)
-    bm25_score: Optional[float] = Field(default=None, ge=0.0)
-    semantic_score: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    rerank_score: float | None = Field(default=None, ge=0.0, le=1.0)
+    bm25_score: float | None = Field(default=None, ge=0.0)
+    semantic_score: float | None = Field(default=None, ge=0.0, le=1.0)
 
 
 class QueryResult(BaseModel):
@@ -111,14 +111,14 @@ class QueryResult(BaseModel):
     query_id: UUID
     query_text: str
     answer: str
-    sources: List[RetrievedDocument] = Field(default_factory=list)
+    sources: list[RetrievedDocument] = Field(default_factory=list)
     experiment_variant: ExperimentVariant
     confidence_score: float = Field(ge=0.0, le=1.0)
     processing_time_ms: float
     token_count: int
     cost_usd: float
     status: QueryStatus = QueryStatus.COMPLETED
-    error_message: Optional[str] = None
+    error_message: str | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -156,11 +156,11 @@ class UserFeedback(BaseModel):
 
     id: UUID = Field(default_factory=uuid4)
     result_id: UUID
-    user_id: Optional[str] = None
+    user_id: str | None = None
     feedback_type: FeedbackType
     value: Any  # Can be bool (thumbs), int (rating), str (correction)
-    comment: Optional[str] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    comment: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     @field_validator("value")

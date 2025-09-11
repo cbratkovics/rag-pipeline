@@ -1,6 +1,6 @@
 """Feedback API endpoints."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
@@ -22,8 +22,8 @@ class FeedbackRequest(BaseModel):
     result_id: str = Field(..., description="ID of the query result")
     feedback_type: str = Field(..., description="Type of feedback")
     value: Any = Field(..., description="Feedback value")
-    comment: Optional[str] = Field(default=None, description="Optional comment")
-    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Additional metadata")
+    comment: str | None = Field(default=None, description="Optional comment")
+    metadata: dict[str, Any] | None = Field(default=None, description="Additional metadata")
 
 
 class FeedbackResponse(BaseModel):
@@ -97,18 +97,18 @@ async def submit_feedback(request: FeedbackRequest, req: Request) -> FeedbackRes
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid feedback data: {str(e)}",
+            detail=f"Invalid feedback data: {e!s}",
         )
     except Exception as e:
         logger.error("Failed to record feedback", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to record feedback: {str(e)}",
+            detail=f"Failed to record feedback: {e!s}",
         )
 
 
 @router.get("/feedback/stats")
-async def get_feedback_stats() -> Dict[str, Any]:
+async def get_feedback_stats() -> dict[str, Any]:
     """Get feedback statistics."""
     try:
         # Get feedback counts by type
@@ -133,5 +133,5 @@ async def get_feedback_stats() -> Dict[str, Any]:
         logger.error("Failed to get feedback stats", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get feedback stats: {str(e)}",
+            detail=f"Failed to get feedback stats: {e!s}",
         )

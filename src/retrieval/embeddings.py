@@ -1,24 +1,23 @@
 """Embedding generation and management."""
 
-from typing import List, Optional
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.core.config import get_settings
-from src.infrastructure.cache import CacheDecorator, cache_manager
+from src.infrastructure.cache import CacheDecorator
 from src.infrastructure.logging import LoggerMixin
 
 
 class EmbeddingManager(LoggerMixin):
     """Manages embedding generation for documents and queries."""
 
-    def __init__(self, model_name: Optional[str] = None):
+    def __init__(self, model_name: str | None = None):
         """Initialize embedding manager."""
         self.settings = get_settings()
         self.model_name = model_name or self.settings.embedding_model
-        self.model: Optional[SentenceTransformer] = None
+        self.model: SentenceTransformer | None = None
         self.dimension = self.settings.embedding_dimension
 
     def initialize(self) -> None:
@@ -34,7 +33,7 @@ class EmbeddingManager(LoggerMixin):
             )
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    def embed_text(self, text: str, normalize: bool = True) -> List[float]:
+    def embed_text(self, text: str, normalize: bool = True) -> list[float]:
         """Generate embedding for a single text."""
         if self.model is None:
             self.initialize()
@@ -51,10 +50,10 @@ class EmbeddingManager(LoggerMixin):
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def embed_batch(
         self,
-        texts: List[str],
-        batch_size: Optional[int] = None,
+        texts: list[str],
+        batch_size: int | None = None,
         normalize: bool = True,
-    ) -> List[List[float]]:
+    ) -> list[list[float]]:
         """Generate embeddings for multiple texts."""
         if self.model is None:
             self.initialize()
@@ -76,14 +75,14 @@ class EmbeddingManager(LoggerMixin):
         return [emb.tolist() for emb in embeddings]
 
     @CacheDecorator(key_prefix="embedding", ttl=86400)  # Cache for 24 hours
-    async def embed_with_cache(self, text: str, normalize: bool = True) -> List[float]:
+    async def embed_with_cache(self, text: str, normalize: bool = True) -> list[float]:
         """Generate embedding with caching."""
         return self.embed_text(text, normalize)
 
     def compute_similarity(
         self,
-        embedding1: List[float],
-        embedding2: List[float],
+        embedding1: list[float],
+        embedding2: list[float],
     ) -> float:
         """Compute cosine similarity between two embeddings."""
         vec1 = np.array(embedding1)
@@ -98,9 +97,9 @@ class EmbeddingManager(LoggerMixin):
 
     def compute_similarities(
         self,
-        query_embedding: List[float],
-        document_embeddings: List[List[float]],
-    ) -> List[float]:
+        query_embedding: list[float],
+        document_embeddings: list[list[float]],
+    ) -> list[float]:
         """Compute similarities between query and multiple documents."""
         if not document_embeddings:
             return []

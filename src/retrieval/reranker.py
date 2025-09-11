@@ -1,6 +1,5 @@
 """Cross-encoder reranking for improved precision."""
 
-from typing import List, Optional
 
 import torch
 from sentence_transformers import CrossEncoder
@@ -13,11 +12,11 @@ from src.infrastructure.logging import LoggerMixin
 class Reranker(LoggerMixin):
     """Cross-encoder reranker for document reordering."""
 
-    def __init__(self, model_name: Optional[str] = None):
+    def __init__(self, model_name: str | None = None):
         """Initialize reranker."""
         self.settings = get_settings()
         self.model_name = model_name or self.settings.reranker_model
-        self.model: Optional[CrossEncoder] = None
+        self.model: CrossEncoder | None = None
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
 
     def initialize(self) -> None:
@@ -38,9 +37,9 @@ class Reranker(LoggerMixin):
     def rerank(
         self,
         query: str,
-        documents: List[RetrievedDocument],
-        top_k: Optional[int] = None,
-    ) -> List[RetrievedDocument]:
+        documents: list[RetrievedDocument],
+        top_k: int | None = None,
+    ) -> list[RetrievedDocument]:
         """Rerank documents using cross-encoder."""
         if not documents:
             return []
@@ -65,7 +64,7 @@ class Reranker(LoggerMixin):
             return documents[:top_k]
 
         # Update documents with rerank scores
-        for doc, score in zip(documents, scores):
+        for doc, score in zip(documents, scores, strict=False):
             doc.rerank_score = float(score)
 
         # Sort by rerank score
@@ -90,16 +89,16 @@ class Reranker(LoggerMixin):
 
     def batch_rerank(
         self,
-        queries: List[str],
-        document_sets: List[List[RetrievedDocument]],
-        top_k: Optional[int] = None,
-    ) -> List[List[RetrievedDocument]]:
+        queries: list[str],
+        document_sets: list[list[RetrievedDocument]],
+        top_k: int | None = None,
+    ) -> list[list[RetrievedDocument]]:
         """Rerank multiple query-document sets."""
         if self.model is None:
             self.initialize()
 
         results = []
-        for query, documents in zip(queries, document_sets):
+        for query, documents in zip(queries, document_sets, strict=False):
             reranked = self.rerank(query, documents, top_k)
             results.append(reranked)
 

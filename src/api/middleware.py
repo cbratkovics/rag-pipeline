@@ -1,10 +1,9 @@
 """API middleware for request processing."""
 
 import time
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import HTTPException, Request, Response, status
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.core.config import get_settings
 from src.infrastructure.cache import cache_manager
@@ -91,9 +90,7 @@ async def rate_limit_middleware(request: Request, call_next: Callable) -> Respon
     response = await call_next(request)
 
     # Add rate limit headers
-    response.headers["X-RateLimit-Limit-Minute"] = str(
-        settings.rate_limit_requests_per_minute
-    )
+    response.headers["X-RateLimit-Limit-Minute"] = str(settings.rate_limit_requests_per_minute)
     response.headers["X-RateLimit-Remaining-Minute"] = str(
         settings.rate_limit_requests_per_minute - minute_count
     )

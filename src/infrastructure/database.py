@@ -1,10 +1,15 @@
 """Database setup and connection management."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Optional
 
 from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.orm import declarative_base
 
 from src.core.config import get_settings
@@ -31,12 +36,14 @@ class DatabaseManager:
     def __init__(self) -> None:
         """Initialize database manager."""
         self.settings = get_settings()
-        self.engine: Optional[AsyncEngine] = None
-        self.session_factory: Optional[async_sessionmaker[AsyncSession]] = None
+        self.engine: AsyncEngine | None = None
+        self.session_factory: async_sessionmaker[AsyncSession] | None = None
 
     async def initialize(self) -> None:
         """Initialize database engine and session factory."""
-        logger.info("Initializing database connection", database_url=str(self.settings.database_url))
+        logger.info(
+            "Initializing database connection", database_url=str(self.settings.database_url)
+        )
 
         self.engine = create_async_engine(
             str(self.settings.database_url),
@@ -69,7 +76,7 @@ class DatabaseManager:
 
         if self.session_factory is None:
             raise RuntimeError("Database not initialized")
-        
+
         async with self.session_factory() as session:
             try:
                 yield session
@@ -87,7 +94,7 @@ class DatabaseManager:
 
         if self.engine is None:
             raise RuntimeError("Database not initialized")
-        
+
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             logger.info("Database tables created")
@@ -99,7 +106,7 @@ class DatabaseManager:
 
         if self.engine is None:
             raise RuntimeError("Database not initialized")
-        
+
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
             logger.info("Database tables dropped")

@@ -1,9 +1,9 @@
 """Metrics API endpoints."""
 
-import psutil
 from datetime import datetime, timedelta
-from typing import Dict, Any, List
+from typing import Any
 
+import psutil
 from fastapi import APIRouter, HTTPException, status
 
 from src.core.models import SystemMetrics
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("/metrics/system")
-async def get_system_metrics() -> Dict[str, Any]:
+async def get_system_metrics() -> dict[str, Any]:
     """Get current system metrics."""
     try:
         # Get query statistics from cache
@@ -79,12 +79,12 @@ async def get_system_metrics() -> Dict[str, Any]:
         logger.error("Failed to get system metrics", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get system metrics: {str(e)}",
+            detail=f"Failed to get system metrics: {e!s}",
         )
 
 
 @router.get("/metrics/queries")
-async def get_query_metrics(hours: int = 24) -> Dict[str, Any]:
+async def get_query_metrics(hours: int = 24) -> dict[str, Any]:
     """Get query metrics for the specified time period."""
     try:
         # Get query results from cache
@@ -150,5 +150,5 @@ async def get_query_metrics(hours: int = 24) -> Dict[str, Any]:
         logger.error("Failed to get query metrics", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get query metrics: {str(e)}",
+            detail=f"Failed to get query metrics: {e!s}",
         )

@@ -3,7 +3,7 @@
 import sys
 import uuid
 from contextvars import ContextVar
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import structlog
 from structlog.processors import CallsiteParameter, CallsiteParameterAdder
@@ -11,14 +11,14 @@ from structlog.processors import CallsiteParameter, CallsiteParameterAdder
 from src.core.config import get_settings
 
 # Context variable for correlation ID
-correlation_id_var: ContextVar[Optional[str]] = ContextVar("correlation_id", default=None)
+correlation_id_var: ContextVar[str | None] = ContextVar("correlation_id", default=None)
 
 
 def add_correlation_id(
     logger: structlog.types.WrappedLogger,
     method_name: str,
-    event_dict: Dict[str, Any],
-) -> Dict[str, Any]:
+    event_dict: dict[str, Any],
+) -> dict[str, Any]:
     """Add correlation ID to log events."""
     correlation_id = correlation_id_var.get()
     if correlation_id:
@@ -29,8 +29,8 @@ def add_correlation_id(
 def add_app_context(
     logger: structlog.types.WrappedLogger,
     method_name: str,
-    event_dict: Dict[str, Any],
-) -> Dict[str, Any]:
+    event_dict: dict[str, Any],
+) -> dict[str, Any]:
     """Add application context to log events."""
     settings = get_settings()
     event_dict["app_name"] = settings.app_name
@@ -64,7 +64,7 @@ def setup_logging() -> None:
         add_app_context,
     ]
 
-    renderer: Union[structlog.dev.ConsoleRenderer, structlog.processors.JSONRenderer]
+    renderer: structlog.dev.ConsoleRenderer | structlog.processors.JSONRenderer
     if settings.debug:
         # Development: Pretty console output
         renderer = structlog.dev.ConsoleRenderer()
@@ -132,7 +132,7 @@ def generate_correlation_id() -> str:
     return str(uuid.uuid4())
 
 
-def set_correlation_id(correlation_id: Optional[str] = None) -> str:
+def set_correlation_id(correlation_id: str | None = None) -> str:
     """Set correlation ID for the current context."""
     if correlation_id is None:
         correlation_id = generate_correlation_id()
@@ -140,7 +140,7 @@ def set_correlation_id(correlation_id: Optional[str] = None) -> str:
     return correlation_id
 
 
-def get_correlation_id() -> Optional[str]:
+def get_correlation_id() -> str | None:
     """Get the current correlation ID."""
     return correlation_id_var.get()
 

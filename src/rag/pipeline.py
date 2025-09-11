@@ -1,12 +1,12 @@
+import logging
 import os
 import time
-import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 from dotenv import load_dotenv
 
-from .retriever import HybridRetriever
 from .generator import get_llm
+from .retriever import HybridRetriever
 
 load_dotenv()
 
@@ -21,12 +21,12 @@ async def answer_query(
     final_k: int = 4,
     provider: str = "stub",
     fusion_method: str = "rrf",
-    bm25_weight: Optional[float] = None,
-    vector_weight: Optional[float] = None
-) -> Dict[str, Any]:
+    bm25_weight: float | None = None,
+    vector_weight: float | None = None,
+) -> dict[str, Any]:
     """
     Execute the RAG pipeline to answer a question.
-    
+
     Args:
         question: The question to answer
         top_k_vec: Number of vector search results
@@ -37,22 +37,22 @@ async def answer_query(
         fusion_method: "rrf" or "weighted"
         bm25_weight: Weight for BM25 (for weighted fusion)
         vector_weight: Weight for vector search (for weighted fusion)
-    
+
     Returns:
         Dictionary containing answer, contexts, scores, and metadata
     """
     start_time = time.time()
-    
+
     # Get weights from environment if not provided
     if bm25_weight is None:
         bm25_weight = float(os.getenv("HYBRID_WEIGHT_BM25", "0.5"))
     if vector_weight is None:
         vector_weight = float(os.getenv("HYBRID_WEIGHT_VECTOR", "0.5"))
-    
+
     # Initialize retriever
     logger.info(f"Retrieving documents for: {question}")
     retriever = HybridRetriever()
-    
+
     # Retrieve documents
     retrieval_start = time.time()
     retrieval_results = retriever.retrieve(
@@ -63,11 +63,11 @@ async def answer_query(
         fusion_method=fusion_method,
         rrf_k=rrf_k,
         bm25_weight=bm25_weight,
-        vector_weight=vector_weight
+        vector_weight=vector_weight,
     )
     retrieval_time = time.time() - retrieval_start
     logger.info(f"Retrieved {len(retrieval_results['contexts'])} contexts in {retrieval_time:.2f}s")
-    
+
     # Generate answer
     logger.info(f"Generating answer using {provider} provider")
     generation_start = time.time()
@@ -75,7 +75,7 @@ async def answer_query(
     answer = llm.generate(question, retrieval_results["contexts"])
     generation_time = time.time() - generation_start
     logger.info(f"Generated answer in {generation_time:.2f}s")
-    
+
     # Calculate aggregate scores
     aggregate_scores = {}
     for score_type in ["hybrid", "bm25", "vector"]:
@@ -84,10 +84,10 @@ async def answer_query(
             aggregate_scores[score_type] = sum(scores) / len(scores)
         else:
             aggregate_scores[score_type] = 0.0
-    
+
     total_time = time.time() - start_time
     logger.info(f"Pipeline completed in {total_time:.2f}s")
-    
+
     return {
         "answer": answer,
         "contexts": retrieval_results["contexts"],
@@ -96,6 +96,6 @@ async def answer_query(
         "timing": {
             "retrieval_ms": retrieval_time * 1000,
             "generation_ms": generation_time * 1000,
-            "total_ms": total_time * 1000
-        }
+            "total_ms": total_time * 1000,
+        },
     }

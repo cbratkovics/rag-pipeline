@@ -2,7 +2,7 @@
 
 import json
 import pickle
-from typing import Any, Optional, Union
+from typing import Any
 
 import redis.asyncio as redis
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -19,7 +19,7 @@ class CacheManager(LoggerMixin):
     def __init__(self) -> None:
         """Initialize cache manager."""
         self.settings = get_settings()
-        self.client: Optional[redis.Redis] = None
+        self.client: redis.Redis | None = None
         self.connected = False
 
     async def initialize(self) -> None:
@@ -74,7 +74,7 @@ class CacheManager(LoggerMixin):
         self,
         key: str,
         value: Any,
-        ttl: Optional[int] = None,
+        ttl: int | None = None,
     ) -> bool:
         """Set value in cache."""
         if not self.connected:
@@ -82,7 +82,7 @@ class CacheManager(LoggerMixin):
 
         try:
             # Try to serialize as JSON first, fallback to pickle
-            serialized: Union[str, bytes]
+            serialized: str | bytes
             try:
                 serialized = json.dumps(value)
             except (TypeError, ValueError):
@@ -125,7 +125,7 @@ class CacheManager(LoggerMixin):
             self.logger.warning("Cache exists check failed", key=key, error=str(e))
             return False
 
-    async def increment(self, key: str, amount: int = 1) -> Optional[int]:
+    async def increment(self, key: str, amount: int = 1) -> int | None:
         """Increment counter in cache."""
         if not self.connected:
             return None
@@ -155,7 +155,7 @@ class CacheManager(LoggerMixin):
                 return {}
             values = await self.client.mget(keys)
             result = {}
-            for key, value in zip(keys, values):
+            for key, value in zip(keys, values, strict=False):
                 if value:
                     try:
                         result[key.decode("utf-8")] = json.loads(value)
@@ -198,7 +198,7 @@ class CacheDecorator:
     def __init__(
         self,
         key_prefix: str,
-        ttl: Optional[int] = None,
+        ttl: int | None = None,
     ):
         """Initialize cache decorator."""
         self.key_prefix = key_prefix

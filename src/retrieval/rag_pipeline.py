@@ -1,23 +1,20 @@
 """Main RAG pipeline orchestrating retrieval and generation."""
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
-from langchain_community.llms import OpenAI
 from langchain_openai import ChatOpenAI
 
 from src.core.config import get_settings
 from src.core.models import (
-    Document,
     ExperimentVariant,
     Query,
     QueryResult,
     QueryStatus,
     RetrievedDocument,
 )
-from src.infrastructure.cache import CacheDecorator, cache_manager
 from src.infrastructure.logging import LoggerMixin, get_correlation_id
 from src.retrieval.embeddings import embedding_manager
 from src.retrieval.hybrid_search import hybrid_searcher, query_expander
@@ -69,7 +66,7 @@ Answer: """
     async def process_query(
         self,
         query: Query,
-        variant: Optional[ExperimentVariant] = None,
+        variant: ExperimentVariant | None = None,
     ) -> QueryResult:
         """Process a query through the RAG pipeline."""
         start_time = time.time()
@@ -161,9 +158,9 @@ Answer: """
         self,
         query_text: str,
         variant: ExperimentVariant,
-        metadata_filter: Optional[Dict[str, Any]] = None,
+        metadata_filter: dict[str, Any] | None = None,
         top_k: int = 5,
-    ) -> List[RetrievedDocument]:
+    ) -> list[RetrievedDocument]:
         """Retrieve documents based on variant strategy."""
         if variant == ExperimentVariant.BASELINE:
             # Simple semantic search
@@ -211,9 +208,9 @@ Answer: """
     async def _generate_answer(
         self,
         question: str,
-        documents: List[RetrievedDocument],
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        documents: list[RetrievedDocument],
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> tuple[str, int]:
         """Generate answer using LLM."""
         if not documents:
@@ -258,7 +255,7 @@ Answer: """
             self.logger.error("Answer generation failed", error=str(e))
             return "I encountered an error while generating the answer.", 0
 
-    def _calculate_confidence(self, documents: List[RetrievedDocument]) -> float:
+    def _calculate_confidence(self, documents: list[RetrievedDocument]) -> float:
         """Calculate confidence score based on retrieval quality."""
         if not documents:
             return 0.0
