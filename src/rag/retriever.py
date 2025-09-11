@@ -37,7 +37,7 @@ class HybridRetriever:
 
         try:
             self.collection = self.client.get_collection(collection_name)
-        except:
+        except Exception:
             logger.warning(f"Collection {collection_name} not found. Creating empty collection.")
             self.collection = self.client.create_collection(
                 name=collection_name, metadata={"hnsw:space": "cosine"}
@@ -157,11 +157,11 @@ class HybridRetriever:
         rrf_scores: dict[str, float] = {}
 
         # Process BM25 results
-        for rank, (doc_id, text, score, metadata) in enumerate(bm25_results):
+        for rank, (doc_id, _text, _score, _metadata) in enumerate(bm25_results):
             rrf_scores[doc_id] = rrf_scores.get(doc_id, 0) + 1.0 / (k + rank + 1)
 
         # Process vector results
-        for rank, (doc_id, text, score, metadata) in enumerate(vector_results):
+        for rank, (doc_id, _text, _score, _metadata) in enumerate(vector_results):
             rrf_scores[doc_id] = rrf_scores.get(doc_id, 0) + 1.0 / (k + rank + 1)
 
         # Sort by RRF score

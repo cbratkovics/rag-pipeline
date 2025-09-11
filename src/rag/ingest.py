@@ -1,5 +1,6 @@
 import logging
 import os
+from contextlib import suppress
 from pathlib import Path
 
 import chromadb
@@ -105,10 +106,8 @@ def ingest(
 
     if reset:
         logger.info(f"Resetting collection {collection_name}")
-        try:
+        with suppress(Exception):
             client.delete_collection(collection_name)
-        except:
-            pass
 
     collection = client.get_or_create_collection(
         name=collection_name, metadata={"hnsw:space": "cosine"}

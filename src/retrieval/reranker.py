@@ -1,6 +1,5 @@
 """Cross-encoder reranking for improved precision."""
 
-
 import torch
 from sentence_transformers import CrossEncoder
 

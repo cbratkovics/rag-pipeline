@@ -19,7 +19,7 @@ def main():
     try:
         client.delete_collection(collection_name)
         print(f"Deleted existing collection: {collection_name}")
-    except:
+    except Exception:
         pass
 
     # Create new collection

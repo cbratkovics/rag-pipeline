@@ -53,8 +53,8 @@ class OpenAILLM(BaseLLM):
             import openai
 
             self.client = openai.OpenAI(api_key=self.api_key)
-        except ImportError:
-            raise ImportError("openai package not installed")
+        except ImportError as e:
+            raise ImportError("openai package not installed") from e
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def generate(self, prompt: str, contexts: list[str]) -> str:
