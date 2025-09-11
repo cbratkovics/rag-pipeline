@@ -29,9 +29,7 @@ class QueryRequest(BaseModel):
     )
     max_results: int = Field(default=5, ge=1, le=20, description="Maximum number of results")
     include_sources: bool = Field(default=True, description="Include source documents")
-    temperature: float | None = Field(
-        default=None, ge=0.0, le=2.0, description="LLM temperature"
-    )
+    temperature: float | None = Field(default=None, ge=0.0, le=2.0, description="LLM temperature")
     max_tokens: int | None = Field(
         default=None, ge=1, le=4000, description="Maximum tokens for response"
     )
@@ -162,4 +160,4 @@ async def process_query(request: QueryRequest, req: Request) -> QueryResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Query processing failed: {e!s}",
-        )
+        ) from e

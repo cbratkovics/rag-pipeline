@@ -100,7 +100,7 @@ async def query(request: QueryRequest):
         except Exception as e:
             ERROR_COUNT.labels(endpoint="/api/v1/query", error_type=type(e).__name__).inc()
             REQUEST_COUNT.labels(endpoint="/api/v1/query", status="error").inc()
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 if __name__ == "__main__":

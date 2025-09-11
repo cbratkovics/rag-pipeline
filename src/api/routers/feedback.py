@@ -98,13 +98,13 @@ async def submit_feedback(request: FeedbackRequest, req: Request) -> FeedbackRes
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid feedback data: {e!s}",
-        )
+        ) from e
     except Exception as e:
         logger.error("Failed to record feedback", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to record feedback: {e!s}",
-        )
+        ) from e
 
 
 @router.get("/feedback/stats")
@@ -134,4 +134,4 @@ async def get_feedback_stats() -> dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get feedback stats: {e!s}",
-        )
+        ) from e

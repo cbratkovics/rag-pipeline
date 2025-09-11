@@ -27,7 +27,7 @@ async def get_system_metrics() -> dict[str, Any]:
         # Get vector store size
         try:
             vector_count = await vector_store.count_documents()
-        except:
+        except Exception:
             vector_count = 0
 
         # Get system resource usage
@@ -80,7 +80,7 @@ async def get_system_metrics() -> dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get system metrics: {e!s}",
-        )
+        ) from e
 
 
 @router.get("/metrics/queries")
@@ -96,7 +96,7 @@ async def get_query_metrics(hours: int = 24) -> dict[str, Any]:
 
         # Filter by time range
         filtered_results = []
-        for key, data in all_results.items():
+        for _key, data in all_results.items():
             result_time = datetime.fromisoformat(data["timestamp"])
             if start_time <= result_time <= end_time:
                 filtered_results.append(data)
@@ -151,4 +151,4 @@ async def get_query_metrics(hours: int = 24) -> dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get query metrics: {e!s}",
-        )
+        ) from e

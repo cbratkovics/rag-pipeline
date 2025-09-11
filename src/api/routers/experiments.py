@@ -80,7 +80,7 @@ async def get_experiment_stats(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get experiment stats: {e!s}",
-        )
+        ) from e
 
 
 @router.get("/experiments", response_model=list[str])
@@ -95,4 +95,4 @@ async def list_experiments() -> list[str]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to list experiments: {e!s}",
-        )
+        ) from e
