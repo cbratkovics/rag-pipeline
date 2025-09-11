@@ -1,10 +1,10 @@
 """Database setup and connection management."""
 
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
 from sqlalchemy import MetaData
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
 from src.core.config import get_settings
@@ -31,8 +31,8 @@ class DatabaseManager:
     def __init__(self) -> None:
         """Initialize database manager."""
         self.settings = get_settings()
-        self.engine = None
-        self.session_factory = None
+        self.engine: Optional[AsyncEngine] = None
+        self.session_factory: Optional[async_sessionmaker[AsyncSession]] = None
 
     async def initialize(self) -> None:
         """Initialize database engine and session factory."""
@@ -67,6 +67,9 @@ class DatabaseManager:
         if not self.session_factory:
             await self.initialize()
 
+        if self.session_factory is None:
+            raise RuntimeError("Database not initialized")
+        
         async with self.session_factory() as session:
             try:
                 yield session
@@ -82,6 +85,9 @@ class DatabaseManager:
         if not self.engine:
             await self.initialize()
 
+        if self.engine is None:
+            raise RuntimeError("Database not initialized")
+        
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             logger.info("Database tables created")
@@ -91,6 +97,9 @@ class DatabaseManager:
         if not self.engine:
             await self.initialize()
 
+        if self.engine is None:
+            raise RuntimeError("Database not initialized")
+        
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.drop_all)
             logger.info("Database tables dropped")

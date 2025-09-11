@@ -56,6 +56,8 @@ class Reranker(LoggerMixin):
 
         # Get reranking scores
         try:
+            if self.model is None:
+                return documents[:top_k]
             scores = self.model.predict(pairs, show_progress_bar=False)
         except Exception as e:
             self.logger.error("Reranking failed", error=str(e))

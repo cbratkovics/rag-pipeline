@@ -26,7 +26,7 @@ class EmbeddingManager(LoggerMixin):
         if self.model is None:
             self.logger.info("Loading embedding model", model=self.model_name)
             self.model = SentenceTransformer(self.model_name)
-            self.dimension = self.model.get_sentence_embedding_dimension()
+            self.dimension = int(self.model.get_sentence_embedding_dimension())  # type: ignore[arg-type]
             self.logger.info(
                 "Embedding model loaded",
                 model=self.model_name,
@@ -39,6 +39,8 @@ class EmbeddingManager(LoggerMixin):
         if self.model is None:
             self.initialize()
 
+        if self.model is None:
+            raise RuntimeError("Model not initialized")
         embedding = self.model.encode(
             text,
             normalize_embeddings=normalize,
@@ -62,6 +64,8 @@ class EmbeddingManager(LoggerMixin):
 
         batch_size = batch_size or self.settings.embedding_batch_size
 
+        if self.model is None:
+            raise RuntimeError("Model not initialized")
         embeddings = self.model.encode(
             texts,
             batch_size=batch_size,
@@ -69,7 +73,7 @@ class EmbeddingManager(LoggerMixin):
             show_progress_bar=len(texts) > 100,
         )
 
-        return embeddings.tolist()
+        return [emb.tolist() for emb in embeddings]
 
     @CacheDecorator(key_prefix="embedding", ttl=86400)  # Cache for 24 hours
     async def embed_with_cache(self, text: str, normalize: bool = True) -> List[float]:
@@ -110,7 +114,7 @@ class EmbeddingManager(LoggerMixin):
 
         # Compute similarities
         similarities = np.dot(doc_norms, query_norm)
-        return similarities.tolist()
+        return similarities.tolist()  # type: ignore[no-any-return]
 
 
 # Global embedding manager instance

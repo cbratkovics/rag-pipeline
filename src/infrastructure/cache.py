@@ -2,7 +2,7 @@
 
 import json
 import pickle
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import redis.asyncio as redis
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -54,6 +54,8 @@ class CacheManager(LoggerMixin):
             return default
 
         try:
+            if self.client is None:
+                return default
             value = await self.client.get(key)
             if value is None:
                 return default
@@ -80,12 +82,15 @@ class CacheManager(LoggerMixin):
 
         try:
             # Try to serialize as JSON first, fallback to pickle
+            serialized: Union[str, bytes]
             try:
                 serialized = json.dumps(value)
             except (TypeError, ValueError):
                 serialized = pickle.dumps(value)
 
             ttl = ttl or self.settings.cache_ttl_seconds
+            if self.client is None:
+                return False
             await self.client.set(key, serialized, ex=ttl)
             return True
         except Exception as e:
@@ -98,6 +103,8 @@ class CacheManager(LoggerMixin):
             return False
 
         try:
+            if self.client is None:
+                return False
             result = await self.client.delete(key)
             return bool(result)
         except Exception as e:
@@ -110,6 +117,8 @@ class CacheManager(LoggerMixin):
             return False
 
         try:
+            if self.client is None:
+                return False
             result = await self.client.exists(key)
             return bool(result)
         except Exception as e:
@@ -122,8 +131,10 @@ class CacheManager(LoggerMixin):
             return None
 
         try:
+            if self.client is None:
+                return None
             result = await self.client.incrby(key, amount)
-            return result
+            return int(result)
         except Exception as e:
             self.logger.warning("Cache increment failed", key=key, error=str(e))
             return None
@@ -134,10 +145,14 @@ class CacheManager(LoggerMixin):
             return {}
 
         try:
+            if self.client is None:
+                return {}
             keys = await self.client.keys(pattern)
             if not keys:
                 return {}
 
+            if self.client is None:
+                return {}
             values = await self.client.mget(keys)
             result = {}
             for key, value in zip(keys, values):
@@ -157,9 +172,12 @@ class CacheManager(LoggerMixin):
             return 0
 
         try:
+            if self.client is None:
+                return 0
             keys = await self.client.keys(pattern)
             if keys:
-                return await self.client.delete(*keys)
+                deleted = await self.client.delete(*keys)
+                return int(deleted)
             return 0
         except Exception as e:
             self.logger.warning("Cache pattern flush failed", pattern=pattern, error=str(e))

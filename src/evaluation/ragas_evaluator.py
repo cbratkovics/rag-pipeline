@@ -273,7 +273,8 @@ Recall score (0-1):"""
     ) -> List[EvaluationMetrics]:
         """Evaluate multiple query results."""
         evaluations = []
-        ground_truths = ground_truths or [None] * len(results)
+        if ground_truths is None:
+            ground_truths = [None] * len(results)  # type: ignore[list-item]
 
         for result, ground_truth in zip(results, ground_truths):
             evaluation = await self.evaluate(result, ground_truth)
@@ -296,12 +297,12 @@ Recall score (0-1):"""
             return {}
 
         return {
-            "mean_context_relevancy": np.mean([e.context_relevancy for e in evaluations]),
-            "mean_answer_faithfulness": np.mean([e.answer_faithfulness for e in evaluations]),
-            "mean_answer_relevancy": np.mean([e.answer_relevancy for e in evaluations]),
-            "mean_context_recall": np.mean([e.context_recall for e in evaluations]),
-            "mean_overall_score": np.mean([e.overall_score for e in evaluations]),
-            "std_overall_score": np.std([e.overall_score for e in evaluations]),
+            "mean_context_relevancy": float(np.mean([e.context_relevancy for e in evaluations])),
+            "mean_answer_faithfulness": float(np.mean([e.answer_faithfulness for e in evaluations])),
+            "mean_answer_relevancy": float(np.mean([e.answer_relevancy for e in evaluations])),
+            "mean_context_recall": float(np.mean([e.context_recall for e in evaluations])),
+            "mean_overall_score": float(np.mean([e.overall_score for e in evaluations])),
+            "std_overall_score": float(np.std([e.overall_score for e in evaluations])),
             "min_overall_score": min(e.overall_score for e in evaluations),
             "max_overall_score": max(e.overall_score for e in evaluations),
         }

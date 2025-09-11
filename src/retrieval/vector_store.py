@@ -135,6 +135,8 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                 points.append(point)
 
             # Upload to Qdrant
+            if self.client is None:
+                raise RuntimeError("Qdrant client not initialized")
             self.client.upsert(
                 collection_name=self.collection_name,
                 points=points,
@@ -181,6 +183,8 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                     search_filter = qdrant_models.Filter(must=must_conditions)
 
             # Search
+            if self.client is None:
+                raise RuntimeError("Qdrant client not initialized")
             results = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=query_embedding,
@@ -224,6 +228,8 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             await self.initialize()
 
         try:
+            if self.client is None:
+                raise RuntimeError("Qdrant client not initialized")
             self.client.delete(
                 collection_name=self.collection_name,
                 points_selector=qdrant_models.PointIdsList(
@@ -243,6 +249,8 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             await self.initialize()
 
         try:
+            if self.client is None:
+                raise RuntimeError("Qdrant client not initialized")
             results = self.client.retrieve(
                 collection_name=self.collection_name,
                 ids=[doc_id],
@@ -283,8 +291,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             await self.initialize()
 
         try:
+            if self.client is None:
+                raise RuntimeError("Qdrant client not initialized")
             info = self.client.get_collection(self.collection_name)
-            return info.points_count
+            return int(info.points_count)
 
         except Exception as e:
             self.logger.error("Failed to count documents in Qdrant", error=str(e))

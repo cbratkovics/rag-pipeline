@@ -83,7 +83,7 @@ class SentenceChunker(ChunkingStrategy):
 
         sentences = sent_tokenize(text)
         chunks = []
-        current_chunk = []
+        current_chunk: List[str] = []
         current_size = 0
 
         for sentence in sentences:
@@ -95,7 +95,7 @@ class SentenceChunker(ChunkingStrategy):
                 # Start new chunk with overlap
                 if self.chunk_overlap > 0:
                     # Keep last few sentences for overlap
-                    overlap_sentences = []
+                    overlap_sentences: List[str] = []
                     overlap_size = 0
                     for sent in reversed(current_chunk):
                         overlap_size += len(sent)
@@ -129,7 +129,7 @@ class SemanticChunker(ChunkingStrategy):
         # Split by paragraphs first
         paragraphs = re.split(r"\n\n+", text)
         chunks = []
-        current_chunk = []
+        current_chunk: List[str] = []
         current_size = 0
 
         for paragraph in paragraphs:

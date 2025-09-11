@@ -272,6 +272,7 @@ class MultiArmedBandit(LoggerMixin):
         exploration_rate: float = 0.1,
     ):
         """Initialize multi-armed bandit."""
+        self.settings = get_settings()
         self.variants = variants
         self.exploration_rate = exploration_rate
         self.arm_counts = {v: 0 for v in variants}
@@ -288,7 +289,7 @@ class MultiArmedBandit(LoggerMixin):
                 v: self.arm_rewards[v] / max(self.arm_counts[v], 1)
                 for v in self.variants
             }
-            return max(avg_rewards, key=avg_rewards.get)
+            return max(avg_rewards, key=lambda k: avg_rewards[k])
 
     def update_arm(self, variant: str, reward: float) -> None:
         """Update arm statistics."""

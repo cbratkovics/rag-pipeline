@@ -3,7 +3,7 @@
 import sys
 import uuid
 from contextvars import ContextVar
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import structlog
 from structlog.processors import CallsiteParameter, CallsiteParameterAdder
@@ -64,6 +64,7 @@ def setup_logging() -> None:
         add_app_context,
     ]
 
+    renderer: Union[structlog.dev.ConsoleRenderer, structlog.processors.JSONRenderer]
     if settings.debug:
         # Development: Pretty console output
         renderer = structlog.dev.ConsoleRenderer()
@@ -72,7 +73,7 @@ def setup_logging() -> None:
         renderer = structlog.processors.JSONRenderer()
 
     structlog.configure(
-        processors=shared_processors + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter],
+        processors=shared_processors + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter],  # type: ignore[arg-type]
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
@@ -123,7 +124,7 @@ def setup_logging() -> None:
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """Get a structured logger instance."""
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[no-any-return]
 
 
 def generate_correlation_id() -> str:
