@@ -1,8 +1,9 @@
 """Health check API endpoints."""
 
-from typing import Dict
+from typing import Dict, Any, Union
 
 from fastapi import APIRouter, status
+from sqlalchemy import text
 
 from src.infrastructure.cache import cache_manager
 from src.infrastructure.database import db_manager
@@ -20,7 +21,7 @@ async def health_check() -> Dict[str, str]:
 
 
 @router.get("/health/ready", status_code=status.HTTP_200_OK)
-async def readiness_check() -> Dict[str, any]:
+async def readiness_check() -> Dict[str, Any]:
     """Readiness check for all components."""
     checks = {
         "database": False,
@@ -31,7 +32,7 @@ async def readiness_check() -> Dict[str, any]:
     # Check database
     try:
         async with db_manager.get_session() as session:
-            await session.execute("SELECT 1")
+            await session.execute(text("SELECT 1"))
             checks["database"] = True
     except Exception as e:
         logger.warning("Database health check failed", error=str(e))
@@ -51,7 +52,7 @@ async def readiness_check() -> Dict[str, any]:
     try:
         count = await vector_store.count_documents()
         checks["vector_store"] = True
-        checks["vector_store_count"] = count
+        checks["vector_store_count"] = count  # type: ignore[assignment]
     except Exception as e:
         logger.warning("Vector store health check failed", error=str(e))
 

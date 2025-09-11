@@ -2,7 +2,7 @@
 
 import psutil
 from datetime import datetime, timedelta
-from typing import Dict, List
+from typing import Dict, Any, List
 
 from fastapi import APIRouter, HTTPException, status
 
@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 @router.get("/metrics/system")
-async def get_system_metrics() -> Dict[str, any]:
+async def get_system_metrics() -> Dict[str, Any]:
     """Get current system metrics."""
     try:
         # Get query statistics from cache
@@ -84,7 +84,7 @@ async def get_system_metrics() -> Dict[str, any]:
 
 
 @router.get("/metrics/queries")
-async def get_query_metrics(hours: int = 24) -> Dict[str, any]:
+async def get_query_metrics(hours: int = 24) -> Dict[str, Any]:
     """Get query metrics for the specified time period."""
     try:
         # Get query results from cache
