@@ -32,7 +32,7 @@ def evaluate_dataset():
         data = json.load(f)
     
     results = []
-    all_scores = {
+    all_scores: Dict[str, List[float]] = {
         "context_relevancy": [],
         "answer_faithfulness": [],
         "answer_relevancy": [],

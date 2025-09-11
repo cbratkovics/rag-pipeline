@@ -1,6 +1,6 @@
 import os
 import logging
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Optional
 
 import numpy as np
 from rank_bm25 import BM25Okapi
@@ -19,8 +19,8 @@ class HybridRetriever:
     
     def __init__(
         self,
-        persist_dir: str = None,
-        embedding_model: str = None,
+        persist_dir: Optional[str] = None,
+        embedding_model: Optional[str] = None,
         collection_name: str = "rag_documents"
     ):
         # Configuration
@@ -29,7 +29,7 @@ class HybridRetriever:
         
         # Initialize Chroma client
         self.client = chromadb.PersistentClient(
-            path=self.persist_dir,
+            path=self.persist_dir,  # type: ignore[arg-type]
             settings=Settings(anonymized_telemetry=False)
         )
         
@@ -46,10 +46,10 @@ class HybridRetriever:
         self.embedding_model = SentenceTransformer(self.embedding_model_name)
         
         # Cache for BM25
-        self._bm25_index = None
-        self._corpus_texts = None
-        self._corpus_ids = None
-        self._corpus_metadata = None
+        self._bm25_index: Optional[BM25Okapi] = None
+        self._corpus_texts: Optional[List[str]] = None
+        self._corpus_ids: Optional[List[str]] = None
+        self._corpus_metadata: Optional[List[Dict[str, Any]]] = None
     
     def _build_bm25_index(self):
         """Build BM25 index from collection."""
@@ -69,7 +69,7 @@ class HybridRetriever:
         
         self._corpus_texts = results["documents"]
         self._corpus_ids = results["ids"]
-        self._corpus_metadata = results["metadatas"]
+        self._corpus_metadata = results["metadatas"]  # type: ignore[assignment]
         
         # Tokenize documents for BM25
         tokenized_corpus = [doc.lower().split() for doc in self._corpus_texts]
@@ -84,7 +84,7 @@ class HybridRetriever:
         """
         self._build_bm25_index()
         
-        if not self._bm25_index or not self._corpus_texts:
+        if not self._bm25_index or not self._corpus_texts or not self._corpus_ids:
             return []
         
         # Tokenize query
@@ -122,20 +122,20 @@ class HybridRetriever:
             n_results=top_k
         )
         
-        if not results["documents"][0]:
+        if not results.get("documents") or not results["documents"][0]:  # type: ignore[index]
             return []
         
         # Format results
         formatted_results = []
-        for i in range(len(results["documents"][0])):
+        for i in range(len(results["documents"][0])):  # type: ignore[index]
             formatted_results.append((
                 results["ids"][0][i],
-                results["documents"][0][i],
-                1.0 - results["distances"][0][i],  # Convert distance to similarity
-                results["metadatas"][0][i] if results["metadatas"] else {}
+                results["documents"][0][i],  # type: ignore[index]
+                1.0 - results["distances"][0][i],  # type: ignore[index]
+                results["metadatas"][0][i] if results.get("metadatas") else {}  # type: ignore[index]
             ))
         
-        return formatted_results
+        return formatted_results  # type: ignore[return-value]
     
     def rrf_combine(
         self,
@@ -152,7 +152,7 @@ class HybridRetriever:
         vector_dict = {r[0]: (r[1], r[2], r[3]) for r in vector_results}
         
         # Calculate RRF scores
-        rrf_scores = {}
+        rrf_scores: Dict[str, float] = {}
         
         # Process BM25 results
         for rank, (doc_id, text, score, metadata) in enumerate(bm25_results):
@@ -210,7 +210,7 @@ class HybridRetriever:
         vector_dict = {r[0]: (r[1], r[2]/max_vector if max_vector > 0 else 0, r[3]) for r in vector_results}
         
         # Calculate weighted scores
-        weighted_scores = {}
+        weighted_scores: Dict[str, float] = {}
         all_docs = {}
         
         for doc_id, (text, score, metadata) in bm25_dict.items():

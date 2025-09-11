@@ -1,7 +1,7 @@
 import os
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Optional
 
 from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -43,7 +43,7 @@ class StubLLM(BaseLLM):
 class OpenAILLM(BaseLLM):
     """OpenAI LLM implementation."""
     
-    def __init__(self, api_key: str = None, model: str = None):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.model = model or os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
         
@@ -81,7 +81,7 @@ Answer:"""
         
         try:
             response = self.client.chat.completions.create(
-                model=self.model,
+                model=self.model,  # type: ignore[arg-type]
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_message}
@@ -90,7 +90,10 @@ Answer:"""
                 max_tokens=512
             )
             
-            return response.choices[0].message.content.strip()
+            content = response.choices[0].message.content
+            if content is None:
+                return ""
+            return content.strip()
         
         except Exception as e:
             logger.error(f"OpenAI API error: {e}")
@@ -98,7 +101,7 @@ Answer:"""
             return StubLLM().generate(prompt, contexts)
 
 
-def get_llm(provider: str = None) -> BaseLLM:
+def get_llm(provider: Optional[str] = None) -> BaseLLM:
     """
     Factory function to get the appropriate LLM.
     

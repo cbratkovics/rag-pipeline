@@ -39,7 +39,7 @@ trace.set_tracer_provider(TracerProvider())
 tracer = trace.get_tracer(__name__)
 
 span_processor = BatchSpanProcessor(ConsoleSpanExporter())
-trace.get_tracer_provider().add_span_processor(span_processor)
+trace.get_tracer_provider().add_span_processor(span_processor)  # type: ignore[attr-defined]
 
 FastAPIInstrumentor.instrument_app(app)
 

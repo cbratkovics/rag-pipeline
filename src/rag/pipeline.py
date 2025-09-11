@@ -1,7 +1,7 @@
 import os
 import time
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from dotenv import load_dotenv
 
@@ -21,8 +21,8 @@ async def answer_query(
     final_k: int = 4,
     provider: str = "stub",
     fusion_method: str = "rrf",
-    bm25_weight: float = None,
-    vector_weight: float = None
+    bm25_weight: Optional[float] = None,
+    vector_weight: Optional[float] = None
 ) -> Dict[str, Any]:
     """
     Execute the RAG pipeline to answer a question.

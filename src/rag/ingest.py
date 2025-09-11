@@ -34,7 +34,7 @@ def chunk_text(text: str, chunk_size: int = 512, overlap: int = 50) -> List[str]
 
 def load_documents(data_dir: str) -> List[dict]:
     """Load documents from the data directory."""
-    documents = []
+    documents: List[dict] = []
     data_path = Path(data_dir)
     
     if not data_path.exists():
@@ -74,7 +74,7 @@ def create_embeddings(documents: List[dict], model_name: str) -> List[List[float
     texts = [doc["text"] for doc in documents]
     embeddings = model.encode(texts, show_progress_bar=True)
     
-    return embeddings.tolist()
+    return [emb.tolist() for emb in embeddings]
 
 
 @app.command()
@@ -134,7 +134,7 @@ def ingest(
     
     collection.add(
         ids=ids,
-        embeddings=embeddings,
+        embeddings=embeddings,  # type: ignore[arg-type]
         documents=texts,
         metadatas=metadatas
     )

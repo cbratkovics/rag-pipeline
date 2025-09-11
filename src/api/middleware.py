@@ -23,7 +23,7 @@ async def add_correlation_id(request: Request, call_next: Callable) -> Response:
         correlation_id = str(uuid.uuid4())
 
     set_correlation_id(correlation_id)
-    response = await call_next(request)
+    response: Response = await call_next(request)
     response.headers["X-Correlation-ID"] = correlation_id
     return response
 
@@ -31,7 +31,7 @@ async def add_correlation_id(request: Request, call_next: Callable) -> Response:
 async def add_process_time(request: Request, call_next: Callable) -> Response:
     """Add request processing time to response headers."""
     start_time = time.time()
-    response = await call_next(request)
+    response: Response = await call_next(request)
     process_time = (time.time() - start_time) * 1000
     response.headers["X-Process-Time-MS"] = str(process_time)
     return response
@@ -40,7 +40,8 @@ async def add_process_time(request: Request, call_next: Callable) -> Response:
 async def rate_limit_middleware(request: Request, call_next: Callable) -> Response:
     """Rate limiting middleware."""
     if not settings.rate_limit_enabled:
-        return await call_next(request)
+        response: Response = await call_next(request)
+        return response
 
     # Get client identifier (IP or API key)
     client_id = request.headers.get(settings.api_key_header)
