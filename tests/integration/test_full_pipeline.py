@@ -47,7 +47,7 @@ class TestFullPipeline:
         assert isinstance(data["answer"], str)
         assert isinstance(data["contexts"], list)
         assert isinstance(data["scores"], dict)
-        assert isinstance(data["latency_ms"], (int, float))
+        assert isinstance(data["latency_ms"], int | float)
 
         # Verify contexts were retrieved
         assert len(data["contexts"]) > 0
@@ -142,9 +142,9 @@ class TestFullPipeline:
         assert "vector" in scores
 
         # Scores should be numeric
-        assert isinstance(scores["hybrid"], (int, float))
-        assert isinstance(scores["bm25"], (int, float))
-        assert isinstance(scores["vector"], (int, float))
+        assert isinstance(scores["hybrid"], int | float)
+        assert isinstance(scores["bm25"], int | float)
+        assert isinstance(scores["vector"], int | float)
 
     def test_latency_measurement(self):
         """Verify that latency is properly measured."""
@@ -230,7 +230,7 @@ def test_api_availability():
     try:
         response = requests.get(f"{BASE_URL}/healthz", timeout=5)
         return response.status_code == 200
-    except:
+    except Exception:
         return False
 
 

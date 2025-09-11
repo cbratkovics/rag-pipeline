@@ -197,10 +197,10 @@ class TestRAGASEvaluation:
 
         thresholds = evaluator.check_thresholds(metrics)
 
-        assert thresholds["context_relevancy"] == True
-        assert thresholds["answer_faithfulness"] == True
-        assert thresholds["answer_relevancy"] == True
-        assert thresholds["context_recall"] == True
+        assert thresholds["context_relevancy"]
+        assert thresholds["answer_faithfulness"]
+        assert thresholds["answer_relevancy"]
+        assert thresholds["context_recall"]
 
 
 class TestCostCalculation:

@@ -72,7 +72,7 @@ def test_weighted_combine():
     assert len(results) == 3  # Should have 3 unique documents
 
     # Check scores are normalized and weighted
-    for doc_id, text, scores, metadata in results:
+    for _doc_id, _text, scores, _metadata in results:
         assert 0 <= scores["hybrid"] <= 1.0
         assert scores["bm25"] >= 0
         assert scores["vector"] >= 0

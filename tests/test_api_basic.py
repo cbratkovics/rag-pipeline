@@ -66,7 +66,7 @@ def test_query_endpoint_schema(client):
         assert isinstance(data["answer"], str)
         assert isinstance(data["contexts"], list)
         assert isinstance(data["scores"], dict)
-        assert isinstance(data["latency_ms"], (int, float))
+        assert isinstance(data["latency_ms"], int | float)
 
 
 def test_query_endpoint_default_params(client):
