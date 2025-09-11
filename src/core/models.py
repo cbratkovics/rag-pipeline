@@ -74,7 +74,7 @@ class Document(BaseModel):
         try:
             json.dumps(v)
         except (TypeError, ValueError) as e:
-            raise ValueError(f"Metadata must be JSON-serializable: {e}")
+            raise ValueError(f"Metadata must be JSON-serializable: {e}") from e
         return v
 
 
@@ -172,11 +172,10 @@ class UserFeedback(BaseModel):
             if not isinstance(v, bool):
                 raise ValueError("Thumbs feedback must be boolean")
         elif feedback_type == FeedbackType.RATING:
-            if not isinstance(v, (int, float)) or v < 1 or v > 5:
+            if not isinstance(v, int | float) or v < 1 or v > 5:
                 raise ValueError("Rating must be between 1 and 5")
-        elif feedback_type == FeedbackType.CORRECTION:
-            if not isinstance(v, str):
-                raise ValueError("Correction must be a string")
+        elif feedback_type == FeedbackType.CORRECTION and not isinstance(v, str):
+            raise ValueError("Correction must be a string")
         return v
 
 

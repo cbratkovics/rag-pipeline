@@ -185,7 +185,7 @@ class CacheManager(LoggerMixin):
 
     def make_key(self, *parts: str) -> str:
         """Create cache key from parts."""
-        return ":".join([self.settings.app_name] + list(parts))
+        return ":".join([self.settings.app_name, *parts])
 
 
 # Global cache manager instance

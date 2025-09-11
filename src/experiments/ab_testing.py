@@ -131,7 +131,7 @@ class ABTestManager(LoggerMixin):
 
         # Group by variant
         variant_data: dict[str, list[dict]] = {}
-        for key, data in all_results.items():
+        for _key, data in all_results.items():
             variant = data["variant"]
             if variant not in variant_data:
                 variant_data[variant] = []
@@ -250,9 +250,10 @@ class ABTestManager(LoggerMixin):
         # Find variant with highest success rate that is statistically significant
         best_result = None
         for result in results:
-            if result.is_significant:
-                if best_result is None or result.success_rate > best_result.success_rate:
-                    best_result = result
+            if result.is_significant and (
+                best_result is None or result.success_rate > best_result.success_rate
+            ):
+                best_result = result
 
         if best_result:
             return best_result.variant

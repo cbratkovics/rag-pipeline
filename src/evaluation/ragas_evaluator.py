@@ -117,10 +117,7 @@ Contexts:
                     scores.append(0.5)  # Default to neutral if parsing fails
 
             # Calculate average relevancy
-            if scores:
-                relevancy = sum(scores) / len(scores)
-            else:
-                relevancy = 0.5
+            relevancy = sum(scores) / len(scores) if scores else 0.5
 
             return min(max(relevancy, 0.0), 1.0)
 
@@ -227,10 +224,7 @@ Relevancy score (0-1):"""
                 context_terms = set(context.lower().split())
                 covered_terms.update(query_terms.intersection(context_terms))
 
-            if query_terms:
-                recall = len(covered_terms) / len(query_terms)
-            else:
-                recall = 0.5
+            recall = len(covered_terms) / len(query_terms) if query_terms else 0.5
 
             return min(max(recall, 0.0), 1.0)
 
