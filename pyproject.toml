@@ -81,10 +81,22 @@ ignore = ["E501", "B008", "C901", "W191"]
 fixable = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]
+# All files that need protobuf environment variable before imports
 "scripts/simple_ingest.py" = ["E402"]
 "src/rag/ingest.py" = ["E402"]
 "src/rag/retriever.py" = ["E402"]
+"tests/test_pipeline.py" = ["E402"]
+"tests/test_rrf.py" = ["E402"]
+"tests/test_api_basic.py" = ["E402"]
+"tests/conftest.py" = ["E402"]
+"tests/test_embeddings.py" = ["E402"]
+"tests/test_vector_store.py" = ["E402"]
+"tests/test_generator.py" = ["E402"]
+"tests/test_config.py" = ["E402"]
+"tests/test_cache.py" = ["E402"]
+"tests/test_monitoring.py" = ["E402"]
+"tests/test_ab_testing.py" = ["E402"]
+"tests/*" = ["S101"]
 
 [tool.mypy]
 python_version = "3.11"
