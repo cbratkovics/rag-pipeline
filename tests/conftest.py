@@ -3,10 +3,14 @@
 import importlib.util
 import os
 import sys
+from collections.abc import AsyncGenerator, Generator
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import pytest_asyncio
+from fastapi.testclient import TestClient
+from httpx import AsyncClient
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -17,7 +21,7 @@ os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 # Set ALL required environment variables for testing
 os.environ.setdefault("LLM_PROVIDER", "stub")
 os.environ.setdefault("RAGAS_ENABLED", "false")
-os.environ.setdefault("VECTOR_STORE_TYPE", "chromadb")
+os.environ.setdefault("VECTOR_STORE_TYPE", "qdrant")
 os.environ.setdefault("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
 os.environ.setdefault("REDIS_HOST", "localhost")
 os.environ.setdefault("REDIS_PORT", "6379")
@@ -42,6 +46,9 @@ os.environ.setdefault("LOG_LEVEL", "INFO")
 os.environ.setdefault("CACHE_TTL", "3600")
 os.environ.setdefault("CACHE_TYPE", "redis")
 os.environ.setdefault("MLFLOW_TRACKING_URI", "file:///tmp/mlflow")
+os.environ.setdefault("PROMETHEUS_ENABLED", "false")
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
+os.environ.setdefault("CORS_ORIGINS", '["*"]')
 
 
 @pytest.fixture(autouse=True)
@@ -129,3 +136,133 @@ def sample_embeddings():
         "2": [0.2] * 768,
         "3": [0.3] * 768,
     }
+
+
+@pytest.fixture
+def mock_rag_pipeline():
+    """Mock the RAG pipeline for testing."""
+
+    # Create a coroutine mock for answer_query
+    async def mock_answer_query(*args, **kwargs):
+        # Get the k parameter from kwargs, default to 3
+        k = kwargs.get("final_k", kwargs.get("k", 3))
+
+        # Create contexts based on k value
+        all_contexts = [
+            "Context 1: Machine learning is a subset of AI.",
+            "Context 2: Deep learning uses neural networks.",
+            "Context 3: Transformers revolutionized NLP.",
+            "Context 4: Natural language processing is key.",
+            "Context 5: RAG combines retrieval and generation.",
+        ]
+
+        contexts = all_contexts[: min(k, len(all_contexts))]
+
+        return {
+            "answer": "This is a test answer based on the retrieved context.",
+            "contexts": contexts,
+            "scores": {
+                "hybrid": 0.85,
+                "bm25": 0.75,
+                "vector": 0.90,
+            },
+        }
+
+    with patch("api.main.answer_query", mock_answer_query):
+        yield mock_answer_query
+
+
+@pytest.fixture
+def test_app():
+    """Create test FastAPI app for api/main.py."""
+    # Import here to avoid circular imports
+    from api.main import app
+
+    # The app is already configured
+    return app
+
+
+@pytest.fixture
+def test_client(test_app, mock_rag_pipeline) -> Generator[TestClient, None, None]:
+    """Create test client for api/main.py."""
+    with TestClient(test_app) as client:
+        yield client
+
+
+@pytest_asyncio.fixture
+async def async_test_client(test_app, mock_rag_pipeline) -> AsyncGenerator[AsyncClient, None]:
+    """Create async test client for api/main.py."""
+    async with AsyncClient(app=test_app, base_url="http://test") as client:
+        yield client
+
+
+# Remove the mock_src_infrastructure fixture as it's now integrated into test_src_app
+
+
+@pytest.fixture
+def test_src_app():
+    """Create test FastAPI app for src/api/main.py."""
+    # Change LLM_PROVIDER to a supported one temporarily
+    old_provider = os.environ.get("LLM_PROVIDER", "stub")
+    os.environ["LLM_PROVIDER"] = "openai"
+
+    try:
+        # Mock OpenAI client to avoid actual API calls
+        with patch("src.llm.openai_client.OpenAIClient") as mock_openai_class:
+            mock_llm_instance = MagicMock()
+            mock_llm_instance.generate = AsyncMock(return_value="Test response")
+            mock_llm_instance.embed = AsyncMock(return_value=[0.1] * 768)
+            mock_openai_class.return_value = mock_llm_instance
+
+            # Mock vector store
+            with patch("src.retrieval.vector_store.QdrantVectorStore") as mock_qdrant_class:
+                mock_vector_instance = AsyncMock()
+                mock_vector_instance.initialize = AsyncMock(return_value=None)
+                mock_vector_instance.search = AsyncMock(return_value=[])
+                mock_qdrant_class.return_value = mock_vector_instance
+
+                # Mock the rag_pipeline instance after it's created
+                with patch("src.retrieval.rag_pipeline.rag_pipeline") as mock_rag:
+                    mock_rag.process_query = AsyncMock(
+                        return_value={
+                            "answer": "Test answer",
+                            "sources": [],
+                            "confidence_score": 0.9,
+                            "processing_time_ms": 100,
+                            "token_count": 50,
+                            "cost_usd": 0.001,
+                        }
+                    )
+
+                    with patch("src.infrastructure.database.db_manager") as mock_db:
+                        mock_db.initialize = AsyncMock(return_value=None)
+                        mock_db.close = AsyncMock(return_value=None)
+
+                        with patch("src.infrastructure.cache.cache_manager") as mock_cache:
+                            mock_cache.initialize = AsyncMock(return_value=None)
+                            mock_cache.close = AsyncMock(return_value=None)
+
+                            with patch("src.experiments.ab_testing.ab_test_manager") as mock_ab:
+                                mock_ab.initialize = AsyncMock(return_value=None)
+
+                                # Import app after all mocks are set up
+                                from src.api.main import app
+
+                                return app
+    finally:
+        # Restore original LLM_PROVIDER
+        os.environ["LLM_PROVIDER"] = old_provider
+
+
+@pytest.fixture
+def test_src_client(test_src_app) -> Generator[TestClient, None, None]:
+    """Create test client for src/api/main.py."""
+    with TestClient(test_src_app) as client:
+        yield client
+
+
+@pytest_asyncio.fixture
+async def async_test_src_client(test_src_app) -> AsyncGenerator[AsyncClient, None]:
+    """Create async test client for src/api/main.py."""
+    async with AsyncClient(app=test_src_app, base_url="http://test") as client:
+        yield client
