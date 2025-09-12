@@ -16,6 +16,7 @@ from src.retrieval.chunking import SemanticChunker
 from src.retrieval.embeddings import EmbeddingManager
 
 
+@pytest.mark.unit
 class TestEmbeddingManager:
     """Test embedding manager functionality."""
 
@@ -57,6 +58,7 @@ class TestEmbeddingManager:
         assert similarity2 == pytest.approx(0.0, rel=1e-5)
 
 
+@pytest.mark.unit
 class TestChunking:
     """Test document chunking strategies."""
 
@@ -85,6 +87,7 @@ class TestChunking:
         assert chunks == []
 
 
+@pytest.mark.unit
 class TestABTesting:
     """Test A/B testing functionality."""
 
@@ -203,6 +206,7 @@ class TestRAGASEvaluation:
         assert thresholds["context_recall"]
 
 
+@pytest.mark.unit
 class TestCostCalculation:
     """Test cost calculation functionality."""
 

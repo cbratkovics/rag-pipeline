@@ -16,6 +16,7 @@ def client():
     return TestClient(app)
 
 
+@pytest.mark.unit
 def test_health_check(client):
     """Test health check endpoint."""
     response = client.get("/healthz")
@@ -23,6 +24,7 @@ def test_health_check(client):
     assert response.json() == {"status": "ok"}
 
 
+@pytest.mark.unit
 def test_metrics_endpoint(client):
     """Test metrics endpoint returns Prometheus format."""
     response = client.get("/metrics")
@@ -37,6 +39,7 @@ def test_metrics_endpoint(client):
     assert "# HELP" in content or "# TYPE" in content or "rag_requests_total" in content
 
 
+@pytest.mark.unit
 def test_query_endpoint_schema(client):
     """Test query endpoint returns expected schema."""
     payload = {
@@ -69,6 +72,7 @@ def test_query_endpoint_schema(client):
         assert isinstance(data["latency_ms"], int | float)
 
 
+@pytest.mark.unit
 def test_query_endpoint_default_params(client):
     """Test query endpoint with minimal params."""
     payload = {"question": "Test question"}
@@ -79,6 +83,7 @@ def test_query_endpoint_default_params(client):
     assert response.status_code in [200, 500]
 
 
+@pytest.mark.unit
 def test_query_endpoint_invalid_request(client):
     """Test query endpoint with invalid request."""
     payload = {}  # Missing required question field

@@ -4,9 +4,11 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
+import pytest
 from src.rag.retriever import HybridRetriever
 
 
+@pytest.mark.unit
 def test_rrf_combine():
     """Test Reciprocal Rank Fusion combination."""
     retriever = HybridRetriever()
@@ -47,6 +49,7 @@ def test_rrf_combine():
     assert "doc2" in doc_ids[:2]  # Should be in top 2
 
 
+@pytest.mark.unit
 def test_weighted_combine():
     """Test weighted combination of results."""
     retriever = HybridRetriever()
@@ -87,6 +90,7 @@ def test_weighted_combine():
     assert doc_ids[0] in ["doc1", "doc2"]
 
 
+@pytest.mark.unit
 def test_empty_results_handling():
     """Test handling of empty result sets."""
     retriever = HybridRetriever()
@@ -106,6 +110,7 @@ def test_empty_results_handling():
     assert len(results) == 0
 
 
+@pytest.mark.unit
 def test_rrf_k_parameter():
     """Test the effect of different k values in RRF."""
     retriever = HybridRetriever()

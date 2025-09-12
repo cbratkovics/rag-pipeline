@@ -100,6 +100,20 @@ lint:  ## Run linting
 format:  ## Format code
 	poetry run ruff check --fix .
 
+ci-test:  ## Run CI tests locally
+	@echo "Running CI tests locally..."
+	poetry run ruff format --check .
+	poetry run ruff check .
+	poetry run mypy src api --ignore-missing-imports
+	poetry run pytest tests/ -m "not integration" --cov=src --cov=api --cov-report=term
+	@echo "CI tests passed!"
+
+ci-fix:  ## Fix CI issues automatically
+	@echo "Fixing CI issues..."
+	poetry run ruff format .
+	poetry run ruff check . --fix
+	@echo "CI issues fixed!"
+
 # Poetry management
 install:  ## Install dependencies with Poetry
 	@echo "Installing dependencies with Poetry..."

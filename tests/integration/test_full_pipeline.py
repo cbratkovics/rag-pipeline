@@ -8,6 +8,7 @@ import requests
 BASE_URL = "http://localhost:8000"
 
 
+@pytest.mark.integration
 class TestFullPipeline:
     """Test the complete RAG pipeline flow."""
 
@@ -176,6 +177,7 @@ class TestFullPipeline:
         assert "Based on" in data["answer"] or "cannot find" in data["answer"]
 
 
+@pytest.mark.integration
 class TestABTesting:
     """Test A/B testing functionality."""
 
@@ -189,6 +191,7 @@ class TestABTesting:
         assert response.status_code == 200
 
 
+@pytest.mark.integration
 class TestErrorHandling:
     """Test error handling and edge cases."""
 
@@ -225,6 +228,7 @@ class TestErrorHandling:
             assert response.status_code in [200, 422]
 
 
+@pytest.mark.integration
 def test_api_availability():
     """Quick test to verify API is running."""
     try:
