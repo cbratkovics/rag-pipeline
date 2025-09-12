@@ -1,5 +1,9 @@
 # Production RAG Pipeline with A/B Testing & Continuous Learning
 
+**Production-grade Retrieval-Augmented Generation (RAG) system demonstrating enterprise-level AI engineering with real-time A/B testing, continuous learning, and comprehensive observability.**
+
+<div align="center">
+
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/cbratkovics/rag-pipeline-ragas)
 [![Test Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)](https://github.com/cbratkovics/rag-pipeline-ragas)
 [![Documentation](https://img.shields.io/badge/docs-available-blue)](https://github.com/cbratkovics/rag-pipeline-ragas)
@@ -7,7 +11,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![MLOps](https://img.shields.io/badge/MLOps-Production-orange)](https://github.com/yourusername/rag-pipeline-ragas)
 
-A production-grade Retrieval-Augmented Generation (RAG) system demonstrating enterprise-level AI engineering with real-time A/B testing, continuous learning, and comprehensive observability.
+</div>
 
 ## Key Features
 
@@ -135,34 +139,34 @@ graph TB
         API[API Client]
         SDK[Python SDK]
     end
-    
+
     subgraph "API Gateway"
         FastAPI[FastAPI Server]
         Auth[Authentication]
         RateLimit[Rate Limiter]
     end
-    
+
     subgraph "Core Services"
         RAG[RAG Engine]
         Eval[RAGAS Evaluator]
         AB[A/B Test Manager]
         Feedback[Feedback Processor]
     end
-    
+
     subgraph "Data Layer"
         Vector[Vector Store]
         Cache[Redis Cache]
         DB[PostgreSQL]
         Queue[Task Queue]
     end
-    
+
     subgraph "Observability"
         Metrics[Prometheus]
         Logs[Structured Logs]
         Traces[OpenTelemetry]
         Dash[Grafana]
     end
-    
+
     Web --> FastAPI
     API --> FastAPI
     SDK --> FastAPI
@@ -176,7 +180,7 @@ graph TB
     AB --> DB
     Feedback --> DB
     RAG --> Queue
-    
+
     RAG --> Metrics
     RAG --> Logs
     RAG --> Traces

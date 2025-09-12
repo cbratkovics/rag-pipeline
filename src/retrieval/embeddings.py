@@ -1,6 +1,8 @@
 """Embedding generation and management."""
 
 import numpy as np
+from typing import cast
+
 from sentence_transformers import SentenceTransformer
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -24,7 +26,7 @@ class EmbeddingManager(LoggerMixin):
         if self.model is None:
             self.logger.info("Loading embedding model", model=self.model_name)
             self.model = SentenceTransformer(self.model_name)
-            self.dimension = int(self.model.get_sentence_embedding_dimension())  # type: ignore[arg-type]
+            self.dimension = int(self.model.get_sentence_embedding_dimension())
             self.logger.info(
                 "Embedding model loaded",
                 model=self.model_name,
@@ -44,7 +46,8 @@ class EmbeddingManager(LoggerMixin):
             normalize_embeddings=normalize,
             show_progress_bar=False,
         )
-        return embedding.tolist()
+        result = embedding.tolist()
+        return cast(list[float], result)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     def embed_batch(
