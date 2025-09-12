@@ -100,14 +100,14 @@ async def root():
                 body { font-family: Arial, sans-serif; margin: 40px; }
                 h1 { color: #333; }
                 .links { margin-top: 20px; }
-                .links a { 
-                    display: inline-block; 
-                    margin: 10px 20px 10px 0; 
-                    padding: 10px 20px; 
-                    background: #007bff; 
-                    color: white; 
-                    text-decoration: none; 
-                    border-radius: 5px; 
+                .links a {
+                    display: inline-block;
+                    margin: 10px 20px 10px 0;
+                    padding: 10px 20px;
+                    background: #007bff;
+                    color: white;
+                    text-decoration: none;
+                    border-radius: 5px;
                 }
                 .links a:hover { background: #0056b3; }
             </style>
@@ -134,100 +134,100 @@ async def demo():
         <head>
             <title>RAG Pipeline Demo</title>
             <style>
-                body { 
-                    font-family: Arial, sans-serif; 
-                    margin: 0; 
-                    padding: 20px; 
-                    background: #f5f5f5; 
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    background: #f5f5f5;
                 }
-                .container { 
-                    max-width: 1200px; 
-                    margin: 0 auto; 
-                    background: white; 
-                    padding: 30px; 
-                    border-radius: 10px; 
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+                .container {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 }
                 h1 { color: #333; margin-bottom: 10px; }
                 .subtitle { color: #666; margin-bottom: 30px; }
-                .query-section { 
-                    background: #f8f9fa; 
-                    padding: 20px; 
-                    border-radius: 8px; 
-                    margin-bottom: 20px; 
+                .query-section {
+                    background: #f8f9fa;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin-bottom: 20px;
                 }
-                textarea { 
-                    width: 100%; 
-                    padding: 10px; 
-                    border: 1px solid #ddd; 
-                    border-radius: 4px; 
-                    font-size: 14px; 
-                    resize: vertical; 
+                textarea {
+                    width: 100%;
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    font-size: 14px;
+                    resize: vertical;
                 }
-                select, button { 
-                    padding: 10px 20px; 
-                    margin: 10px 10px 10px 0; 
-                    border: 1px solid #ddd; 
-                    border-radius: 4px; 
-                    font-size: 14px; 
+                select, button {
+                    padding: 10px 20px;
+                    margin: 10px 10px 10px 0;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    font-size: 14px;
                 }
-                button { 
-                    background: #007bff; 
-                    color: white; 
-                    border: none; 
-                    cursor: pointer; 
+                button {
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    cursor: pointer;
                 }
                 button:hover { background: #0056b3; }
-                button:disabled { 
-                    background: #ccc; 
-                    cursor: not-allowed; 
+                button:disabled {
+                    background: #ccc;
+                    cursor: not-allowed;
                 }
-                .results { 
-                    margin-top: 20px; 
-                    padding: 20px; 
-                    background: #f8f9fa; 
-                    border-radius: 8px; 
+                .results {
+                    margin-top: 20px;
+                    padding: 20px;
+                    background: #f8f9fa;
+                    border-radius: 8px;
                 }
-                .metrics { 
-                    display: grid; 
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-                    gap: 15px; 
-                    margin-top: 20px; 
+                .metrics {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 15px;
+                    margin-top: 20px;
                 }
-                .metric-card { 
-                    background: white; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    border: 1px solid #e0e0e0; 
+                .metric-card {
+                    background: white;
+                    padding: 15px;
+                    border-radius: 8px;
+                    border: 1px solid #e0e0e0;
                 }
-                .metric-label { 
-                    color: #666; 
-                    font-size: 12px; 
-                    margin-bottom: 5px; 
+                .metric-label {
+                    color: #666;
+                    font-size: 12px;
+                    margin-bottom: 5px;
                 }
-                .metric-value { 
-                    font-size: 24px; 
-                    font-weight: bold; 
-                    color: #333; 
+                .metric-value {
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #333;
                 }
-                .source { 
-                    background: white; 
-                    padding: 10px; 
-                    margin: 10px 0; 
-                    border-left: 3px solid #007bff; 
-                    border-radius: 4px; 
+                .source {
+                    background: white;
+                    padding: 10px;
+                    margin: 10px 0;
+                    border-left: 3px solid #007bff;
+                    border-radius: 4px;
                 }
-                .loading { 
-                    text-align: center; 
-                    padding: 20px; 
-                    color: #666; 
+                .loading {
+                    text-align: center;
+                    padding: 20px;
+                    color: #666;
                 }
-                .error { 
-                    background: #f8d7da; 
-                    color: #721c24; 
-                    padding: 10px; 
-                    border-radius: 4px; 
-                    margin: 10px 0; 
+                .error {
+                    background: #f8d7da;
+                    color: #721c24;
+                    padding: 10px;
+                    border-radius: 4px;
+                    margin: 10px 0;
                 }
             </style>
         </head>
@@ -235,11 +235,11 @@ async def demo():
             <div class="container">
                 <h1>RAG Pipeline Interactive Demo</h1>
                 <p class="subtitle">Test the production RAG system with real-time A/B testing and RAGAS evaluation</p>
-                
+
                 <div class="query-section">
                     <h3>Query Input</h3>
                     <textarea id="query" rows="3" placeholder="Enter your question here...">What are the latest advances in transformer architectures?</textarea>
-                    
+
                     <div style="margin-top: 15px;">
                         <label>Experiment Variant:</label>
                         <select id="variant">
@@ -249,7 +249,7 @@ async def demo():
                             <option value="hybrid">Hybrid</option>
                             <option value="finetuned">Fine-tuned</option>
                         </select>
-                        
+
                         <label>Data Sources:</label>
                         <select id="source" multiple size="3">
                             <option value="arxiv" selected>ArXiv</option>
@@ -257,43 +257,43 @@ async def demo():
                             <option value="pubmed">PubMed</option>
                         </select>
                     </div>
-                    
+
                     <button id="submitBtn" onclick="submitQuery()">Submit Query</button>
                     <button onclick="clearResults()">Clear</button>
                 </div>
-                
+
                 <div id="results" style="display:none;">
                     <h3>Results</h3>
                     <div id="answer"></div>
-                    
+
                     <div class="metrics" id="metrics"></div>
-                    
+
                     <div id="sources"></div>
-                    
+
                     <div id="evaluation"></div>
                 </div>
             </div>
-            
+
             <script>
                 async function submitQuery() {
                     const query = document.getElementById('query').value;
                     const variant = document.getElementById('variant').value;
                     const sourceSelect = document.getElementById('source');
                     const sources = Array.from(sourceSelect.selectedOptions).map(opt => opt.value);
-                    
+
                     if (!query.trim()) {
                         alert('Please enter a query');
                         return;
                     }
-                    
+
                     const submitBtn = document.getElementById('submitBtn');
                     const resultsDiv = document.getElementById('results');
                     const answerDiv = document.getElementById('answer');
-                    
+
                     submitBtn.disabled = true;
                     resultsDiv.style.display = 'block';
                     answerDiv.innerHTML = '<div class="loading">Processing query...</div>';
-                    
+
                     try {
                         const response = await fetch('/api/v1/query', {
                             method: 'POST',
@@ -304,28 +304,28 @@ async def demo():
                                 metadata_filters: sources.length > 0 ? { source: sources } : {}
                             })
                         });
-                        
+
                         if (!response.ok) {
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
-                        
+
                         const data = await response.json();
                         displayResults(data);
-                        
+
                     } catch (error) {
                         answerDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
                     } finally {
                         submitBtn.disabled = false;
                     }
                 }
-                
+
                 function displayResults(data) {
                     // Display answer
                     document.getElementById('answer').innerHTML = `
                         <h4>Answer:</h4>
                         <p>${data.answer}</p>
                     `;
-                    
+
                     // Display metrics
                     const metricsHtml = `
                         <div class="metric-card">
@@ -350,7 +350,7 @@ async def demo():
                         </div>
                     `;
                     document.getElementById('metrics').innerHTML = metricsHtml;
-                    
+
                     // Display sources
                     if (data.sources && data.sources.length > 0) {
                         let sourcesHtml = '<h4>Sources:</h4>';
@@ -365,7 +365,7 @@ async def demo():
                         });
                         document.getElementById('sources').innerHTML = sourcesHtml;
                     }
-                    
+
                     // Display evaluation metrics if available
                     if (data.evaluation_metrics) {
                         const evalHtml = `
@@ -392,7 +392,7 @@ async def demo():
                         document.getElementById('evaluation').innerHTML = evalHtml;
                     }
                 }
-                
+
                 function clearResults() {
                     document.getElementById('results').style.display = 'none';
                     document.getElementById('query').value = '';

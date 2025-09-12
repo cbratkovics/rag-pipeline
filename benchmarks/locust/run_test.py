@@ -142,7 +142,7 @@ def generate_html_report(stats: dict, timestamp: str) -> str:
 <body>
     <h1>RAG Pipeline Load Test Report</h1>
     <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
-    
+
     <div class="metrics">
         <h2>Test Configuration</h2>
         <div class="metric">
@@ -158,7 +158,7 @@ def generate_html_report(stats: dict, timestamp: str) -> str:
             <span class="metric-value">{HOST}</span>
         </div>
     </div>
-    
+
     <div class="metrics">
         <h2>Performance Metrics</h2>
         <div class="metric">
@@ -184,7 +184,7 @@ def generate_html_report(stats: dict, timestamp: str) -> str:
             <span class="metric-value">{stats.get("requests_per_second", 0):.2f}</span>
         </div>
     </div>
-    
+
     <div class="metrics">
         <h2>Latency Statistics</h2>
         <div class="metric">

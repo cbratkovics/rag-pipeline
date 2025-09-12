@@ -64,7 +64,7 @@ def generate_evidence():
     <div class="container">
         <h1>🚀 RAG Pipeline Load Test Report</h1>
         <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
-        
+
         <div class="summary">
             <h2>Executive Summary</h2>
             <div class="grid">
@@ -86,7 +86,7 @@ def generate_evidence():
                 </div>
             </div>
         </div>
-        
+
         <div class="metrics">
             <h2>📊 Test Configuration</h2>
             <div class="metric">
@@ -102,7 +102,7 @@ def generate_evidence():
                 <span class="metric-value">POST /api/v1/query</span>
             </div>
         </div>
-        
+
         <div class="metrics">
             <h2>⚡ Performance Metrics</h2>
             <div class="metric">
@@ -130,7 +130,7 @@ def generate_evidence():
                 <span class="metric-value">{stats["requests_per_second"]:.2f}</span>
             </div>
         </div>
-        
+
         <div class="metrics">
             <h2>⏱️ Latency Analysis</h2>
             <div class="grid">
@@ -164,11 +164,11 @@ def generate_evidence():
                 </div>
             </div>
         </div>
-        
+
         <div class="metrics">
             <h2>✅ Test Results</h2>
-            <p>The RAG pipeline successfully handled <strong>{stats["requests_per_second"]:.1f} requests per second</strong> with a 
-            <strong>{stats["success_rate"]:.1f}% success rate</strong>. The P95 latency of <strong>{stats["p95_latency_ms"]:.0f}ms</strong> 
+            <p>The RAG pipeline successfully handled <strong>{stats["requests_per_second"]:.1f} requests per second</strong> with a
+            <strong>{stats["success_rate"]:.1f}% success rate</strong>. The P95 latency of <strong>{stats["p95_latency_ms"]:.0f}ms</strong>
             indicates good performance under load, meeting our SLA requirements.</p>
         </div>
     </div>

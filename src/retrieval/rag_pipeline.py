@@ -48,7 +48,7 @@ class RAGPipeline(LoggerMixin):
 
     def _create_prompt_template(self) -> PromptTemplate:
         """Create the prompt template for RAG."""
-        template = """You are a helpful AI assistant. Use the following context to answer the question. 
+        template = """You are a helpful AI assistant. Use the following context to answer the question.
 If you cannot answer the question based on the context, say so.
 
 Context:

@@ -69,9 +69,9 @@ class TestChunking:
 
         text = """
         This is the first paragraph of text. It contains some information.
-        
+
         This is the second paragraph. It has different content than the first.
-        
+
         And here is the third paragraph with even more information.
         """
 
