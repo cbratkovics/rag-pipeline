@@ -76,6 +76,9 @@ fixable = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"scripts/simple_ingest.py" = ["E402"]
+"src/rag/ingest.py" = ["E402"]
+"src/rag/retriever.py" = ["E402"]
 
 [tool.mypy]
 python_version = "3.11"
