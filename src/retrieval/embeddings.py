@@ -1,8 +1,8 @@
 """Embedding generation and management."""
 
-import numpy as np
 from typing import cast
 
+import numpy as np
 from sentence_transformers import SentenceTransformer
 from tenacity import retry, stop_after_attempt, wait_exponential
 
