@@ -41,7 +41,8 @@ tests/
 test_*.py
 
 # Data
-data/
+data/*
+!data/.gitkeep
 *.db
 *.sqlite
 *.csv
