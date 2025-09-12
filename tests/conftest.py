@@ -1,5 +1,6 @@
 """Test configuration and fixtures."""
 
+import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -49,17 +50,12 @@ def mock_external_services():
     # Only mock services that are actually imported/used
     mocks = []
 
-    # Try to mock each service conditionally
-    try:
-        import chromadb
-
+    # Mock ChromaDB if available
+    if importlib.util.find_spec("chromadb"):
         mocks.append(patch("chromadb.PersistentClient", MagicMock()))
-    except ImportError:
-        pass
 
-    try:
-        import redis
-
+    # Mock Redis if available
+    if importlib.util.find_spec("redis"):
         mock_redis_instance = MagicMock()
         mock_redis_instance.get.return_value = None
         mock_redis_instance.set.return_value = True
@@ -67,22 +63,14 @@ def mock_external_services():
         mock_redis_instance.delete.return_value = True
         mocks.append(patch("redis.asyncio.Redis", return_value=mock_redis_instance))
         mocks.append(patch("redis.Redis", return_value=mock_redis_instance))
-    except ImportError:
-        pass
 
-    try:
-        import psycopg2
-
+    # Mock PostgreSQL if available
+    if importlib.util.find_spec("psycopg2"):
         mocks.append(patch("psycopg2.connect", MagicMock()))
-    except ImportError:
-        pass
 
-    try:
-        import mlflow
-
+    # Mock MLflow if available
+    if importlib.util.find_spec("mlflow"):
         mocks.append(patch("mlflow.set_tracking_uri", return_value=None))
-    except ImportError:
-        pass
 
     # Enter all mocks
     for mock in mocks:
