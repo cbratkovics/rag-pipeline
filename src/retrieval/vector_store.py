@@ -116,6 +116,8 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             # Prepare points for Qdrant
             points = []
             for doc in documents:
+                if doc.embedding is None:
+                    raise ValueError(f"Document {doc.id} has no embedding")
                 point = qdrant_models.PointStruct(
                     id=str(doc.id),
                     vector=doc.embedding,
@@ -183,7 +185,9 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                             )
                         )
                 if must_conditions:
-                    search_filter = qdrant_models.Filter(must=must_conditions)
+                    search_filter = qdrant_models.Filter(
+                        must=must_conditions  # type: ignore[arg-type]
+                    )
 
             # Search
             if self.client is None:
@@ -198,8 +202,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             # Convert to RetrievedDocument
             retrieved_docs = []
             for result in results:
+                if result.payload is None:
+                    continue
                 doc = Document(
-                    id=UUID(result.id),
+                    id=UUID(str(result.id)),
                     content=result.payload["content"],
                     metadata=result.payload.get("metadata", {}),
                     source=result.payload["source"],
@@ -238,7 +244,7 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             self.client.delete(
                 collection_name=self.collection_name,
                 points_selector=qdrant_models.PointIdsList(
-                    points=ids,
+                    points=ids,  # type: ignore[arg-type]
                 ),
             )
             self.logger.info("Deleted documents from Qdrant", count=len(ids))
@@ -265,8 +271,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                 return None
 
             result = results[0]
+            if result.payload is None:
+                return None
             doc = Document(
-                id=UUID(result.id),
+                id=UUID(str(result.id)),
                 content=result.payload["content"],
                 metadata=result.payload.get("metadata", {}),
                 source=result.payload["source"],
@@ -301,6 +309,8 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             if self.client is None:
                 raise RuntimeError("Qdrant client not initialized")
             info = self.client.get_collection(self.collection_name)
+            if info.points_count is None:
+                return 0
             return int(info.points_count)
 
         except Exception as e:

@@ -26,7 +26,10 @@ class EmbeddingManager(LoggerMixin):
         if self.model is None:
             self.logger.info("Loading embedding model", model=self.model_name)
             self.model = SentenceTransformer(self.model_name)
-            self.dimension = int(self.model.get_sentence_embedding_dimension())
+            embedding_dim = self.model.get_sentence_embedding_dimension()
+            if embedding_dim is None:
+                raise ValueError(f"Could not get embedding dimension for model {self.model_name}")
+            self.dimension = int(embedding_dim)
             self.logger.info(
                 "Embedding model loaded",
                 model=self.model_name,
