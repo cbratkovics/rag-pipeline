@@ -64,6 +64,10 @@ class CacheManager(LoggerMixin):
             try:
                 return json.loads(value)
             except (json.JSONDecodeError, TypeError):
+                # Security check: Only unpickle if we trust the source (internal cache)
+                if not self.connected or self.client is None:
+                    return default
+                # Consider using a safer serialization method like msgpack
                 return pickle.loads(value)
         except Exception as e:
             self.logger.warning("Cache get failed", key=key, error=str(e))
@@ -160,7 +164,9 @@ class CacheManager(LoggerMixin):
                     try:
                         result[key.decode("utf-8")] = json.loads(value)
                     except (json.JSONDecodeError, TypeError):
-                        result[key.decode("utf-8")] = pickle.loads(value)
+                        # Security check: Only unpickle if we trust the source (internal cache)
+                        if self.connected and self.client is not None:
+                            result[key.decode("utf-8")] = pickle.loads(value)
             return result
         except Exception as e:
             self.logger.warning("Cache pattern get failed", pattern=pattern, error=str(e))

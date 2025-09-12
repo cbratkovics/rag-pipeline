@@ -2,6 +2,9 @@ import logging
 import os
 from typing import Any
 
+# Set protobuf environment before importing ChromaDB
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 import chromadb
 import numpy as np
 from chromadb.config import Settings

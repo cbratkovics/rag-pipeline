@@ -23,7 +23,9 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO")
 
     # API
-    api_host: str = Field(default="0.0.0.0")
+    api_host: str = Field(
+        default="127.0.0.1"
+    )  # Use localhost for security, can be overridden via env
     api_port: int = Field(default=8000)
     api_key_header: str = Field(default="X-API-Key")
     cors_origins: list[str] = Field(default=["*"])

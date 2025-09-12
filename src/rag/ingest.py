@@ -3,6 +3,9 @@ import os
 from contextlib import suppress
 from pathlib import Path
 
+# Set protobuf environment before importing ChromaDB
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 import chromadb
 import typer
 from chromadb.config import Settings

@@ -58,7 +58,7 @@ class ABTestManager(LoggerMixin):
         identifier = user_id or session_id or str(random.random())
 
         # Hash-based assignment for consistency
-        hash_value = int(hashlib.md5(f"{experiment_id}:{identifier}".encode()).hexdigest(), 16)
+        hash_value = int(hashlib.sha256(f"{experiment_id}:{identifier}".encode()).hexdigest(), 16)
         assignment_value = (hash_value % 100) / 100.0
 
         # Determine variant based on traffic split
