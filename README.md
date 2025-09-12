@@ -1,7 +1,5 @@
 # Production RAG Pipeline with A/B Testing & Continuous Learning
 
-**Production-grade Retrieval-Augmented Generation (RAG) system demonstrating enterprise-level AI engineering with real-time A/B testing, continuous learning, and comprehensive observability.**
-
 <div align="center">
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/cbratkovics/rag-pipeline-ragas)
@@ -12,6 +10,8 @@
 [![MLOps](https://img.shields.io/badge/MLOps-Production-orange)](https://github.com/yourusername/rag-pipeline-ragas)
 
 </div>
+
+**Production-grade Retrieval-Augmented Generation (RAG) system demonstrating enterprise-level AI engineering with real-time A/B testing, continuous learning, and comprehensive observability.**
 
 ## Key Features
 
