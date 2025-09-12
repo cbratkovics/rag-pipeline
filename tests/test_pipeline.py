@@ -216,17 +216,46 @@ class TestCostCalculation:
 
     def test_cost_calculation(self):
         """Test that costs are calculated correctly."""
-        from src.retrieval.rag_pipeline import RAGPipeline
+        import os
+        import sys
+        from unittest.mock import patch
 
-        pipeline = RAGPipeline()
+        # Remove any previously imported modules that might have loaded the vector store
+        modules_to_remove = [
+            "src.retrieval.vector_store",
+            "src.retrieval.hybrid_search",
+            "src.retrieval.rag_pipeline",
+            "src.core.config",
+        ]
+        for module in modules_to_remove:
+            if module in sys.modules:
+                del sys.modules[module]
 
-        cost = pipeline._calculate_cost(
-            retrieval_count=10,
-            token_count=500,
-            variant=ExperimentVariant.HYBRID,
-        )
+        # Temporarily set required environment variables
+        original_store_type = os.environ.get("VECTOR_STORE_TYPE", "chromadb")
+        original_llm_provider = os.environ.get("LLM_PROVIDER", "stub")
+        os.environ["VECTOR_STORE_TYPE"] = "qdrant"
+        os.environ["LLM_PROVIDER"] = "openai"  # Use a supported provider
 
-        assert isinstance(cost, float)
-        assert cost > 0
-        # Check that cost includes all components
-        assert cost >= pipeline.settings.cost_per_embedding_request
+        try:
+            # Mock all external dependencies
+            with patch("qdrant_client.QdrantClient"), patch("langchain_openai.ChatOpenAI"):
+                from src.retrieval.rag_pipeline import RAGPipeline
+
+                # Create a pipeline instance directly without using the global one
+                pipeline = RAGPipeline()
+
+                cost = pipeline._calculate_cost(
+                    retrieval_count=10,
+                    token_count=500,
+                    variant=ExperimentVariant.HYBRID,
+                )
+
+                assert isinstance(cost, float)
+                assert cost > 0
+                # Check that cost includes all components
+                assert cost >= pipeline.settings.cost_per_embedding_request
+        finally:
+            # Restore original environment variables
+            os.environ["VECTOR_STORE_TYPE"] = original_store_type
+            os.environ["LLM_PROVIDER"] = original_llm_provider
