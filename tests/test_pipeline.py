@@ -5,7 +5,6 @@ import os
 # Set protobuf workaround FIRST
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
-from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
