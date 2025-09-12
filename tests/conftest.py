@@ -48,44 +48,48 @@ def mock_external_services():
     """Mock all external service connections for unit tests."""
     # Only mock services that are actually imported/used
     mocks = []
-    
+
     # Try to mock each service conditionally
     try:
         import chromadb
-        mocks.append(patch('chromadb.PersistentClient', MagicMock()))
+
+        mocks.append(patch("chromadb.PersistentClient", MagicMock()))
     except ImportError:
         pass
-    
+
     try:
         import redis
+
         mock_redis_instance = MagicMock()
         mock_redis_instance.get.return_value = None
         mock_redis_instance.set.return_value = True
         mock_redis_instance.expire.return_value = True
         mock_redis_instance.delete.return_value = True
-        mocks.append(patch('redis.asyncio.Redis', return_value=mock_redis_instance))
-        mocks.append(patch('redis.Redis', return_value=mock_redis_instance))
+        mocks.append(patch("redis.asyncio.Redis", return_value=mock_redis_instance))
+        mocks.append(patch("redis.Redis", return_value=mock_redis_instance))
     except ImportError:
         pass
-    
+
     try:
         import psycopg2
-        mocks.append(patch('psycopg2.connect', MagicMock()))
+
+        mocks.append(patch("psycopg2.connect", MagicMock()))
     except ImportError:
         pass
-    
+
     try:
         import mlflow
-        mocks.append(patch('mlflow.set_tracking_uri', return_value=None))
+
+        mocks.append(patch("mlflow.set_tracking_uri", return_value=None))
     except ImportError:
         pass
-    
+
     # Enter all mocks
     for mock in mocks:
         mock.__enter__()
-    
+
     yield
-    
+
     # Exit all mocks
     for mock in reversed(mocks):
         mock.__exit__(None, None, None)

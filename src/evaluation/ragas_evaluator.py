@@ -24,6 +24,7 @@ class RAGASEvaluator(LoggerMixin):
         if llm_config["provider"] == "stub":
             # Return a mock LLM for stub provider
             from unittest.mock import MagicMock
+
             mock_llm = MagicMock()
             mock_llm.invoke = MagicMock(return_value="Mock response")
             return mock_llm
