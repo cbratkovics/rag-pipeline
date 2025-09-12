@@ -14,6 +14,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="allow",  # Allow extra fields from environment variables
     )
 
     # Application
@@ -241,7 +242,15 @@ class Settings(BaseSettings):
             "max_tokens": self.max_tokens,
         }
 
-        if self.llm_provider == "openai":
+        if self.llm_provider == "stub":
+            # Stub provider for testing
+            return {
+                **base_config,
+                "provider": "stub",
+                "api_key": "test-key",
+                "model": "test-model",
+            }
+        elif self.llm_provider == "openai":
             return {
                 **base_config,
                 "provider": "openai",
