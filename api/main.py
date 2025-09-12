@@ -1,6 +1,8 @@
+import json
 import os
 import time
 
+import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +24,7 @@ app = FastAPI(title="RAG Pipeline API", version="0.1.0")
 cors_origins = os.getenv("CORS_ORIGINS", '["http://localhost:3000", "http://localhost:8000"]')
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=eval(cors_origins),
+    allow_origins=json.loads(cors_origins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -104,8 +106,6 @@ async def query(request: QueryRequest):
 
 
 if __name__ == "__main__":
-    import uvicorn
-
     host = os.getenv("API_HOST", "0.0.0.0")
     port = int(os.getenv("API_PORT", "8000"))
     uvicorn.run(app, host=host, port=port)

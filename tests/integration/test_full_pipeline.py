@@ -1,5 +1,6 @@
 """Integration tests for the complete RAG pipeline."""
 
+import concurrent.futures
 import time
 
 import pytest
@@ -97,8 +98,6 @@ class TestFullPipeline:
 
     def test_concurrent_requests(self):
         """Test handling concurrent requests."""
-        import concurrent.futures
-
         def make_request(question):
             payload = {"question": question, "k": 3, "provider": "stub"}
             response = requests.post(f"{BASE_URL}/api/v1/query", json=payload)

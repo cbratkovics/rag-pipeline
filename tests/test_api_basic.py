@@ -1,11 +1,5 @@
-import sys
-from pathlib import Path
-
 import pytest
 from fastapi.testclient import TestClient
-
-# Add parent directory to path
-sys.path.append(str(Path(__file__).parent.parent))
 
 from api.main import app
 

@@ -7,6 +7,7 @@ import pytest
 from src.core.models import (
     Document,
     DocumentSource,
+    EvaluationMetrics,
     ExperimentVariant,
     Query,
     RetrievedDocument,
@@ -163,8 +164,6 @@ class TestRAGASEvaluation:
 
     async def test_evaluation_metrics_calculation(self):
         """Test that evaluation metrics are calculated correctly."""
-        from src.core.models import EvaluationMetrics
-
         metrics = EvaluationMetrics(
             result_id=uuid4(),
             context_relevancy=0.85,

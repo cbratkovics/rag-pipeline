@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Simplified ingestion script for testing."""
 
+import hashlib
 from pathlib import Path
 
 import chromadb
@@ -60,8 +61,6 @@ def main():
     # Add to collection (without embeddings for now)
     if documents:
         # For testing, use simple hash-based embeddings
-        import hashlib
-
         embeddings = []
         for doc in documents:
             # Create a simple 384-dimensional embedding
