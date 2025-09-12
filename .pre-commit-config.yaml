@@ -1,0 +1,42 @@
+repos:
+  - repo: local
+    hooks:
+      - id: poetry-check
+        name: Poetry Check
+        entry: poetry check
+        language: system
+        pass_filenames: false
+        always_run: true
+        
+      - id: ruff-format
+        name: Ruff Format
+        entry: poetry run ruff format
+        language: system
+        types: [python]
+        
+      - id: ruff-lint
+        name: Ruff Lint
+        entry: poetry run ruff check --fix
+        language: system
+        types: [python]
+        
+      - id: mypy
+        name: MyPy Type Check
+        entry: poetry run mypy src api --ignore-missing-imports
+        language: system
+        types: [python]
+        pass_filenames: false
+        
+      - id: pytest-fast
+        name: Fast Tests
+        entry: poetry run pytest tests/ -m "not integration" --tb=short -q
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+        
+      - id: ci-script
+        name: Full CI Check
+        entry: ./scripts/ci.sh
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

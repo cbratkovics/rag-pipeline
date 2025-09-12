@@ -1,7 +1,7 @@
 """Vector store interfaces and implementations."""
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 from qdrant_client import QdrantClient
@@ -185,9 +185,7 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                             )
                         )
                 if must_conditions:
-                    search_filter = qdrant_models.Filter(
-                        must=must_conditions  # type: ignore[arg-type]
-                    )
+                    search_filter = qdrant_models.Filter(must=cast(Any, must_conditions))
 
             # Search
             if self.client is None:
@@ -244,7 +242,7 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             self.client.delete(
                 collection_name=self.collection_name,
                 points_selector=qdrant_models.PointIdsList(
-                    points=ids,  # type: ignore[arg-type]
+                    points=cast(Any, ids),
                 ),
             )
             self.logger.info("Deleted documents from Qdrant", count=len(ids))
