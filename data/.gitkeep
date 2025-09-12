@@ -1,0 +1,3 @@
+# Placeholder for data directory
+# This file ensures the data/ directory exists for Docker builds
+# Actual data files should not be committed to version control
