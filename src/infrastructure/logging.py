@@ -3,10 +3,11 @@
 import sys
 import uuid
 from contextvars import ContextVar
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from structlog.processors import CallsiteParameter, CallsiteParameterAdder
+from structlog.stdlib import BoundLogger
 
 from src.core.config import get_settings
 
@@ -73,7 +74,7 @@ def setup_logging() -> None:
         renderer = structlog.processors.JSONRenderer()
 
     structlog.configure(
-        processors=[*shared_processors, structlog.stdlib.ProcessorFormatter.wrap_for_formatter],
+        processors=shared_processors + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter],  # type: ignore[arg-type]
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
@@ -122,9 +123,9 @@ def setup_logging() -> None:
     )
 
 
-def get_logger(name: str) -> structlog.stdlib.BoundLogger:
+def get_logger(name: str) -> BoundLogger:
     """Get a structured logger instance."""
-    return structlog.get_logger(name)
+    return cast(BoundLogger, structlog.get_logger(name))
 
 
 def generate_correlation_id() -> str:
@@ -149,7 +150,7 @@ class LoggerMixin:
     """Mixin class to add logging capabilities."""
 
     @property
-    def logger(self) -> structlog.stdlib.BoundLogger:
+    def logger(self) -> BoundLogger:
         """Get logger for the class."""
         if not hasattr(self, "_logger"):
             self._logger = get_logger(self.__class__.__name__)
