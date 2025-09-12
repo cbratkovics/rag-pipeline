@@ -21,7 +21,13 @@ class RAGASEvaluator(LoggerMixin):
     def _initialize_llm(self):
         """Initialize LLM for evaluation."""
         llm_config = self.settings.get_llm_config()
-        if llm_config["provider"] == "openai":
+        if llm_config["provider"] == "stub":
+            # Return a mock LLM for stub provider
+            from unittest.mock import MagicMock
+            mock_llm = MagicMock()
+            mock_llm.invoke = MagicMock(return_value="Mock response")
+            return mock_llm
+        elif llm_config["provider"] == "openai":
             return ChatOpenAI(
                 model=llm_config["model"],
                 temperature=0.0,  # Use deterministic responses for evaluation
