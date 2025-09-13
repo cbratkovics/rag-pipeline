@@ -30,6 +30,7 @@ htmlcov/
 # Git
 .git/
 .gitignore
+.github/
 
 # Documentation
 docs/
@@ -39,6 +40,9 @@ docs/
 # Tests
 tests/
 test_*.py
+*_test.py
+coverage.xml
+.coverage.*
 
 # Data
 data/*
@@ -62,6 +66,8 @@ logs/
 dist/
 build/
 *.egg-info/
+*.whl
+*.tar.gz
 
 # MLflow
 mlruns/
@@ -69,7 +75,26 @@ mlruns/
 # Notebooks
 notebooks/
 
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Cache
+*.pyc
+__pycache__/
+.cache/
+pip-wheel-metadata/
+
+# Development
+*.orig
+*.rej
+*.bak
+*.tmp
+.pre-commit-config.yaml
+
 # Docker
 Dockerfile
 docker-compose.yml
-.dockerignore
+docker-compose*.yml
+Dockerfile.*

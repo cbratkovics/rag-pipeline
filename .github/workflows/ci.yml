@@ -191,6 +191,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
+      - name: Show disk space
+        run: df -h
+
+      - name: Clean up Docker system
+        run: |
+          docker system df
+          docker system prune -af --volumes
+          docker builder prune -af
+          df -h
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -209,7 +230,10 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/rag-pipeline:latest
             ${{ secrets.DOCKER_USERNAME }}/rag-pipeline:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=buildkit
+          cache-to: type=gha,mode=min,scope=buildkit
           build-args: |
             PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+          platforms: linux/amd64
+          provenance: false
+          sbom: false

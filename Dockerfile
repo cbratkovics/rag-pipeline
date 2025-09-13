@@ -5,21 +5,25 @@ FROM python:3.11-slim as builder
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install Poetry
-RUN pip install --no-cache-dir poetry==1.7.1
+RUN pip install --no-cache-dir --no-compile poetry==1.7.1
 
 # Copy dependency files
 COPY pyproject.toml poetry.lock* ./
 
 # Install dependencies
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root --only main
+    && poetry install --no-interaction --no-ansi --no-root --only main \
+    && rm -rf ~/.cache/pypoetry /tmp/* /var/tmp/* \
+    && find /usr/local -type f -name '*.pyc' -delete \
+    && find /usr/local -type d -name '__pycache__' -delete
 
 # Production stage
 FROM python:3.11-slim
@@ -28,23 +32,26 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Copy Python packages from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code
-COPY api/ ./api/
-COPY src/ ./src/
-COPY configs/ ./configs/
-COPY scripts/ ./scripts/
-COPY data/ ./data/
+# Copy application code with specific patterns
+COPY --chown=1000:1000 api/ ./api/
+COPY --chown=1000:1000 src/ ./src/
+COPY --chown=1000:1000 configs/ ./configs/
+COPY --chown=1000:1000 scripts/ ./scripts/
+
+# Create data directory
+RUN mkdir -p /app/data
 
 # Create non-root user
-RUN useradd -m -u 1000 raguser && chown -R raguser:raguser /app
+RUN useradd -m -u 1000 raguser
 USER raguser
 
 # Set environment variables
