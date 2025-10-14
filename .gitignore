@@ -129,3 +129,4 @@ secrets/
 
 # Output from tools
 /tmp/prometheus_multiproc/
+/Claude.md

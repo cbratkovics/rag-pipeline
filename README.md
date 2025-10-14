@@ -201,6 +201,38 @@ The system integrates with multiple open-source data repositories:
 
 All sources include proper attribution and license compliance.
 
+## Frontend
+
+Modern Next.js application showcasing the RAG pipeline capabilities with real-time metrics and interactive visualization.
+
+**Features:**
+- Interactive query interface with real-time results
+- A/B testing variant selection (Auto, Baseline, Reranked, Hybrid)
+- RAGAS evaluation metrics visualization
+- Source citation with relevance scores and retrieval methods
+- Performance monitoring (latency, tokens, cost estimation)
+- Responsive design for all devices
+
+**Tech Stack:** Next.js 14, TypeScript, TailwindCSS, Shadcn/ui, React Query
+
+**Local Development:**
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+# Edit .env.local with your API URL
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to see the application.
+
+**Production Deployment:**
+- Deployed to Vercel
+- Backend CORS configuration required (see [frontend/README.md](frontend/README.md))
+- Environment variables: `NEXT_PUBLIC_API_URL`
+
+See [frontend/README.md](frontend/README.md) for detailed documentation.
+
 ## API Documentation
 
 Interactive API documentation available at: `http://localhost:8000/docs`
@@ -237,6 +269,12 @@ make eval
 rag-pipeline-ragas/
 ├── api/                  # FastAPI application
 │   └── main.py          # API endpoints and Prometheus metrics
+├── frontend/            # Next.js web application
+│   ├── app/             # Next.js App Router
+│   ├── components/      # React components
+│   ├── lib/             # API client and utilities
+│   ├── types/           # TypeScript definitions
+│   └── README.md        # Frontend documentation
 ├── src/
 │   ├── rag/             # RAG pipeline components
 │   │   ├── ingest.py    # Document ingestion to Chroma
@@ -254,8 +292,7 @@ rag-pipeline-ragas/
 │   ├── seed/           # Source documents
 │   └── eval/           # Evaluation dataset
 ├── results/            # Evaluation outputs
-└── scripts/            # Automation scripts
-├── tests/
+├── tests/              # Test suite
 │   ├── unit/            # Unit tests
 │   ├── integration/     # Integration tests
 │   └── load/           # Performance tests
@@ -263,7 +300,8 @@ rag-pipeline-ragas/
 ├── deployments/        # Kubernetes and Docker configs
 ├── docs/              # Technical documentation
 ├── scripts/           # Automation and utility scripts
-└── notebooks/         # Research and analysis notebooks
+├── notebooks/         # Research and analysis notebooks
+└── vercel.json        # Vercel deployment config
 ```
 
 ## Deployment
