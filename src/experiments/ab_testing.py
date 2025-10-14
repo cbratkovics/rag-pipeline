@@ -228,7 +228,7 @@ class ABTestManager(LoggerMixin):
             ]
 
             try:
-                chi2, p_value, _, _ = stats.chi2_contingency(observed)
+                _chi2, p_value, _, _ = stats.chi2_contingency(observed)
                 result.p_value = p_value
                 result.is_significant = p_value < (1 - self.settings.ab_test_confidence_level)
             except Exception as e:

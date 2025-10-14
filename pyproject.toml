@@ -6,6 +6,11 @@ authors = ["AI Engineer <ai@example.com>"]
 readme = "README.md"
 packages = [{include = "src"}, {include = "api"}]
 
+[tool.poetry.scripts]
+rag-api = "api.main:main"
+rag-ingest = "src.rag.ingest:main"
+rag-eval = "src.eval.ragas_runner:main"
+
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.104.1"
@@ -68,11 +73,6 @@ pre-commit = "^3.5.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-rag-api = "api.main:main"
-rag-ingest = "src.rag.ingest:main"
-rag-eval = "src.eval.ragas_runner:main"
 
 [tool.ruff]
 line-length = 100

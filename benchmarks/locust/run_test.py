@@ -224,7 +224,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     print("Running load test...")
-    stats, results = run_load_test()
+    stats, _results = run_load_test()
 
     # Save JSON stats
     with open(output_dir / "stats.json", "w") as f:

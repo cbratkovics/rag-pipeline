@@ -66,7 +66,7 @@
 ### Prerequisites
 - Python 3.11+
 - Docker & Docker Compose
-- Poetry
+- Poetry 1.7.0+
 - 4GB RAM minimum
 
 ### Installation
@@ -76,8 +76,15 @@
 git clone https://github.com/cbratkovics/rag-pipeline.git
 cd rag-pipeline
 
-# One-command setup
-make setup
+# Install dependencies
+poetry install
+
+# Activate virtual environment
+poetry shell
+
+# Setup pre-commit hooks (IMPORTANT!)
+chmod +x scripts/fix-hooks.sh
+bash scripts/fix-hooks.sh
 
 # Ingest seed documents
 make ingest
@@ -87,6 +94,43 @@ make run
 
 # Or use Docker Compose
 make up
+```
+
+### If Pre-commit Hooks Fail
+
+If you encounter errors when committing:
+
+```bash
+# Quick fix - run the helper script
+chmod +x scripts/fix-hooks.sh
+bash scripts/fix-hooks.sh
+
+# Manual fix
+chmod +x scripts/ci.sh
+poetry lock --no-update
+poetry run pre-commit uninstall
+poetry run pre-commit install
+
+# Verify everything works
+poetry run pre-commit run --all-files
+```
+
+**Common Errors:**
+- `[Errno 13] Permission denied` → Run the fix script above
+- `pyproject.toml changed significantly` → Run `poetry lock --no-update`
+- Hooks still failing → See [Troubleshooting Guide](docs/TROUBLESHOOTING.md)
+
+### Running Quality Checks
+
+```bash
+# Run all checks
+make quality
+
+# Or individually
+poetry run ruff format .
+poetry run ruff check .
+poetry run mypy src api --ignore-missing-imports
+poetry run pytest -m unit
 ```
 
 ### Makefile Targets
@@ -306,6 +350,42 @@ rag-pipeline-ragas/
 
 ## Deployment
 
+### Production Architecture
+
+```
+┌─────────────┐      ┌──────────────┐      ┌─────────────┐
+│   Vercel    │─────▶│    Render    │─────▶│    Redis    │
+│  (Frontend) │      │  (FastAPI)   │      │   (Cache)   │
+└─────────────┘      └──────────────┘      └─────────────┘
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │  ChromaDB   │
+                     │  (Vectors)  │
+                     └─────────────┘
+```
+
+### Quick Deploy to Production
+
+**Backend (Render):**
+1. Push code to GitHub
+2. Import repository in Render using `render.yaml`
+3. Set `OPENAI_API_KEY` in environment variables
+4. Deploy automatically!
+
+**Frontend (Vercel):**
+1. Import repository in Vercel
+2. Set root directory to `frontend`
+3. Add `NEXT_PUBLIC_API_URL` environment variable
+4. Deploy automatically!
+
+See detailed guides:
+- [Backend Deployment Guide](docs/RENDER_DEPLOYMENT.md)
+- [Frontend Deployment Guide](frontend/README.md)
+- [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)
+
+**Estimated Monthly Cost:** $7-12 (Render Starter + Redis Free tier)
+
 ### Docker Deployment
 
 ```bash
@@ -314,6 +394,9 @@ docker build -t rag-pipeline:latest .
 
 # Run container
 docker run -p 8000:8000 --env-file .env rag-pipeline:latest
+
+# Or use Docker Compose (recommended for local development)
+make up
 ```
 
 ### Kubernetes Deployment
