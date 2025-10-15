@@ -223,3 +223,36 @@ export async function isAPIAvailable(): Promise<boolean> {
     return false
   }
 }
+
+/**
+ * Format duration in milliseconds to human-readable string
+ */
+export function formatDuration(ms: number): string {
+  if (ms < 1000) {
+    return `${ms.toFixed(0)}ms`
+  }
+  const seconds = ms / 1000
+  if (seconds < 60) {
+    return `${seconds.toFixed(2)}s`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}m ${remainingSeconds.toFixed(0)}s`
+}
+
+/**
+ * Format cost in dollars
+ */
+export function formatCost(cost: number): string {
+  if (cost < 0.01) {
+    return `$${(cost * 1000).toFixed(3)}¢`
+  }
+  return `$${cost.toFixed(4)}`
+}
+
+/**
+ * Format large numbers with commas
+ */
+export function formatNumber(num: number): string {
+  return num.toLocaleString('en-US')
+}
