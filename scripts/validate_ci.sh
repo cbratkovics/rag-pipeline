@@ -15,23 +15,23 @@ echo "Running validation checks..."
 echo "----------------------------"
 
 echo ""
-echo "1. Checking Poetry lock file..."
-poetry check
-echo "✓ Poetry check passed"
+echo "1. Checking uv environment..."
+uv run python -m pip check
+echo "✓ Environment check passed"
 
 echo ""
 echo "2. Running ruff formatter check..."
-poetry run ruff format --check .
+uv run ruff format --check .
 echo "✓ Format check passed"
 
 echo ""
 echo "3. Running ruff linter..."
-poetry run ruff check .
+uv run ruff check .
 echo "✓ Linting passed"
 
 echo ""
 echo "4. Running mypy type checker (CRITICAL)..."
-poetry run mypy src api --ignore-missing-imports
+uv run mypy src api --ignore-missing-imports
 echo "✓ Type checking passed - NO MORE UNUSED TYPE: IGNORE ERRORS!"
 
 echo ""

@@ -8,10 +8,6 @@ on:
 
 env:
   PYTHON_VERSION: "3.12"
-  POETRY_VERSION: "1.7.1"
-  POETRY_HOME: /opt/poetry
-  POETRY_VIRTUALENVS_IN_PROJECT: true
-  POETRY_NO_INTERACTION: 1
 
 jobs:
   test:
@@ -50,39 +46,26 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$POETRY_HOME/bin" >> $GITHUB_PATH
-
-      - name: Cache Poetry virtual environment
-        uses: actions/cache@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v1
         with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            venv-${{ runner.os }}-
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Install dependencies
-        run: |
-          poetry config virtualenvs.in-project true
-          poetry install --no-interaction --no-ansi --with dev
+        run: uv sync --frozen
 
       - name: Run ruff formatting check
-        run: |
-          poetry run ruff format --check .
+        run: uv run ruff format --check .
 
       - name: Run ruff linting
-        run: |
-          poetry run ruff check .
+        run: uv run ruff check .
 
       - name: Run mypy type checking
-        run: |
-          poetry run mypy src api --ignore-missing-imports
+        run: uv run mypy src api --ignore-missing-imports
 
       - name: Run security scan with bandit
-        run: |
-          poetry run bandit -r src/ -ll
+        run: uv run bandit -r src/ -ll
         continue-on-error: true
 
       - name: Run unit tests with coverage
@@ -98,7 +81,7 @@ jobs:
           RAGAS_ENABLED: false
           PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
         run: |
-          poetry run pytest tests/ -v \
+          uv run pytest tests/ -v \
             -m "not integration" \
             --cov=src --cov=api \
             --cov-report=xml \
@@ -153,15 +136,14 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$POETRY_HOME/bin" >> $GITHUB_PATH
+      - name: Install uv
+        uses: astral-sh/setup-uv@v1
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: Install dependencies
-        run: |
-          poetry config virtualenvs.in-project true
-          poetry install --no-interaction --no-ansi --with dev
+        run: uv sync --frozen
 
       - name: Run integration tests
         env:
@@ -178,7 +160,7 @@ jobs:
           LLM_PROVIDER: stub
           RAGAS_ENABLED: false
         run: |
-          poetry run pytest tests/ -v \
+          uv run pytest tests/ -v \
             -m "integration" \
             --cov=src --cov=api \
             --cov-report=xml

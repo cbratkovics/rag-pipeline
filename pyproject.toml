@@ -1,5 +1,13 @@
+[project]
+name = "rag-pipeline"
+version = "0.1.0"
+description = "Production-grade RAG pipeline with A/B testing and continuous learning"
+authors = [{name = "AI Engineer", email = "ai@example.com"}]
+readme = "README.md"
+requires-python = ">=3.12"
+
 [tool.poetry]
-name = "rag-pipeline-ragas"
+name = "rag-pipeline"
 version = "0.1.0"
 description = "Production-grade RAG pipeline with A/B testing and continuous learning"
 authors = ["AI Engineer <ai@example.com>"]
@@ -34,6 +42,7 @@ nltk = "^3.9.1"  # Version 3.8.0 doesn't exist, use 3.9.1
 
 # Vector search and embeddings
 chromadb = "^0.4.0"
+chroma-hnswlib = ">=0.7.3"  # Explicit override to allow newer versions with binary wheels
 rank-bm25 = "^0.2.2"
 sentence-transformers = "^2.2.2"
 

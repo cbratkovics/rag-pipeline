@@ -9,8 +9,8 @@ help:  ## Show this help message
 
 setup:  ## Install dependencies and pre-commit hooks
 	@echo "Setting up RAG pipeline..."
-	@echo "Installing Poetry dependencies..."
-	@poetry install --sync
+	@echo "Installing dependencies with uv..."
+	@uv sync
 	@echo "Creating necessary directories..."
 	@mkdir -p data/seed data/eval results/ragas benchmarks/locust mlruns .chroma
 	@echo "Setup complete!"
@@ -18,18 +18,18 @@ setup:  ## Install dependencies and pre-commit hooks
 ingest:  ## Build local Chroma index from data/seed
 	@echo "Ingesting documents into Chroma..."
 	@mkdir -p data/seed .chroma
-	poetry run python -m src.rag.ingest --data-dir data/seed --reset
+	uv run python -m src.rag.ingest --data-dir data/seed --reset
 	@echo "Ingestion complete!"
 
 run:  ## Run API locally with uvicorn
 	@echo "Starting RAG API server..."
 	@mkdir -p /tmp/prometheus_multiproc
-	poetry run uvicorn api.main:app --host 0.0.0.0 --port 8000
+	uv run uvicorn api.main:app --host 0.0.0.0 --port 8000
 
 eval:  ## Run RAGAS evaluation and log to MLflow
 	@echo "Running RAGAS evaluation..."
 	@mkdir -p results/ragas mlruns
-	poetry run python -m src.eval.ragas_runner
+	uv run python -m src.eval.ragas_runner
 	@echo "Evaluation complete! Check results/ragas/ for reports"
 
 loadtest:  ## Run Locust headless and save artifacts
@@ -37,7 +37,7 @@ loadtest:  ## Run Locust headless and save artifacts
 	@mkdir -p benchmarks/locust
 	@TIMESTAMP=$$(date +%Y%m%d_%H%M%S) && \
 	mkdir -p benchmarks/locust/$$TIMESTAMP && \
-	poetry run locust \
+	uv run locust \
 		-f benchmarks/locust/locustfile.py \
 		--host http://localhost:8000 \
 		--users 10 \
@@ -51,7 +51,7 @@ loadtest:  ## Run Locust headless and save artifacts
 evidence:  ## Generate README evidence snippet from latest artifacts
 	@echo "Generating evidence summary..."
 	@mkdir -p results
-	poetry run python scripts/summarize_evidence.py
+	uv run python scripts/summarize_evidence.py
 	@echo "Evidence summary generated!"
 
 quality:  ## Run ruff, mypy, pytest
@@ -83,7 +83,7 @@ clean:  ## Clean up cache and temporary files
 
 # Development helpers
 dev-run:  ## Run with hot reload for development
-	poetry run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+	uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
 
 docker-build:  ## Build Docker image
 	docker build -t rag-pipeline:latest .
@@ -92,46 +92,47 @@ docker-logs:  ## Show Docker logs
 	docker compose logs -f api
 
 test:  ## Run pytest with coverage
-	poetry run pytest tests/ -v --cov=src --cov=api --cov-report=term-missing
+	uv run pytest tests/ -v --cov=src --cov=api --cov-report=term-missing
 
 lint:  ## Run linting
-	poetry run ruff check .
+	uv run ruff check .
 
 format:  ## Format code
-	poetry run ruff check --fix .
+	uv run ruff check --fix .
 
 ci-test:  ## Run CI tests locally
 	@echo "Running CI tests locally..."
-	poetry run ruff format --check .
-	poetry run ruff check .
-	poetry run mypy src api --ignore-missing-imports
-	poetry run pytest tests/ -m "not integration" --cov=src --cov=api --cov-report=term
+	uv run ruff format --check .
+	uv run ruff check .
+	uv run mypy src api --ignore-missing-imports
+	uv run pytest tests/ -m "not integration" --cov=src --cov=api --cov-report=term
 	@echo "CI tests passed!"
 
 ci-fix:  ## Fix CI issues automatically
 	@echo "Fixing CI issues..."
-	poetry run ruff format .
-	poetry run ruff check . --fix
+	uv run ruff format .
+	uv run ruff check . --fix
 	@echo "CI issues fixed!"
 
-# Poetry management
-install:  ## Install dependencies with Poetry
-	@echo "Installing dependencies with Poetry..."
-	@poetry install --sync
+# UV management
+install:  ## Install dependencies with uv
+	@echo "Installing dependencies with uv..."
+	@uv sync
 	@echo "Dependencies installed!"
 
 update:  ## Update dependencies
 	@echo "Updating dependencies..."
-	@poetry update
+	@uv lock --upgrade
+	@uv sync
 	@echo "Dependencies updated!"
 
-lock:  ## Regenerate poetry.lock
-	@echo "Regenerating poetry.lock..."
-	@poetry lock
+lock:  ## Regenerate uv.lock
+	@echo "Regenerating uv.lock..."
+	@uv lock
 	@echo "Lock file regenerated!"
 
-shell:  ## Enter Poetry shell
-	@poetry shell
+shell:  ## Enter Python shell with uv
+	@uv run python
 
 show-deps:  ## Show dependency tree
-	@poetry show --tree
+	@uv tree

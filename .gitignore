@@ -26,7 +26,21 @@ venv/
 ENV/
 env/
 .venv/
+.venv*/
 .virtualenv/
+**/venv/
+**/.venv/
+
+# Python Cache & Tools
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+.pytest_cache/
+.coverage
+.hypothesis/
 
 # IDE
 .vscode/
@@ -36,39 +50,44 @@ env/
 *~
 .project
 .pydevproject
+*.code-workspace
 
 # macOS
 .DS_Store
 .AppleDouble
 .LSOverride
+._*
 
 # Windows
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+$RECYCLE.BIN/
 
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
 
 # Testing
-.pytest_cache/
-.coverage
 htmlcov/
 .tox/
-.hypothesis/
-.mypy_cache/
-.ruff_cache/
+*.cover
+.cache
 
 # Data and Models
 .chroma/
+.claude/
+chroma/
 *.db
 *.sqlite
+*.sqlite3
 *.h5
+*.hdf5
 *.pkl
 *.pickle
 *.npy
 *.npz
+*.parquet
 
 # Logs
 *.log
@@ -78,8 +97,13 @@ logs/
 
 # Environment
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+.envrc
+
+# Pre-commit (ignore duplicate configs)
+.pre-commit-config*.yaml
+!.pre-commit-config.yaml
 
 # MLflow
 mlruns/
@@ -93,6 +117,7 @@ benchmarks/locust/*/
 
 # Docker
 docker-compose.override.yml
+.dockerignore
 
 # Monitoring
 prometheus_data/
@@ -105,28 +130,48 @@ temp/
 *.bak
 *.backup
 *.old
+*~
 
 # Generated documentation
 docs/_build/
 site/
+_build/
 
 # Package managers
 node_modules/
 npm-debug.log
 yarn-error.log
+package-lock.json
+yarn.lock
+.pnpm-store/
 
-# Secrets
+# Secrets & Keys
 *.key
 *.pem
 *.crt
 *.p12
 secrets/
+.secret
 
 # Terraform
 *.tfstate
 *.tfstate.*
 .terraform/
+.terraform.lock.hcl
+
+# UV lock file (Python package manager)
+uv.lock
 
 # Output from tools
 /tmp/prometheus_multiproc/
 /Claude.md
+CLAUDE.md
+
+# Local setup files
+LOCAL_SETUP.md
+
+# Python version files
+.python-version
+
+# Pytest
+.pytest_cache/

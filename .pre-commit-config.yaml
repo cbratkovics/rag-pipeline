@@ -1,8 +1,8 @@
 repos:
   - repo: local
     hooks:
-      - id: poetry-check
-        name: Poetry Check
+      - id: uv-check
+        name: UV Environment Check
         entry: .venv/bin/python -m pip check
         language: system
         pass_filenames: false
