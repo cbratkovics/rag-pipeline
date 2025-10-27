@@ -160,7 +160,7 @@ secrets/
 .terraform.lock.hcl
 
 # UV lock file (Python package manager)
-uv.lock
+# uv.lock should be committed to version control
 
 # Output from tools
 /tmp/prometheus_multiproc/
