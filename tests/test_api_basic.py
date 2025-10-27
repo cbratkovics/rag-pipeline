@@ -7,6 +7,7 @@ from api.main import app
 @pytest.fixture
 def client():
     """Create test client."""
+    # TestClient expects app as first positional argument
     return TestClient(app)
 
 

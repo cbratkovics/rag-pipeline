@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: uv-check
         name: UV Environment Check
-        entry: uv run python -c "print('✓ UV environment is working')"
+        entry: uv run python -m pip check
         language: system
         pass_filenames: false
         always_run: true

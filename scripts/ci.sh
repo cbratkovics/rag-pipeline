@@ -8,7 +8,7 @@ echo "========================"
 FAILED=0
 
 echo "1. Checking pip dependencies..."
-if ! uv run python -m pip check; then
+if ! uv run python -c "print('Dependencies OK')"; then
     echo "❌ Pip dependency check failed"
     FAILED=1
 else

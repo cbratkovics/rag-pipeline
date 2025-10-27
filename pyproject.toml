@@ -137,6 +137,9 @@ markers = [
     "unit: marks tests as unit tests",
     "slow: marks tests as slow",
     "asyncio: marks tests as asyncio tests",
+    "optional: marks tests requiring optional dependencies",
+    "requires_langchain: requires langchain_openai package",
+    "requires_qdrant: requires qdrant_client package",
 ]
 
 [tool.coverage.run]
