@@ -1,49 +1,16 @@
 services:
-  # FastAPI Backend
   - type: web
     name: rag-pipeline-api
     env: python
     region: oregon
-    plan: starter  # $7/month - upgrade to standard for production
-    buildCommand: "pip install poetry && poetry install --only main"
-    startCommand: "poetry run uvicorn api.main:app --host 0.0.0.0 --port $PORT"
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.12.0
-      - key: POETRY_VERSION
-        value: 1.7.0
-      - key: APP_ENV
-        value: production
-      - key: LOG_LEVEL
-        value: INFO
-      - key: CORS_ORIGINS
-        value: '["https://your-app.vercel.app"]'  # Update with actual Vercel URL
-      - key: LLM_PROVIDER
-        value: stub  # Change to "openai" when OPENAI_API_KEY is set
-      - key: EMBEDDING_MODEL
-        value: all-MiniLM-L6-v2
-      - key: CHROMA_PERSIST_DIR
-        value: /opt/render/project/.chroma
-      - key: HYBRID_WEIGHT_BM25
-        value: '0.5'
-      - key: HYBRID_WEIGHT_VECTOR
-        value: '0.5'
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: rag-pipeline-redis
-          property: connectionString
-      - key: OPENAI_API_KEY
-        sync: false  # Set manually in Render dashboard
-      - key: OPENAI_MODEL
-        value: gpt-3.5-turbo
-    healthCheckPath: /healthz
-    autoDeploy: true
-
-  # Redis Cache
+    buildCommand: |
+      pip install --upgrade pip
+      pip install "poetry==2.2.1"
+      poetry config virtualenvs.create false
+      poetry lock --no-update
+      poetry install --only main --no-interaction --no-ansi
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
   - type: redis
     name: rag-pipeline-redis
-    region: oregon
-    plan: starter  # Free tier available
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: []  # Empty = allow all (restrict in production)
+    ipAllowList: []
+    plan: starter
