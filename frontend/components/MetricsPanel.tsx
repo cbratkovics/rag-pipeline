@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Clock, DollarSign, FileText, Zap } from 'lucide-react'
 import type { QueryResponse } from '@/types'
-import { formatDuration, formatCost, formatNumber, estimateOpenAICost } from '@/lib/api'
+import { estimateOpenAICost } from '@/lib/api'
+import { formatDuration, formatCost, formatNumber } from '@/lib/utils'
 
 interface MetricsPanelProps {
   result: QueryResponse
