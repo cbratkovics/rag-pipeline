@@ -22,11 +22,17 @@ export default function Diagnostics() {
         results.push({ label: "CORS preflight", ok: false, detail: String(e) });
       }
       try {
-        const r = await fetch(`${API_BASE_URL}/api/health`, { mode: "cors" });
+        // Try the actual health endpoint
+        const r = await fetch(`${API_BASE_URL}/healthz`, {
+          mode: "cors",
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
         results.push({
           label: "API health",
           ok: r.ok,
-          detail: `HTTP ${r.status}`,
+          detail: r.ok ? "Connected" : `HTTP ${r.status}`,
         });
       } catch (e: any) {
         results.push({ label: "API health", ok: false, detail: String(e) });

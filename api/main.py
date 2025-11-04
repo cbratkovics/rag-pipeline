@@ -1,5 +1,6 @@
 import os
 import time
+import warnings
 
 import uvicorn
 from dotenv import load_dotenv
@@ -22,6 +23,8 @@ from prometheus_client import (
 from pydantic import BaseModel, Field
 
 from src.rag.pipeline import answer_query
+
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="opentelemetry")
 
 load_dotenv()
 
@@ -114,6 +117,15 @@ def healthz() -> dict:
         status="success",
     ).inc()
     return {"status": "ok"}
+
+
+@app.get("/health")
+def health() -> dict:
+    REQUEST_COUNT.labels(
+        endpoint="/health",
+        status="success",
+    ).inc()
+    return {"status": "healthy", "service": "rag-pipeline"}
 
 
 @app.get("/metrics")

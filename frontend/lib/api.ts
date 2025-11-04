@@ -59,10 +59,20 @@ export async function queryRAG(params: QueryRequest): Promise<QueryResponse> {
 // Health check function
 export async function checkHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/healthz`)
-    return response.ok
+    // Try multiple endpoints for compatibility
+    const endpoints = ['/healthz', '/health', '/api/health'];
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`);
+        if (response.ok) return true;
+      } catch {
+        // Continue to next endpoint
+      }
+    }
+    return false;
   } catch {
-    return false
+    return false;
   }
 }
 

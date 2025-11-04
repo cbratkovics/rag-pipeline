@@ -10,9 +10,12 @@ services:
       poetry lock --no-update
       poetry install --only main --no-interaction --no-ansi
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
     envVars:
       - key: FRONTEND_CORS_ORIGINS
         value: https://rag-pipeline-eta.vercel.app,https://*.vercel.app,http://localhost:3000
+      - key: FRONTEND_CORS_ORIGIN_REGEX
+        value: https://.*\.vercel\.app
   - type: redis
     name: rag-pipeline-redis
     ipAllowList: []
