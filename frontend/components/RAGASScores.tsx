@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,25 @@ interface RAGASScoresProps {
 }
 
 export function RAGASScores({ metrics }: RAGASScoresProps) {
+  const [liveMetrics, setLiveMetrics] = useState<any>(null)
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/metrics/ragas`)
+        if (res.ok) {
+          const data = await res.json()
+          setLiveMetrics(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch RAGAS metrics:', error)
+      }
+    }
+
+    fetchMetrics()
+    const interval = setInterval(fetchMetrics, 60000)
+    return () => clearInterval(interval)
+  }, [])
   // Mock RAGAS metrics for demo purposes
   // In production, these would come from the backend
   const defaultMetrics: RAGASMetrics = {

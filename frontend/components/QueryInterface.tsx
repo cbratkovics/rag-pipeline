@@ -15,8 +15,8 @@ interface QueryInterfaceProps {
 }
 
 export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
-  const [question, setQuestion] = useState('')
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [question, setQuestion] = useState('Explain the differences between semantic search and keyword search in modern RAG systems')
+  const [showAdvanced, setShowAdvanced] = useState(true)
   const [variant, setVariant] = useState<ABVariant>('auto')
 
   // Query parameters with defaults matching backend
