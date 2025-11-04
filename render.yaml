@@ -5,18 +5,31 @@ services:
     region: oregon
     buildCommand: |
       pip install --upgrade pip
-      pip install "poetry==2.2.1"
-      poetry config virtualenvs.create false
-      poetry lock --no-update
-      poetry install --only main --no-interaction --no-ansi
+      pip install uv==0.5.1
+      uv pip install --system --no-cache -r requirements.txt
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
       - key: FRONTEND_CORS_ORIGINS
         value: https://rag-pipeline-eta.vercel.app,https://*.vercel.app,http://localhost:3000
       - key: FRONTEND_CORS_ORIGIN_REGEX
         value: https://.*\.vercel\.app
+      - key: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
+        value: python
+      - key: CHROMA_PERSIST_DIR
+        value: /opt/render/project/.chroma
+      - key: LLM_PROVIDER
+        value: stub
+      - key: EMBEDDING_MODEL
+        value: all-MiniLM-L6-v2
+      - key: HYBRID_WEIGHT_BM25
+        value: "0.5"
+      - key: HYBRID_WEIGHT_VECTOR
+        value: "0.5"
   - type: redis
     name: rag-pipeline-redis
     ipAllowList: []
     plan: starter
+    maxmemoryPolicy: allkeys-lru
