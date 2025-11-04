@@ -56,10 +56,11 @@ ERROR_COUNT = Counter(
     ["endpoint", "error_type"],
 )
 
-trace.set_tracer_provider(TracerProvider())
+
+tracer_provider = TracerProvider()
+trace.set_tracer_provider(tracer_provider)
 span_processor = BatchSpanProcessor(ConsoleSpanExporter())
-provider = trace.get_tracer_provider()
-provider.add_span_processor(span_processor)  # type: ignore[misc]
+tracer_provider.add_span_processor(span_processor)
 FastAPIInstrumentor.instrument_app(app)
 
 
