@@ -1,7 +1,7 @@
 services:
   - type: web
     name: rag-pipeline-api
-    env: python
+    runtime: python
     region: oregon
     buildCommand: |
       pip install --upgrade pip
@@ -10,6 +10,9 @@ services:
       poetry lock --no-update
       poetry install --only main --no-interaction --no-ansi
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: FRONTEND_CORS_ORIGINS
+        value: https://rag-pipeline-eta.vercel.app,https://*.vercel.app,http://localhost:3000
   - type: redis
     name: rag-pipeline-redis
     ipAllowList: []

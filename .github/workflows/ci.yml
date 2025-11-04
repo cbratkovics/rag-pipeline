@@ -15,5 +15,5 @@ jobs:
       - run: poetry install --with dev
       - run: poetry run ruff format --check .
       - run: poetry run ruff check --output-format=github .
-      - run: poetry run mypy src api
+      - run: poetry run mypy api src
       - run: poetry run pytest -q
