@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Github, AlertCircle, RefreshCw } from 'lucide-react'
+import { Github } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { QueryInterface } from '@/components/QueryInterface'
 import { ResultsDisplay } from '@/components/ResultsDisplay'
 import { MetricsPanel } from '@/components/MetricsPanel'

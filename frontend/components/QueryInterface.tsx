@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Settings, Loader2 } from 'lucide-react'
+import { Search } from 'lucide-react'
+import { Settings } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

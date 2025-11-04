@@ -2,7 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Clock, DollarSign, FileText, Zap } from 'lucide-react'
+import { Clock } from 'lucide-react'
+import { DollarSign } from 'lucide-react'
+import { FileText } from 'lucide-react'
+import { Zap } from 'lucide-react'
 import type { QueryResponse } from '@/types'
 import { estimateOpenAICost } from '@/lib/api'
 import { formatDuration, formatCost, formatNumber } from '@/lib/utils'

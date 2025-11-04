@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Activity, Database, Zap, Server } from 'lucide-react'
+import { Activity } from 'lucide-react'
+import { Database } from 'lucide-react'
+import { Zap } from 'lucide-react'
+import { Server } from 'lucide-react'
 
 export function SystemStatus() {
   const [status, setStatus] = useState({
