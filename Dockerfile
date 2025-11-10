@@ -12,16 +12,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install Poetry
-RUN pip install --no-cache-dir --no-compile poetry==1.7.1
+# Install uv
+RUN pip install --no-cache-dir --no-compile uv==0.5.1
 
 # Copy dependency files
-COPY pyproject.toml poetry.lock* ./
+COPY pyproject.toml uv.lock* ./
 
 # Install dependencies
-RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi --no-root --only main \
-    && rm -rf ~/.cache/pypoetry /tmp/* /var/tmp/* \
+RUN uv sync --frozen --no-dev \
+    && rm -rf /tmp/* /var/tmp/* \
     && find /usr/local -type f -name '*.pyc' -delete \
     && find /usr/local -type d -name '__pycache__' -delete
 
