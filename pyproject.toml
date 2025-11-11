@@ -153,3 +153,11 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "pass",
 ]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "pytest>=7.4.4",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.14.4",
+]

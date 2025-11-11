@@ -4081,6 +4081,14 @@ dev = [
     { name = "types-requests" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.7.5" },
@@ -4129,6 +4137,14 @@ requires-dist = [
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.24.0" },
 ]
 provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.18.2" },
+    { name = "pytest", specifier = ">=7.4.4" },
+    { name = "pytest-cov", specifier = ">=4.1.0" },
+    { name = "ruff", specifier = ">=0.14.4" },
+]
 
 [[package]]
 name = "ragas"
