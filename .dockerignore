@@ -1,25 +1,26 @@
 # Python
 __pycache__/
+*.pyc
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-venv/
-ENV/
-.venv
 .pytest_cache/
 .coverage
-htmlcov/
-.tox/
 .mypy_cache/
 .ruff_cache/
+*.egg-info/
+.venv/
+venv/
+env/
+ENV/
 
-# Jupyter
-.ipynb_checkpoints
-*.ipynb
+# Git
+.git/
+.github/
+.gitignore
 
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -27,24 +28,12 @@ htmlcov/
 *~
 .DS_Store
 
-# Git
-.git/
-.gitignore
-.github/
-
 # Documentation
 docs/
 *.md
 !README.md
 
-# Tests
-tests/
-test_*.py
-*_test.py
-coverage.xml
-.coverage.*
-
-# Data
+# Data and databases
 data/*
 !data/.gitkeep
 *.db
@@ -57,44 +46,34 @@ data/*
 logs/
 *.log
 
-# Environment
-.env
-.env.*
-!.env.example
-
-# Build
-dist/
-build/
-*.egg-info/
-*.whl
-*.tar.gz
-
-# MLflow
-mlruns/
-
-# Notebooks
-notebooks/
+# Tests
+tests/
+coverage.xml
+.coverage.*
 
 # CI/CD
-.github/
+.pre-commit-config.yaml
 .gitlab-ci.yml
 .circleci/
-
-# Cache
-*.pyc
-__pycache__/
-.cache/
-pip-wheel-metadata/
 
 # Development
 *.orig
 *.rej
 *.bak
 *.tmp
-.pre-commit-config.yaml
 
-# Docker
-Dockerfile
-docker-compose.yml
-docker-compose*.yml
-Dockerfile.*
+# Large directories
+notebooks/
+mlruns/
+node_modules/
+dist/
+build/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Cache
+pip-wheel-metadata/
+.cache/
