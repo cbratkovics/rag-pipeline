@@ -282,13 +282,13 @@ export async function runDiagnostics(): Promise<SystemDiagnostics> {
   try {
     const testQuery: QueryRequest = {
       question: 'What is RAG?',
-      top_k: 3,
+      k: 3,
     }
 
     const result = await queryRAG(testQuery, 0) // No retries for diagnostic
 
     // Check if scores are non-zero
-    const hasNonZeroScores = result.scores?.hybrid?.some(s => s > 0) || false
+    const hasNonZeroScores = (result.scores?.hybrid && result.scores.hybrid > 0) || false
 
     checks.push({
       name: 'Query Test',
@@ -299,7 +299,7 @@ export async function runDiagnostics(): Promise<SystemDiagnostics> {
       details: {
         contextCount: result.contexts?.length || 0,
         hasAnswer: !!result.answer,
-        sampleScores: result.scores?.hybrid?.slice(0, 3) || [],
+        sampleScores: result.scores ? [result.scores.hybrid || 0, result.scores.bm25 || 0, result.scores.vector || 0] : [],
       },
       timestamp,
     })
