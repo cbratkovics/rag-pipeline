@@ -12,15 +12,22 @@ import { RAGASScores } from '@/components/RAGASScores'
 import { SourceCitations } from '@/components/SourceCitations'
 import { SystemStatus } from '@/components/SystemStatus'
 import { HybridSearchBreakdown } from '@/components/HybridSearchBreakdown'
+import { QueryHistory } from '@/components/QueryHistory'
+import { ABTestPanel } from '@/components/ABTestPanel'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { MetricsProvider, useMetrics } from '@/contexts/MetricsContext'
 import { queryRAG, RAGAPIError } from '@/lib/api'
 import type { QueryParams, ABVariant, QueryResponse } from '@/types'
 
-export default function Home() {
+function HomeContent() {
+
   const [currentResult, setCurrentResult] = useState<QueryResponse | null>(null)
   const [currentProvider, setCurrentProvider] = useState<'stub' | 'openai'>('stub')
+  const [currentQuestion, setCurrentQuestion] = useState<string>('')
+  const [currentVariant, setCurrentVariant] = useState<ABVariant>('baseline')
   const [error, setError] = useState<string | null>(null)
+  const metrics = useMetrics()
 
   // React Query mutation for API calls
   const mutation = useMutation({
@@ -33,6 +40,7 @@ export default function Home() {
       variant: ABVariant
     }) => {
       setError(null)
+      setCurrentQuestion(question)
       return await queryRAG({
         question,
         k: params.k,
@@ -42,10 +50,15 @@ export default function Home() {
         provider: params.provider,
       })
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setCurrentResult(data)
+      // Record in metrics context
+      metrics.addQuery(data, variables.question, variables.params.provider)
+      // Simulate cache miss for demo purposes (in production, this would come from API)
+      metrics.recordCacheMiss()
     },
     onError: (error: Error) => {
+      metrics.recordError()
       if (error instanceof RAGAPIError) {
         setError(`${error.message} (${error.status || 'Unknown'})`)
       } else {
@@ -56,7 +69,18 @@ export default function Home() {
 
   const handleQuery = (question: string, params: QueryParams, variant: ABVariant) => {
     setCurrentProvider(params.provider)
+    setCurrentVariant(variant)
     mutation.mutate({ question, params, variant })
+  }
+
+  const handleRerunQuery = (question: string) => {
+    handleQuery(question, {
+      k: 4,
+      top_k_bm25: 8,
+      top_k_vec: 8,
+      rrf_k: 60,
+      provider: currentProvider
+    }, currentVariant)
   }
 
   const handleRetry = () => {
@@ -211,17 +235,23 @@ export default function Home() {
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column: Answer & Sources */}
               <div className="lg:col-span-2 space-y-6">
-                <HybridSearchBreakdown />
+                <HybridSearchBreakdown result={currentResult} />
                 <ResultsDisplay result={currentResult} />
                 <SourceCitations result={currentResult} />
               </div>
 
-              {/* Right Column: RAGAS Scores */}
-              <div className="lg:col-span-1">
-                <div className="lg:sticky lg:top-24">
-                  <RAGASScores />
+              {/* Right Column: RAGAS Scores & A/B Testing */}
+              <div className="lg:col-span-1 space-y-6">
+                <div className="lg:sticky lg:top-24 space-y-6">
+                  <RAGASScores result={currentResult} question={currentQuestion} />
+                  <ABTestPanel currentVariant={currentVariant} />
                 </div>
               </div>
+            </section>
+
+            {/* Query History */}
+            <section>
+              <QueryHistory onRerun={handleRerunQuery} />
             </section>
           </>
         )}
@@ -313,5 +343,13 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <MetricsProvider>
+      <HomeContent />
+    </MetricsProvider>
   )
 }

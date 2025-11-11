@@ -109,3 +109,25 @@ export interface ScoreData {
   bm25?: number;
   vector?: number;
 }
+
+// Metrics Context State
+export interface MetricsState {
+  queries: QueryResult[];
+  cacheHits: number;
+  cacheMisses: number;
+  totalQueries: number;
+  avgLatency: number;
+  errorCount: number;
+  lastUpdated: Date;
+  totalTokens: number;
+  totalCost: number;
+}
+
+// Historical Query Entry
+export interface HistoricalQuery {
+  id: string;
+  question: string;
+  result: QueryResult;
+  timestamp: Date;
+  provider: 'stub' | 'openai';
+}
