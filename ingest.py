@@ -1,5 +1,4 @@
 import requests
-import json
 
 # Your Render API URL
 API_URL = "https://rag-pipeline-api-hksb.onrender.com"
