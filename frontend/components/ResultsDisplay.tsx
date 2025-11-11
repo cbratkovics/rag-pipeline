@@ -1,9 +1,10 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import type { QueryResponse } from '@/types'
 
 interface ResultsDisplayProps {
-  result: any
+  result: QueryResponse
 }
 
 export function ResultsDisplay({ result }: ResultsDisplayProps) {

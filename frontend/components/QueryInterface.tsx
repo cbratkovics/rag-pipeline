@@ -3,19 +3,10 @@
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
-
-interface QueryParams {
-  k: number
-  top_k_bm25?: number
-  top_k_vec?: number
-  rrf_k?: number
-  provider: 'stub' | 'openai'
-}
-
-type ABVariant = 'baseline' | 'reranked' | 'hybrid' | 'auto'
+import type { QueryParams, ABVariant } from '@/types'
 
 interface QueryInterfaceProps {
-  onSubmit: (query: string, params: QueryParams, variant: ABVariant) => void
+  onSubmit: (question: string, params: QueryParams, variant: ABVariant) => void
   isLoading?: boolean
 }
 
@@ -25,7 +16,13 @@ export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
-      onSubmit(query, { k: 4, provider: 'stub' }, 'baseline')
+      onSubmit(query, {
+        k: 4,
+        top_k_bm25: 8,
+        top_k_vec: 8,
+        rrf_k: 60,
+        provider: 'stub'
+      }, 'baseline')
     }
   }
 

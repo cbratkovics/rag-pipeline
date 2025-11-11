@@ -1,9 +1,10 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import type { RAGASMetrics } from '@/types'
 
 interface RAGASScoresProps {
-  metrics?: any
+  metrics?: RAGASMetrics
 }
 
 export function RAGASScores({ metrics }: RAGASScoresProps) {

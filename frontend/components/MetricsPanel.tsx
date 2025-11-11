@@ -1,9 +1,10 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import type { QueryResponse } from '@/types'
 
 interface MetricsPanelProps {
-  result?: any
+  result?: QueryResponse
   provider?: string
 }
 
