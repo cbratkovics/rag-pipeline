@@ -11,11 +11,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install uv
 RUN pip install --no-cache-dir uv==0.5.1
 
-# Copy dependency files
-COPY pyproject.toml uv.lock* requirements.txt* ./
+# Copy dependency files and README (required by hatchling build backend)
+COPY pyproject.toml uv.lock ./
+COPY README.md ./
 
-# Try uv first, fallback to pip
-RUN uv sync --frozen --no-dev || pip install -r requirements.txt
+# Install dependencies using uv (frozen lockfile, production only)
+RUN uv sync --frozen --no-dev --compile-bytecode
 
 # Production stage
 FROM python:3.12-slim
@@ -27,8 +28,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy from builder
+# Copy Python and uv from builder
 COPY --from=builder /usr/local /usr/local
+
+# Copy virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
 
 # Copy app code
 COPY api/ ./api/
@@ -41,8 +45,11 @@ RUN useradd -m -u 1000 raguser && \
 
 USER raguser
 
+# Use virtual environment
+ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV VIRTUAL_ENV=/app/.venv
 
 EXPOSE 8000
 
