@@ -1,7 +1,7 @@
 {
   "framework": "nextjs",
   "buildCommand": "NODE_OPTIONS='--max-old-space-size=512' npm run build",
-  "installCommand": "npm install --production=false",
+  "installCommand": "npm install --omit=dev",
   "devCommand": "npm run dev",
   "outputDirectory": ".next",
   "rewrites": [
