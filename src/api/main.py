@@ -12,7 +12,7 @@ from src.api.middleware import (
     add_process_time,
     rate_limit_middleware,
 )
-from src.api.routers import experiments, feedback, health, metrics, query
+from src.api.routers import admin, experiments, feedback, health, metrics, query
 from src.core.config import get_settings
 from src.infrastructure.cache import cache_manager
 from src.infrastructure.database import db_manager
@@ -82,11 +82,18 @@ app.include_router(experiments.router, prefix="/api/v1", tags=["Experiments"])
 app.include_router(feedback.router, prefix="/api/v1", tags=["Feedback"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Metrics"])
 app.include_router(health.router, prefix="/api/v1", tags=["Health"])
+app.include_router(admin.router, prefix="/api/v1", tags=["Admin"])
 
 # Mount Prometheus metrics endpoint
 if settings.prometheus_enabled:
     metrics_app = make_asgi_app()
     app.mount("/metrics", metrics_app)
+
+
+@app.get("/healthz")
+async def healthz():
+    """Simple health check endpoint for frontend compatibility."""
+    return {"status": "ok", "service": "rag-pipeline"}
 
 
 @app.get("/", response_class=HTMLResponse)

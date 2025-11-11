@@ -278,4 +278,38 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Get cached settings instance."""
-    return Settings()
+    import logging
+
+    settings = Settings()
+
+    # Log configuration on first access (with sensitive values masked)
+    logger = logging.getLogger(__name__)
+    logger.info("=" * 80)
+    logger.info("CONFIGURATION LOADED")
+    logger.info("=" * 80)
+    logger.info(f"App Name: {settings.app_name}")
+    logger.info(f"App Environment: {settings.app_env}")
+    logger.info(f"Debug Mode: {settings.debug}")
+    logger.info(f"Log Level: {settings.log_level}")
+    logger.info(f"API Host: {settings.api_host}")
+    logger.info(f"API Port: {settings.api_port}")
+    logger.info(f"CORS Origins: {settings.cors_origins}")
+    logger.info(f"Vector Store Type: {settings.vector_store_type}")
+    logger.info(f"Embedding Model: {settings.embedding_model}")
+    logger.info(f"Embedding Dimension: {settings.embedding_dimension}")
+    logger.info(f"LLM Provider: {settings.llm_provider}")
+
+    if settings.openai_api_key:
+        logger.info(f"OpenAI API Key: {'*' * 20} (set)")
+    else:
+        logger.info("OpenAI API Key: (not set)")
+
+    logger.info(f"Search Top-K: {settings.search_top_k}")
+    logger.info(f"Final Top-K: {settings.final_top_k}")
+    logger.info(f"Hybrid Search Alpha: {settings.hybrid_search_alpha}")
+    logger.info(f"RAGAS Enabled: {settings.ragas_enabled}")
+    logger.info(f"A/B Testing Enabled: {settings.ab_test_enabled}")
+    logger.info(f"Rate Limiting Enabled: {settings.rate_limit_enabled}")
+    logger.info("=" * 80)
+
+    return settings
