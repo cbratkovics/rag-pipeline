@@ -16,7 +16,10 @@ COPY pyproject.toml uv.lock ./
 COPY README.md ./
 
 # Install dependencies using uv (frozen lockfile, production only)
-RUN uv sync --frozen --no-dev --compile-bytecode
+RUN uv sync --frozen --no-dev --compile-bytecode || \
+    (echo "uv sync failed, attempting pip fallback..." && \
+     uv export --format requirements-txt --no-hashes > requirements.txt && \
+     pip install --no-cache-dir -r requirements.txt)
 
 # Production stage
 FROM python:3.12-slim

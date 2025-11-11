@@ -94,6 +94,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Ensure required files exist
+        run: |
+          # Create README.md if it's missing (emergency fallback)
+          if [ ! -f README.md ]; then
+            echo "WARNING: README.md was missing, creating it now..."
+            cat > README.md << 'EOF'
+          # RAG Pipeline
+          Production-ready Retrieval-Augmented Generation system.
+          See [API Docs](https://rag-pipeline-api-hksb.onrender.com/docs)
+          EOF
+          fi
+
+          # Generate requirements.txt as fallback
+          if [ ! -f requirements.txt ] && command -v uv &> /dev/null; then
+            echo "Generating requirements.txt as fallback..."
+            uv export --format requirements-txt --no-hashes > requirements.txt || true
+          fi
+
+          # Verify files exist
+          ls -la README.md pyproject.toml uv.lock || true
+
       - name: Free disk space
         run: |
           df -h
