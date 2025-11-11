@@ -139,7 +139,7 @@ uv run mypy src api
 #### 4. Run Application
 ```bash
 # Start API server
-uv run uvicorn api.main:app --reload
+uv run uvicorn src.api.main:app --reload
 
 # Run ingestion
 uv run python -m src.rag.ingest
@@ -246,7 +246,7 @@ poetry lock --no-update
 ### Backend (On Linux/CI)
 - [ ] `docker build` - Should succeed with Python 3.12
 - [ ] `pytest tests/` - All tests pass
-- [ ] API starts: `uvicorn api.main:app`
+- [ ] API starts: `uvicorn src.api.main:app`
 
 ### Backend (On macOS - Workaround)
 - [ ] Use Poetry with Python 3.11 OR

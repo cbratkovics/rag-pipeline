@@ -24,7 +24,7 @@ ingest:  ## Build local Chroma index from data/seed
 run:  ## Run API locally with uvicorn
 	@echo "Starting RAG API server..."
 	@mkdir -p /tmp/prometheus_multiproc
-	uv run uvicorn api.main:app --host 0.0.0.0 --port 8000
+	uv run uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 
 eval:  ## Run RAGAS evaluation and log to MLflow
 	@echo "Running RAGAS evaluation..."
@@ -83,7 +83,7 @@ clean:  ## Clean up cache and temporary files
 
 # Development helpers
 dev-run:  ## Run with hot reload for development
-	uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+	uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 
 docker-build:  ## Build Docker image
 	docker build -t rag-pipeline:latest .

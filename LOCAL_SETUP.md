@@ -99,10 +99,10 @@ uv run mypy src api --ignore-missing-imports
 
 ```bash
 # Run API server
-uv run uvicorn api.main:app --host 0.0.0.0 --port 8000
+uv run uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 
 # Run with hot reload (development)
-uv run uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Other Operations
