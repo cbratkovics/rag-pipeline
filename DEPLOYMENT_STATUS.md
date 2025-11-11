@@ -228,8 +228,8 @@ Total: 6/6 tests passed
    ```
    CHROMA_PERSIST_DIR=/opt/render/project/.chroma
    EMBEDDING_MODEL=all-MiniLM-L6-v2
-   LLM_PROVIDER=stub  # or openai
-   OPENAI_API_KEY=<your-key>  # if using OpenAI
+   OPENAI_API_KEY=<your-key>  # REQUIRED for production
+   OPENAI_MODEL=gpt-3.5-turbo
    CORS_ORIGINS=["https://rag-pipeline-eta.vercel.app", "https://*.vercel.app"]
    ```
 
@@ -338,9 +338,9 @@ npm run dev
    - Implement document versioning
    - Add document management endpoints
 
-3. **LLM Provider:** Currently using "stub" provider (returns templated responses). For real answers:
-   - Set `LLM_PROVIDER=openai` in environment variables
-   - Provide `OPENAI_API_KEY`
+3. **LLM Provider:** Production system uses OpenAI exclusively. Required:
+   - Set `OPENAI_API_KEY` in environment variables (REQUIRED)
+   - Optionally configure `OPENAI_MODEL` (defaults to gpt-3.5-turbo)
 
 ---
 

@@ -32,8 +32,8 @@
 ### Environment Variables
 - [ ] `CORS_ORIGINS` - Set to frontend URL
 - [ ] `REDIS_URL` - Auto-configured from Redis service
-- [ ] `OPENAI_API_KEY` - Set manually (if using OpenAI)
-- [ ] `LLM_PROVIDER` - Set to "stub" or "openai"
+- [ ] `OPENAI_API_KEY` - **REQUIRED** Set manually in Render dashboard
+- [ ] `OPENAI_MODEL` - Set to "gpt-3.5-turbo" (or custom model)
 - [ ] `EMBEDDING_MODEL` - Set to model name
 - [ ] `CHROMA_PERSIST_DIR` - Set to `/opt/render/project/.chroma`
 - [ ] `PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION` - Set to `python`

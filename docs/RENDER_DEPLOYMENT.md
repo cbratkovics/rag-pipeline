@@ -131,17 +131,17 @@ curl -X POST https://rag-pipeline-api.onrender.com/api/v1/ingest
 ### OpenAI API Errors
 - Verify `OPENAI_API_KEY` is set correctly
 - Check API key has sufficient credits
-- System will fall back to StubLLM if OpenAI fails
+- System will fail to start without valid OpenAI API key (production requirement)
 
 ## Environment Variables Reference
 
 ### Required
 - `CORS_ORIGINS` - Array of allowed frontend URLs
 - `REDIS_URL` - Redis connection string (auto-set by Render)
+- `OPENAI_API_KEY` - **REQUIRED** OpenAI API key for production LLM
 
 ### Optional
-- `OPENAI_API_KEY` - OpenAI API key (only if using OpenAI provider)
-- `LLM_PROVIDER` - "stub" or "openai" (default: "stub")
+- `OPENAI_MODEL` - OpenAI model name (default: "gpt-3.5-turbo")
 - `EMBEDDING_MODEL` - Sentence transformer model (default: "all-MiniLM-L6-v2")
 - `HYBRID_WEIGHT_BM25` - BM25 weight for fusion (default: 0.5)
 - `HYBRID_WEIGHT_VECTOR` - Vector weight for fusion (default: 0.5)

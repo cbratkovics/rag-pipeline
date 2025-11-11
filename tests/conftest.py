@@ -19,7 +19,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 # Set ALL required environment variables for testing
-os.environ.setdefault("LLM_PROVIDER", "stub")
 os.environ.setdefault("RAGAS_ENABLED", "false")
 os.environ.setdefault("VECTOR_STORE_TYPE", "qdrant")
 os.environ.setdefault("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
@@ -33,10 +32,9 @@ os.environ.setdefault("POSTGRES_PASSWORD", "test_password")
 os.environ.setdefault("API_HOST", "127.0.0.1")
 os.environ.setdefault("API_PORT", "8000")
 
-# Additional environment variables for complete configuration
-os.environ.setdefault("OPENAI_API_KEY", "test-openai-key")
-os.environ.setdefault("ANTHROPIC_API_KEY", "test-anthropic-key")
-os.environ.setdefault("GEMINI_API_KEY", "test-gemini-key")
+# OpenAI configuration - REQUIRED for production (mocked in tests)
+os.environ.setdefault("OPENAI_API_KEY", "sk-test-key-for-testing-only")
+os.environ.setdefault("OPENAI_MODEL", "gpt-3.5-turbo")
 os.environ.setdefault("CHROMA_PATH", "/tmp/test_chroma")
 os.environ.setdefault("RERANKING_ENABLED", "false")
 os.environ.setdefault("HYDE_ENABLED", "false")
@@ -49,6 +47,32 @@ os.environ.setdefault("MLFLOW_TRACKING_URI", "file:///tmp/mlflow")
 os.environ.setdefault("PROMETHEUS_ENABLED", "false")
 os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 os.environ.setdefault("CORS_ORIGINS", '["*"]')
+
+
+@pytest.fixture(autouse=True)
+def mock_openai_for_tests():
+    """Always mock OpenAI in tests to avoid API costs."""
+    # Mock ChatOpenAI from langchain_openai
+    with patch("langchain_openai.ChatOpenAI") as mock_openai:
+        mock_instance = MagicMock()
+
+        # Mock ainvoke for async calls
+        async def mock_ainvoke(messages, *args, **kwargs):
+            if isinstance(messages, str):
+                content = "Test response from mocked OpenAI"
+            else:
+                content = "Test response from mocked OpenAI"
+
+            mock_response = MagicMock()
+            mock_response.content = content
+            return mock_response
+
+        mock_instance.ainvoke = mock_ainvoke
+        mock_instance.invoke = MagicMock(return_value=MagicMock(content="Test response"))
+        mock_instance.predict = MagicMock(return_value="Test response")
+
+        mock_openai.return_value = mock_instance
+        yield mock_instance
 
 
 @pytest.fixture(autouse=True)
@@ -202,56 +226,41 @@ async def async_test_client(test_app, mock_rag_pipeline) -> AsyncGenerator[Async
 @pytest.fixture
 def test_src_app():
     """Create test FastAPI app for src/api/main.py."""
-    # Change LLM_PROVIDER to a supported one temporarily
-    old_provider = os.environ.get("LLM_PROVIDER", "stub")
-    os.environ["LLM_PROVIDER"] = "openai"
+    # Mock vector store
+    with patch("src.retrieval.vector_store.QdrantVectorStore") as mock_qdrant_class:
+        mock_vector_instance = AsyncMock()
+        mock_vector_instance.initialize = AsyncMock(return_value=None)
+        mock_vector_instance.search = AsyncMock(return_value=[])
+        mock_qdrant_class.return_value = mock_vector_instance
 
-    try:
-        # Mock OpenAI client to avoid actual API calls
-        with patch("src.llm.openai_client.OpenAIClient") as mock_openai_class:
-            mock_llm_instance = MagicMock()
-            mock_llm_instance.generate = AsyncMock(return_value="Test response")
-            mock_llm_instance.embed = AsyncMock(return_value=[0.1] * 768)
-            mock_openai_class.return_value = mock_llm_instance
+        # Mock the rag_pipeline instance after it's created
+        with patch("src.retrieval.rag_pipeline.rag_pipeline") as mock_rag:
+            mock_rag.process_query = AsyncMock(
+                return_value={
+                    "answer": "Test answer",
+                    "sources": [],
+                    "confidence_score": 0.9,
+                    "processing_time_ms": 100,
+                    "token_count": 50,
+                    "cost_usd": 0.001,
+                }
+            )
 
-            # Mock vector store
-            with patch("src.retrieval.vector_store.QdrantVectorStore") as mock_qdrant_class:
-                mock_vector_instance = AsyncMock()
-                mock_vector_instance.initialize = AsyncMock(return_value=None)
-                mock_vector_instance.search = AsyncMock(return_value=[])
-                mock_qdrant_class.return_value = mock_vector_instance
+            with patch("src.infrastructure.database.db_manager") as mock_db:
+                mock_db.initialize = AsyncMock(return_value=None)
+                mock_db.close = AsyncMock(return_value=None)
 
-                # Mock the rag_pipeline instance after it's created
-                with patch("src.retrieval.rag_pipeline.rag_pipeline") as mock_rag:
-                    mock_rag.process_query = AsyncMock(
-                        return_value={
-                            "answer": "Test answer",
-                            "sources": [],
-                            "confidence_score": 0.9,
-                            "processing_time_ms": 100,
-                            "token_count": 50,
-                            "cost_usd": 0.001,
-                        }
-                    )
+                with patch("src.infrastructure.cache.cache_manager") as mock_cache:
+                    mock_cache.initialize = AsyncMock(return_value=None)
+                    mock_cache.close = AsyncMock(return_value=None)
 
-                    with patch("src.infrastructure.database.db_manager") as mock_db:
-                        mock_db.initialize = AsyncMock(return_value=None)
-                        mock_db.close = AsyncMock(return_value=None)
+                    with patch("src.experiments.ab_testing.ab_test_manager") as mock_ab:
+                        mock_ab.initialize = AsyncMock(return_value=None)
 
-                        with patch("src.infrastructure.cache.cache_manager") as mock_cache:
-                            mock_cache.initialize = AsyncMock(return_value=None)
-                            mock_cache.close = AsyncMock(return_value=None)
+                        # Import app after all mocks are set up
+                        from src.api.main import app
 
-                            with patch("src.experiments.ab_testing.ab_test_manager") as mock_ab:
-                                mock_ab.initialize = AsyncMock(return_value=None)
-
-                                # Import app after all mocks are set up
-                                from src.api.main import app
-
-                                return app
-    finally:
-        # Restore original LLM_PROVIDER
-        os.environ["LLM_PROVIDER"] = old_provider
+                        return app
 
 
 @pytest.fixture

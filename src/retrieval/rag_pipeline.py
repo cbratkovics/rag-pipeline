@@ -32,19 +32,21 @@ class RAGPipeline(LoggerMixin):
         self.prompt_template = self._create_prompt_template()
 
     def _initialize_llm(self):
-        """Initialize the language model."""
+        """Initialize the OpenAI language model."""
         llm_config = self.settings.get_llm_config()
 
-        if llm_config["provider"] == "openai":
-            return ChatOpenAI(
-                model=llm_config["model"],
-                temperature=llm_config["temperature"],
-                model_kwargs={"max_tokens": llm_config["max_tokens"]},
-                api_key=llm_config["api_key"],
+        # Production always uses OpenAI - no exceptions
+        if not self.settings.openai_api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is required. This is a production system that requires real LLM capabilities."
             )
-        else:
-            # Add support for other providers
-            raise ValueError(f"Unsupported LLM provider: {llm_config['provider']}")
+
+        return ChatOpenAI(
+            model=llm_config.get("model", "gpt-3.5-turbo"),
+            temperature=llm_config.get("temperature", 0.7),
+            model_kwargs={"max_tokens": llm_config.get("max_tokens", 512)},
+            api_key=self.settings.openai_api_key,
+        )
 
     def _create_prompt_template(self) -> PromptTemplate:
         """Create the prompt template for RAG."""

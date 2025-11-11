@@ -233,9 +233,7 @@ class TestCostCalculation:
 
         # Temporarily set required environment variables
         original_store_type = os.environ.get("VECTOR_STORE_TYPE", "chromadb")
-        original_llm_provider = os.environ.get("LLM_PROVIDER", "stub")
         os.environ["VECTOR_STORE_TYPE"] = "qdrant"
-        os.environ["LLM_PROVIDER"] = "openai"  # Use a supported provider
 
         try:
             # Mock all external dependencies
@@ -258,4 +256,3 @@ class TestCostCalculation:
         finally:
             # Restore original environment variables
             os.environ["VECTOR_STORE_TYPE"] = original_store_type
-            os.environ["LLM_PROVIDER"] = original_llm_provider

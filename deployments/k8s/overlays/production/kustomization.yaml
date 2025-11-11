@@ -18,7 +18,7 @@ configMapGenerator:
   - APP_ENV=production
   - LOG_LEVEL=WARNING
   - MLFLOW_TRACKING_URI=http://mlflow-prod:5000
-  - LLM_PROVIDER=openai
+  - OPENAI_MODEL=gpt-3.5-turbo
 
 replicas:
 - name: rag-api

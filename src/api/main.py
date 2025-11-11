@@ -29,6 +29,15 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     logger.info("Starting RAG Pipeline application")
 
+    # Validate OpenAI configuration on startup
+    if not settings.openai_api_key:
+        logger.error("OPENAI_API_KEY not configured - shutting down")
+        raise ValueError(
+            "OPENAI_API_KEY is required for production. This system requires real LLM capabilities."
+        )
+
+    logger.info(f"✓ OpenAI configured with model: {settings.openai_model}")
+
     # Initialize components
     await db_manager.initialize()
     await cache_manager.initialize()

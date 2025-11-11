@@ -37,8 +37,8 @@ spec:
           value: "0.0.0.0"
         - name: API_PORT
           value: "8000"
-        - name: LLM_PROVIDER
-          value: "stub"
+        - name: OPENAI_MODEL
+          value: "gpt-3.5-turbo"
         - name: CHROMA_PERSIST_DIR
           value: "/app/.chroma"
         - name: EMBEDDING_MODEL

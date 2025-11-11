@@ -61,14 +61,9 @@ class Settings(BaseSettings):
     embedding_dimension: int = Field(default=384)
     embedding_batch_size: int = Field(default=32)
 
-    # LLM
-    llm_provider: str = Field(default="openai")
+    # LLM - OpenAI Only (Production)
     openai_api_key: str | None = Field(default=None)
     openai_model: str = Field(default="gpt-3.5-turbo")
-    anthropic_api_key: str | None = Field(default=None)
-    anthropic_model: str = Field(default="claude-3-haiku-20240307")
-    local_llm_url: str | None = Field(default=None)
-    local_llm_model: str = Field(default="llama2-7b")
 
     # Reranking
     reranker_model: str = Field(default="cross-encoder/ms-marco-MiniLM-L-6-v2")
@@ -236,43 +231,17 @@ class Settings(BaseSettings):
             raise ValueError(f"Unknown vector store type: {self.vector_store_type}")
 
     def get_llm_config(self) -> dict[str, Any]:
-        """Get LLM configuration based on provider."""
-        base_config = {
+        """Get OpenAI LLM configuration."""
+        if not self.openai_api_key:
+            raise ValueError("OPENAI_API_KEY environment variable is required")
+
+        return {
+            "provider": "openai",
+            "api_key": self.openai_api_key,
+            "model": self.openai_model or "gpt-3.5-turbo",
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
         }
-
-        if self.llm_provider == "stub":
-            # Stub provider for testing
-            return {
-                **base_config,
-                "provider": "stub",
-                "api_key": "test-key",
-                "model": "test-model",
-            }
-        elif self.llm_provider == "openai":
-            return {
-                **base_config,
-                "provider": "openai",
-                "api_key": self.openai_api_key,
-                "model": self.openai_model,
-            }
-        elif self.llm_provider == "anthropic":
-            return {
-                **base_config,
-                "provider": "anthropic",
-                "api_key": self.anthropic_api_key,
-                "model": self.anthropic_model,
-            }
-        elif self.llm_provider == "local":
-            return {
-                **base_config,
-                "provider": "local",
-                "url": self.local_llm_url,
-                "model": self.local_llm_model,
-            }
-        else:
-            raise ValueError(f"Unknown LLM provider: {self.llm_provider}")
 
 
 @lru_cache
@@ -297,12 +266,13 @@ def get_settings() -> Settings:
     logger.info(f"Vector Store Type: {settings.vector_store_type}")
     logger.info(f"Embedding Model: {settings.embedding_model}")
     logger.info(f"Embedding Dimension: {settings.embedding_dimension}")
-    logger.info(f"LLM Provider: {settings.llm_provider}")
+    logger.info("LLM Provider: OpenAI (Production)")
+    logger.info(f"OpenAI Model: {settings.openai_model}")
 
     if settings.openai_api_key:
         logger.info(f"OpenAI API Key: {'*' * 20} (set)")
     else:
-        logger.info("OpenAI API Key: (not set)")
+        logger.warning("OpenAI API Key: (not set) - REQUIRED FOR PRODUCTION")
 
     logger.info(f"Search Top-K: {settings.search_top_k}")
     logger.info(f"Final Top-K: {settings.final_top_k}")

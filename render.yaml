@@ -18,16 +18,18 @@ services:
         value: https://.*\.vercel\.app
       - key: PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION
         value: python
+      - key: OPENAI_MODEL
+        value: gpt-3.5-turbo
       - key: CHROMA_PERSIST_DIR
         value: /opt/render/project/.chroma
-      - key: LLM_PROVIDER
-        value: stub
       - key: EMBEDDING_MODEL
         value: all-MiniLM-L6-v2
       - key: HYBRID_WEIGHT_BM25
         value: "0.5"
       - key: HYBRID_WEIGHT_VECTOR
         value: "0.5"
+      - key: OPENAI_API_KEY
+        sync: false  # Must be set manually in Render dashboard
   - type: redis
     name: rag-pipeline-redis
     ipAllowList: []
