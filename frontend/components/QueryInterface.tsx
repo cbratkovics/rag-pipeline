@@ -4,8 +4,18 @@ import { useState } from 'react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
 
+interface QueryParams {
+  k: number
+  top_k_bm25?: number
+  top_k_vec?: number
+  rrf_k?: number
+  provider: 'stub' | 'openai'
+}
+
+type ABVariant = 'baseline' | 'reranked' | 'hybrid' | 'auto'
+
 interface QueryInterfaceProps {
-  onSubmit: (query: string, params: any, variant: string) => void
+  onSubmit: (query: string, params: QueryParams, variant: ABVariant) => void
   isLoading?: boolean
 }
 
