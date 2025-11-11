@@ -9,54 +9,54 @@ FAILED=0
 
 echo "1. Checking pip dependencies..."
 if ! uv run python -c "print('Dependencies OK')"; then
-    echo "❌ Pip dependency check failed"
+    echo "[FAIL] Pip dependency check failed"
     FAILED=1
 else
-    echo "✓ Dependency check passed"
+    echo "[PASS] Dependency check passed"
 fi
 
 echo ""
 echo "2. Running ruff formatter..."
 if ! uv run ruff format --check .; then
-    echo "❌ Formatting check failed. Run: uv run ruff format ."
+    echo "[FAIL] Formatting check failed. Run: uv run ruff format ."
     FAILED=1
 else
-    echo "✓ Format check passed"
+    echo "[PASS] Format check passed"
 fi
 
 echo ""
 echo "3. Running ruff linter..."
 if ! uv run ruff check .; then
-    echo "❌ Linting failed. Run: uv run ruff check . --fix"
+    echo "[FAIL] Linting failed. Run: uv run ruff check . --fix"
     FAILED=1
 else
-    echo "✓ Linting passed"
+    echo "[PASS] Linting passed"
 fi
 
 echo ""
 echo "4. Running mypy type checker..."
 if ! uv run mypy src api --ignore-missing-imports; then
-    echo "❌ Type checking failed"
+    echo "[FAIL] Type checking failed"
     FAILED=1
 else
-    echo "✓ Type checking passed"
+    echo "[PASS] Type checking passed"
 fi
 
 echo ""
 echo "5. Running pytest tests..."
 if ! uv run pytest tests/ -m "not integration" -q; then
-    echo "❌ Tests failed"
+    echo "[FAIL] Tests failed"
     FAILED=1
 else
-    echo "✓ Tests passed"
+    echo "[PASS] Tests passed"
 fi
 
 echo ""
 echo "========================"
 if [ $FAILED -eq 0 ]; then
-    echo "✅ All quality checks passed!"
+    echo "[SUCCESS] All quality checks passed!"
     exit 0
 else
-    echo "❌ Some checks failed. Fix the issues above."
+    echo "[ERROR] Some checks failed. Fix the issues above."
     exit 1
 fi

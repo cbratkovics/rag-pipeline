@@ -32,7 +32,9 @@ class CacheManager(LoggerMixin):
                 max_connections=50,
             )
             # Test connection
-            await self.client.ping()
+            ping_result = self.client.ping()
+            if hasattr(ping_result, "__await__"):
+                await ping_result
             self.connected = True
             self.logger.info("Redis cache initialized")
         except Exception as e:

@@ -39,7 +39,7 @@ class RAGPipeline(LoggerMixin):
             return ChatOpenAI(
                 model=llm_config["model"],
                 temperature=llm_config["temperature"],
-                max_tokens=llm_config["max_tokens"],
+                model_kwargs={"max_tokens": llm_config["max_tokens"]},
                 api_key=llm_config["api_key"],
             )
         else:
@@ -237,7 +237,9 @@ Answer: """
         if temperature is not None:
             self.llm.temperature = temperature
         if max_tokens is not None:
-            self.llm.max_tokens = max_tokens
+            if not hasattr(self.llm, "model_kwargs"):
+                self.llm.model_kwargs = {}
+            self.llm.model_kwargs["max_tokens"] = max_tokens
 
         # Create chain and generate
         chain = LLMChain(llm=self.llm, prompt=self.prompt_template)

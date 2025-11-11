@@ -2,53 +2,53 @@
 set -euo pipefail
 
 echo "==================================="
-echo "VALIDATING CI/CD FIX COMPLETE"
+echo "VALIDATING CI/CD PIPELINE"
 echo "==================================="
 echo ""
 
-echo "✅ CRITICAL FIX: Removed unused 'type: ignore' comments from vector_store.py"
-echo "   - Line 189: Fixed"
-echo "   - Line 247: Fixed"
-echo ""
-
-echo "Running validation checks..."
+echo "[INFO] Running validation checks..."
 echo "----------------------------"
 
 echo ""
 echo "1. Checking uv environment..."
 uv run python -m pip check
-echo "✓ Environment check passed"
+echo "[PASS] Environment check passed"
 
 echo ""
 echo "2. Running ruff formatter check..."
 uv run ruff format --check .
-echo "✓ Format check passed"
+echo "[PASS] Format check passed"
 
 echo ""
 echo "3. Running ruff linter..."
 uv run ruff check .
-echo "✓ Linting passed"
+echo "[PASS] Linting passed"
 
 echo ""
-echo "4. Running mypy type checker (CRITICAL)..."
+echo "4. Running mypy type checker..."
 uv run mypy src api --ignore-missing-imports
-echo "✓ Type checking passed - NO MORE UNUSED TYPE: IGNORE ERRORS!"
+echo "[PASS] Type checking passed"
+
+echo ""
+echo "5. Running unit tests..."
+uv run pytest tests/ -m "not integration" -q
+echo "[PASS] Tests passed"
 
 echo ""
 echo "==================================="
-echo "✅ SUCCESS: ALL CRITICAL CHECKS PASS!"
+echo "[SUCCESS] ALL VALIDATION CHECKS PASSED!"
 echo "==================================="
 echo ""
-echo "Pre-commit hooks installed and working:"
+echo "Pre-commit hooks status:"
 pre-commit --version
 echo ""
 echo "To verify hooks work, run: pre-commit run --all-files"
 echo ""
-echo "BULLETPROOF SYSTEM IN PLACE:"
-echo "✅ Pre-commit hooks prevent bad commits"
-echo "✅ MyPy errors fixed (no unused type: ignore)"
-echo "✅ Ruff formatting enforced"
-echo "✅ Ruff linting enforced"
-echo "✅ CI script validates everything"
+echo "CI/CD Pipeline Components:"
+echo "- Pre-commit hooks prevent bad commits"
+echo "- MyPy type checking enforced"
+echo "- Ruff formatting enforced"
+echo "- Ruff linting enforced"
+echo "- Unit tests validated"
 echo ""
-echo "Your CI/CD pipeline will now pass!"
+echo "Pipeline is ready for GitHub Actions!"
