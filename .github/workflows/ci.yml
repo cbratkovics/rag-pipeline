@@ -89,31 +89,13 @@ jobs:
   docker-build:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    timeout-minutes: 20
+    timeout-minutes: 30
+
+    env:
+      DOCKER_BUILDKIT: 1
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Ensure required files exist
-        run: |
-          # Create README.md if it's missing (emergency fallback)
-          if [ ! -f README.md ]; then
-            echo "WARNING: README.md was missing, creating it now..."
-            cat > README.md << 'EOF'
-          # RAG Pipeline
-          Production-ready Retrieval-Augmented Generation system.
-          See [API Docs](https://rag-pipeline-api-hksb.onrender.com/docs)
-          EOF
-          fi
-
-          # Generate requirements.txt as fallback
-          if [ ! -f requirements.txt ] && command -v uv &> /dev/null; then
-            echo "Generating requirements.txt as fallback..."
-            uv export --format requirements-txt --no-hashes > requirements.txt || true
-          fi
-
-          # Verify files exist
-          ls -la README.md pyproject.toml uv.lock || true
 
       - name: Free disk space
         run: |
@@ -126,6 +108,9 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
 
       - name: Build Docker image
         uses: docker/build-push-action@v5
@@ -136,7 +121,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            PYTHON_VERSION=${{ env.PYTHON_VERSION }}
+            BUILDKIT_INLINE_CACHE=1
 
   validation:
     runs-on: ubuntu-latest

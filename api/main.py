@@ -1,7 +1,9 @@
 import os
 import time
 import warnings
+from contextlib import asynccontextmanager
 
+import structlog
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -23,12 +25,38 @@ from prometheus_client import (
 from pydantic import BaseModel, Field
 
 from src.rag.pipeline import answer_query
+from src.retrieval.vector_store import vector_store
 
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="opentelemetry")
 
 load_dotenv()
 
-app = FastAPI(title="RAG Pipeline API", version="0.1.0")
+logger = structlog.get_logger()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager - handles startup and shutdown."""
+    # Startup
+    logger.info("Starting RAG Pipeline application")
+    try:
+        await vector_store.initialize()
+        if vector_store.is_available():
+            logger.info("✓ Qdrant vector store initialized")
+        else:
+            logger.warning("⚠ Qdrant unavailable - running in degraded mode")
+    except Exception as e:
+        logger.warning(
+            "⚠ Failed to initialize vector store - running in degraded mode",
+            error=str(e),
+        )
+    logger.info("Application startup complete")
+    yield
+    # Shutdown
+    logger.info("Application shutdown complete")
+
+
+app = FastAPI(title="RAG Pipeline API", version="0.1.0", lifespan=lifespan)
 
 _raw = os.getenv("FRONTEND_CORS_ORIGINS", "")
 _allowed = [o.strip() for o in _raw.split(",") if o.strip()]

@@ -68,7 +68,7 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
         self.dimension = self.settings.embedding_dimension
 
     async def initialize(self) -> None:
-        """Initialize Qdrant connection and collection."""
+        """Initialize Qdrant connection and collection (optional service)."""
         try:
             self.client = QdrantClient(
                 host=self.settings.qdrant_host,
@@ -89,20 +89,33 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
                         distance=qdrant_models.Distance.COSINE,
                     ),
                 )
-                self.logger.info("Created Qdrant collection", collection=self.collection_name)
+                self.logger.info("✓ Created Qdrant collection", collection=self.collection_name)
             else:
                 self.logger.info(
-                    "Using existing Qdrant collection", collection=self.collection_name
+                    "✓ Using existing Qdrant collection", collection=self.collection_name
                 )
 
         except Exception as e:
-            self.logger.error("Failed to initialize Qdrant", error=str(e))
-            raise
+            self.logger.warning(
+                "⚠ Qdrant unavailable - running in degraded mode (vector search disabled)",
+                error=str(e),
+                host=self.settings.qdrant_host,
+                port=self.settings.qdrant_port,
+            )
+            self.client = None
+
+    def is_available(self) -> bool:
+        """Check if Qdrant is available and connected."""
+        return self.client is not None
 
     async def add_documents(self, documents: list[Document]) -> list[str]:
         """Add documents to Qdrant."""
         if not self.client:
             await self.initialize()
+
+        if not self.is_available():
+            self.logger.warning("Cannot add documents - Qdrant unavailable")
+            return []
 
         if not documents:
             return []
@@ -163,6 +176,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
         """Search for similar documents in Qdrant."""
         if not self.client:
             await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot search - Qdrant unavailable, returning empty results")
+            return []
 
         try:
             # Build filter if provided
@@ -236,6 +253,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
         if not self.client:
             await self.initialize()
 
+        if not self.is_available():
+            self.logger.warning("Cannot delete documents - Qdrant unavailable")
+            return False
+
         try:
             if self.client is None:
                 raise RuntimeError("Qdrant client not initialized")
@@ -256,6 +277,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
         """Get a document by ID from Qdrant."""
         if not self.client:
             await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot get document - Qdrant unavailable")
+            return None
 
         try:
             if self.client is None:
@@ -302,6 +327,10 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
         """Count total documents in Qdrant."""
         if not self.client:
             await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot count documents - Qdrant unavailable")
+            return 0
 
         try:
             if self.client is None:

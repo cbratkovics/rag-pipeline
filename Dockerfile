@@ -1,43 +1,41 @@
+# syntax=docker/dockerfile:1.4
 # Multi-stage build for production RAG pipeline
+
 FROM python:3.12-slim as builder
 
 WORKDIR /app
 
-# Install build dependencies
+# Install essential build dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc g++ build-essential curl \
+    gcc \
+    g++ \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
 RUN pip install --no-cache-dir uv==0.5.1
 
-# Copy dependency files and README (required by hatchling build backend)
-COPY pyproject.toml uv.lock ./
-COPY README.md ./
+# Copy dependency files first (better layer caching)
+COPY pyproject.toml uv.lock README.md ./
 
-# Install dependencies using uv (frozen lockfile, production only)
-RUN uv sync --frozen --no-dev --compile-bytecode || \
-    (echo "uv sync failed, attempting pip fallback..." && \
-     uv export --format requirements-txt --no-hashes > requirements.txt && \
-     pip install --no-cache-dir -r requirements.txt)
+# Install dependencies with BuildKit cache mount
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
 # Production stage
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install runtime deps
+# Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python and uv from builder
-COPY --from=builder /usr/local /usr/local
-
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
-# Copy app code
+# Copy application code (after dependencies for better caching)
 COPY api/ ./api/
 COPY src/ ./src/
 COPY configs/ ./configs/
@@ -48,11 +46,11 @@ RUN useradd -m -u 1000 raguser && \
 
 USER raguser
 
-# Use virtual environment
-ENV PATH="/app/.venv/bin:$PATH"
-ENV PYTHONPATH=/app
-ENV PYTHONUNBUFFERED=1
-ENV VIRTUAL_ENV=/app/.venv
+# Environment variables
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH=/app \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/app/.venv
 
 EXPOSE 8000
 
