@@ -22,6 +22,29 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Check disk space (start)
+        run: |
+          echo "=== Disk space at start ==="
+          df -h
+          echo "=== Docker images ==="
+          docker images
+          echo "=== Docker disk usage ==="
+          docker system df
+
+      - name: Free disk space
+        run: |
+          echo "Freeing up disk space..."
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -48,6 +71,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}-
             ${{ runner.os }}-uv-
+          save-always: true
+          lookup-only: false
+        env:
+          # Limit cache size to 2GB to prevent disk space issues
+          SEGMENT_DOWNLOAD_TIMEOUT_MINS: 1
 
       - name: Install dependencies
         run: |
@@ -89,12 +117,48 @@ jobs:
           uv run pip-audit --desc --fix || echo "Security scan completed with warnings"
         continue-on-error: true
 
+      - name: Check disk space (end)
+        if: always()
+        run: |
+          echo "=== Disk space at end ==="
+          df -h
+          echo "=== Cache directory sizes ==="
+          du -sh ~/.cache/uv 2>/dev/null || echo "No uv cache"
+          du -sh .venv 2>/dev/null || echo "No venv"
+
   docker-build:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     timeout-minutes: 20
 
     steps:
+      - name: Check disk space (start)
+        run: |
+          echo "=== Disk space at start ==="
+          df -h
+          echo "=== Docker images ==="
+          docker images
+          echo "=== Docker disk usage ==="
+          docker system df
+
+      - name: Free disk space
+        run: |
+          echo "Freeing up disk space for Docker build..."
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+          echo "Cleaning Docker system..."
+          docker system prune -af --volumes || true
+          echo "=== Disk space after cleanup ==="
+          df -h
+          echo "=== Docker disk usage after cleanup ==="
+          docker system df
+
       - uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -117,6 +181,25 @@ jobs:
             type=gha,mode=max,scope=docker-build
           build-args: |
             BUILDKIT_INLINE_CACHE=1
+
+      - name: Cleanup after Docker build
+        if: always()
+        run: |
+          echo "Cleaning up Docker artifacts..."
+          docker system prune -af --volumes || true
+          docker builder prune -af || true
+          echo "=== Disk space after Docker cleanup ==="
+          df -h
+
+      - name: Check disk space (end)
+        if: always()
+        run: |
+          echo "=== Disk space at end ==="
+          df -h
+          echo "=== Docker images ==="
+          docker images
+          echo "=== Docker disk usage ==="
+          docker system df
 
   validation:
     runs-on: ubuntu-latest
