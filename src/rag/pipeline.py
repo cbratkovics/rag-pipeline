@@ -19,7 +19,7 @@ async def answer_query(
     top_k_bm25: int = 8,
     rrf_k: int = 60,
     final_k: int = 4,
-    provider: str = "stub",
+    provider: str = "openai",
     fusion_method: str = "rrf",
     bm25_weight: float | None = None,
     vector_weight: float | None = None,
@@ -33,7 +33,7 @@ async def answer_query(
         top_k_bm25: Number of BM25 results
         rrf_k: K parameter for RRF fusion
         final_k: Final number of contexts to use
-        provider: LLM provider ("stub" or "openai")
+        provider: LLM provider (OpenAI only)
         fusion_method: "rrf" or "weighted"
         bm25_weight: Weight for BM25 (for weighted fusion)
         vector_weight: Weight for vector search (for weighted fusion)

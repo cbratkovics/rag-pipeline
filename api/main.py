@@ -1,10 +1,18 @@
 import os
+
+# Set protobuf environment variable before any chromadb imports
+os.environ.setdefault("PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION", "python")
+
 import time
 import warnings
 from contextlib import asynccontextmanager
+from typing import Any
+from uuid import uuid4
 
+import chromadb
 import structlog
 import uvicorn
+from chromadb.config import Settings as ChromaSettings
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,6 +33,7 @@ from prometheus_client import (
 from pydantic import BaseModel, Field
 
 from src.rag.pipeline import answer_query
+from src.retrieval.embeddings import embedding_manager
 from src.retrieval.vector_store import vector_store
 
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="opentelemetry")
@@ -32,6 +41,48 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="opentelem
 load_dotenv()
 
 logger = structlog.get_logger()
+
+
+def _get_chroma_collection():
+    """Get or create ChromaDB collection."""
+    persist_dir = os.getenv("CHROMA_PERSIST_DIR", ".chroma")
+    name = os.getenv("CHROMADB_COLLECTION", "rag_documents")
+    client = chromadb.PersistentClient(
+        path=persist_dir,
+        settings=ChromaSettings(anonymized_telemetry=False),
+    )
+    return client, client.get_or_create_collection(name=name, metadata={"hnsw:space": "cosine"})
+
+
+async def _seed_if_empty():
+    """Seed the vector store with initial documents if empty."""
+    _, coll = _get_chroma_collection()
+    if coll.count() == 0:
+        logger.info("ChromaDB collection is empty, seeding with initial documents")
+        docs = [
+            {
+                "content": "Retrieval-Augmented Generation (RAG) combines retrieval systems with generative models to produce more accurate and grounded responses by fetching relevant context from a knowledge base.",
+                "metadata": {"source": "intro", "category": "overview"},
+            },
+            {
+                "content": "Semantic search uses vector embeddings to find documents based on meaning rather than exact keyword matches, enabling more nuanced information retrieval.",
+                "metadata": {"source": "concepts", "category": "fundamentals"},
+            },
+            {
+                "content": "BM25 is a probabilistic ranking function used in information retrieval that scores documents based on term frequency and inverse document frequency with saturation.",
+                "metadata": {"source": "algorithms", "category": "technical"},
+            },
+            {
+                "content": "Hybrid search combines keyword-based methods like BM25 with semantic vector search, using techniques like Reciprocal Rank Fusion to merge results from both approaches for improved retrieval quality.",
+                "metadata": {"source": "techniques", "category": "advanced"},
+            },
+        ]
+        contents = [d["content"] for d in docs]
+        ids = [str(uuid4()) for _ in contents]
+        metadatas = [d["metadata"] for d in docs]
+        embeddings = embedding_manager.embed_batch(contents)
+        coll.add(ids=ids, documents=contents, embeddings=embeddings, metadatas=metadatas)
+        logger.info(f"Seeded ChromaDB with {len(docs)} initial documents")
 
 
 @asynccontextmanager
@@ -47,6 +98,16 @@ async def lifespan(app: FastAPI):
             "⚠ Failed to initialize vector store - running in degraded mode",
             error=str(e),
         )
+
+    # Seed ChromaDB if empty
+    try:
+        await _seed_if_empty()
+    except Exception as e:
+        logger.warning(
+            "⚠ Failed to seed ChromaDB - you may need to add documents manually",
+            error=str(e),
+        )
+
     logger.info("Application startup complete")
     yield
     # Shutdown
@@ -114,8 +175,8 @@ class QueryRequest(BaseModel):
         description="RRF K parameter for fusion",
     )
     provider: str = Field(
-        "stub",
-        description="LLM provider: 'stub' or 'openai'",
+        "openai",
+        description="LLM provider (OpenAI only)",
     )
 
 
@@ -124,6 +185,16 @@ class QueryResponse(BaseModel):
     contexts: list[str]
     scores: dict
     latency_ms: float
+
+
+class IngestDoc(BaseModel):
+    content: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class IngestRequest(BaseModel):
+    documents: list[IngestDoc]
+    reset: bool = False
 
 
 @app.get("/api/health")
@@ -201,6 +272,44 @@ async def query(request: QueryRequest):
                 status="error",
             ).inc()
             raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+@app.post("/api/v1/ingest")
+async def ingest(req: IngestRequest):
+    """Ingest documents into the vector store."""
+    try:
+        client, coll = _get_chroma_collection()
+
+        if req.reset:
+            name = os.getenv("CHROMADB_COLLECTION", "rag_documents")
+            client.delete_collection(name)
+            _, coll = _get_chroma_collection()
+
+        contents = [d.content for d in req.documents]
+        ids = [str(uuid4()) for _ in contents]
+        metadatas = [d.metadata for d in req.documents]
+        embeddings = embedding_manager.embed_batch(contents)
+
+        coll.add(ids=ids, documents=contents, embeddings=embeddings, metadatas=metadatas)
+
+        REQUEST_COUNT.labels(
+            endpoint="/api/v1/ingest",
+            status="success",
+        ).inc()
+
+        logger.info(f"Ingested {len(ids)} documents into ChromaDB")
+        return {"ok": True, "inserted": len(ids)}
+    except Exception as e:
+        ERROR_COUNT.labels(
+            endpoint="/api/v1/ingest",
+            error_type=type(e).__name__,
+        ).inc()
+        REQUEST_COUNT.labels(
+            endpoint="/api/v1/ingest",
+            status="error",
+        ).inc()
+        logger.error(f"Failed to ingest documents: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 if __name__ == "__main__":

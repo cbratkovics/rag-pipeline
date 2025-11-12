@@ -40,7 +40,7 @@ def make_request(query: str) -> dict:
                 "top_k_bm25": 8,
                 "top_k_vec": 8,
                 "rrf_k": 60,
-                "provider": "stub",
+                "provider": "openai",
             },
             timeout=30,
         )

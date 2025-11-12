@@ -30,7 +30,7 @@ class TestFullPipeline:
             "top_k_bm25": 8,
             "top_k_vec": 8,
             "rrf_k": 60,
-            "provider": "stub",
+            "provider": "openai",
         }
 
         response = test_client.post("/api/v1/query", json=payload)
@@ -63,7 +63,7 @@ class TestFullPipeline:
         for params in test_cases:
             payload = {
                 "question": "What is Natural Language Processing?",
-                "provider": "stub",
+                "provider": "openai",
                 **params,
             }
 
@@ -84,7 +84,7 @@ class TestFullPipeline:
         ]
 
         for question in questions:
-            payload = {"question": question, "k": 3, "provider": "stub"}
+            payload = {"question": question, "k": 3, "provider": "openai"}
 
             response = test_client.post("/api/v1/query", json=payload)
             assert response.status_code == 200
@@ -97,7 +97,7 @@ class TestFullPipeline:
         """Test handling concurrent requests."""
 
         def make_request(question):
-            payload = {"question": question, "k": 3, "provider": "stub"}
+            payload = {"question": question, "k": 3, "provider": "openai"}
             response = test_client.post("/api/v1/query", json=payload)
             return response.status_code, response.json()
 
@@ -114,7 +114,7 @@ class TestFullPipeline:
     def test_empty_query_handling(self, test_client):
         """Test handling of empty or invalid queries."""
         # Empty question
-        payload = {"question": "", "k": 3, "provider": "stub"}
+        payload = {"question": "", "k": 3, "provider": "openai"}
 
         response = test_client.post("/api/v1/query", json=payload)
         # Should either handle gracefully or return 422
@@ -125,7 +125,7 @@ class TestFullPipeline:
         payload = {
             "question": "What is retrieval-augmented generation?",
             "k": 4,
-            "provider": "stub",
+            "provider": "openai",
         }
 
         response = test_client.post("/api/v1/query", json=payload)
@@ -146,7 +146,7 @@ class TestFullPipeline:
 
     def test_latency_measurement(self, test_client):
         """Verify that latency is properly measured."""
-        payload = {"question": "What is machine learning?", "k": 3, "provider": "stub"}
+        payload = {"question": "What is machine learning?", "k": 3, "provider": "openai"}
 
         start_time = time.time()
         response = test_client.post("/api/v1/query", json=payload)
@@ -161,15 +161,15 @@ class TestFullPipeline:
         assert reported_latency > 0
         assert reported_latency <= request_time + 100  # Add buffer for timing variations
 
-    def test_stub_provider(self, test_client):
-        """Test that stub provider works correctly."""
-        payload = {"question": "Test question for stub", "k": 2, "provider": "stub"}
+    def test_openai_provider(self, test_client):
+        """Test that OpenAI provider works correctly."""
+        payload = {"question": "Test question for OpenAI", "k": 2, "provider": "openai"}
 
         response = test_client.post("/api/v1/query", json=payload)
         assert response.status_code == 200
 
         data = response.json()
-        # Stub should return an answer
+        # OpenAI should return an answer
         assert data["answer"]
         # The mock returns a fixed answer
         assert (
@@ -185,7 +185,7 @@ class TestABTesting:
         """Test that different variants can be selected."""
         # This would require A/B testing implementation
         # For now, just verify the basic query works
-        payload = {"question": "What is A/B testing?", "k": 3, "provider": "stub"}
+        payload = {"question": "What is A/B testing?", "k": 3, "provider": "openai"}
 
         response = test_client.post("/api/v1/query", json=payload)
         assert response.status_code == 200

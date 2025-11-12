@@ -128,11 +128,73 @@ rag-pipeline/
 ## 🔧 Configuration
 
 Environment variables (see `.env.example`):
-- `OPENAI_API_KEY`: Required for GPT-4 access
+- `OPENAI_API_KEY`: Required for OpenAI access (OpenAI is the only supported LLM provider)
+- `OPENAI_MODEL`: Default "gpt-3.5-turbo"
 - `REDIS_URL`: Cache connection string
 - `CHROMADB_HOST`: Vector database host
+- `CHROMA_PERSIST_DIR`: ChromaDB storage path (default: `.chroma`, Render: `/var/data/chroma`)
 - `EMBEDDING_MODEL`: Default "all-MiniLM-L6-v2"
-- `LLM_MODEL`: Default "gpt-4"
+
+## 📡 API Endpoints
+
+### POST /api/v1/query
+Query the RAG pipeline with a question and get an AI-generated answer.
+
+**Request:**
+```json
+{
+  "question": "What is RAG?",
+  "k": 4,
+  "top_k_bm25": 8,
+  "top_k_vec": 8,
+  "rrf_k": 60,
+  "provider": "openai"
+}
+```
+
+**Response:**
+```json
+{
+  "answer": "RAG (Retrieval-Augmented Generation) is...",
+  "contexts": ["context1", "context2"],
+  "scores": {
+    "hybrid": 0.85,
+    "bm25": 0.72,
+    "vector": 0.91
+  },
+  "latency_ms": 324.5
+}
+```
+
+### POST /api/v1/ingest
+Ingest documents into the vector store for retrieval.
+
+**Request:**
+```json
+{
+  "documents": [
+    {
+      "content": "Your document text here",
+      "metadata": {"source": "example", "category": "technical"}
+    }
+  ],
+  "reset": false
+}
+```
+
+**Response:**
+```json
+{
+  "ok": true,
+  "inserted": 1
+}
+```
+
+**Parameters:**
+- `documents`: List of documents to ingest, each with `content` (string) and optional `metadata` (dict)
+- `reset`: Set to `true` to clear existing documents before ingesting (default: `false`)
+
+**Note:** On first startup, the system automatically seeds ChromaDB with initial documents if the collection is empty. Use this endpoint to add additional documents programmatically.
 
 ## 📈 Monitoring & Observability
 

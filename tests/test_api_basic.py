@@ -43,7 +43,7 @@ def test_query_endpoint_schema(client):
         "top_k_bm25": 8,
         "top_k_vec": 8,
         "rrf_k": 60,
-        "provider": "stub",
+        "provider": "openai",
     }
 
     response = client.post("/api/v1/query", json=payload)

@@ -74,7 +74,7 @@ class RAGPipelineUser(HttpUser):
             "top_k_bm25": 8,
             "top_k_vec": 8,
             "rrf_k": 60,
-            "provider": "stub",
+            "provider": "openai",
         }
 
         # Make request

@@ -7,8 +7,12 @@ services:
       pip install --upgrade pip
       pip install uv==0.5.1
       uv sync --frozen --no-dev
-    startCommand: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /healthz
+    disk:
+      name: chroma-store
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"
@@ -21,7 +25,7 @@ services:
       - key: OPENAI_MODEL
         value: gpt-3.5-turbo
       - key: CHROMA_PERSIST_DIR
-        value: /opt/render/project/.chroma
+        value: /var/data/chroma
       - key: EMBEDDING_MODEL
         value: all-MiniLM-L6-v2
       - key: HYBRID_WEIGHT_BM25
