@@ -1,5 +1,6 @@
 """Query API endpoints."""
 
+import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
@@ -55,7 +56,7 @@ async def process_query(request: QueryRequest, req: Request) -> QueryResponse:
     try:
         # Get user/session ID from headers or create one
         user_id = req.headers.get("X-User-ID")
-        session_id = req.headers.get("X-Session-ID") or req.session.get("session_id")
+        session_id = req.headers.get("X-Session-ID") or str(uuid.uuid4())
 
         # Create query model
         query = Query(
