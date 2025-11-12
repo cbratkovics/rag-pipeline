@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_name: str = Field(default="rag-pipeline-ragas")
+    app_name: str = Field(default="rag-pipeline")
     app_env: str = Field(default="development")
     debug: bool = Field(default=False)
     log_level: str = Field(default="INFO")

@@ -66,33 +66,38 @@ export function QueryHistory({ onRerun }: QueryHistoryProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3 max-h-96 overflow-y-auto">
-        {history.slice().reverse().map((item) => (
-          <div
-            key={item.id}
-            className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
-          >
-            <div className="flex items-start justify-between mb-2">
-              <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1">
-                {item.question}
-              </p>
-              {onRerun && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRerun(item.question)}
-                  className="h-6 ml-2"
-                >
-                  <RotateCcw className="h-3 w-3" />
-                </Button>
-              )}
+        {history.slice().reverse().map((item) => {
+          const queryText = item.query || item.question || '';
+          const latency = item.result.processing_time_ms || item.result.latency_ms || 0;
+
+          return (
+            <div
+              key={item.id}
+              className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <p className="text-sm font-medium text-gray-900 line-clamp-2 flex-1">
+                  {queryText}
+                </p>
+                {onRerun && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onRerun(queryText)}
+                    className="h-6 ml-2"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span>{latency.toFixed(0)}ms</span>
+                <span>•</span>
+                <span>{formatDistanceToNow(new Date(item.timestamp))}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span>{item.result.latency_ms.toFixed(0)}ms</span>
-              <span>•</span>
-              <span>{formatDistanceToNow(new Date(item.timestamp))}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   )

@@ -6,7 +6,7 @@ metadata:
     app: rag-api
 data:
   # Application Configuration
-  APP_NAME: "rag-pipeline-ragas"
+  APP_NAME: "rag-pipeline"
   LOG_LEVEL: "INFO"
   
   # Vector Store Configuration

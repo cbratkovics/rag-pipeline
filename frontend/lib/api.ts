@@ -281,25 +281,25 @@ export async function runDiagnostics(): Promise<SystemDiagnostics> {
   // 3. Test query endpoint
   try {
     const testQuery: QueryRequest = {
-      question: 'What is RAG?',
-      k: 3,
+      query: 'What is RAG?',
+      max_results: 3,
     }
 
     const result = await queryRAG(testQuery, 0) // No retries for diagnostic
 
-    // Check if scores are non-zero
-    const hasNonZeroScores = (result.scores?.hybrid && result.scores.hybrid > 0) || false
+    // Check if confidence score is non-zero
+    const hasValidResponse = (result.confidence_score !== undefined && result.confidence_score > 0) || (result.scores?.hybrid && result.scores.hybrid > 0) || false
 
     checks.push({
       name: 'Query Test',
-      status: hasNonZeroScores ? 'success' : 'warning',
-      message: hasNonZeroScores
-        ? 'Query returned non-zero scores'
-        : 'Query returned zero scores (vector store may be empty)',
+      status: hasValidResponse ? 'success' : 'warning',
+      message: hasValidResponse
+        ? 'Query returned valid response'
+        : 'Query returned low confidence (vector store may be empty)',
       details: {
-        contextCount: result.contexts?.length || 0,
+        sourceCount: result.sources?.length || result.contexts?.length || 0,
         hasAnswer: !!result.answer,
-        sampleScores: result.scores ? [result.scores.hybrid || 0, result.scores.bm25 || 0, result.scores.vector || 0] : [],
+        confidenceScore: result.confidence_score ?? result.scores?.hybrid ?? 0,
       },
       timestamp,
     })

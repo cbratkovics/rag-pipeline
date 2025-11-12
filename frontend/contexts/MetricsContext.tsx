@@ -67,15 +67,17 @@ export function MetricsProvider({ children }: { children: React.ReactNode }) {
     setState(prev => {
       const newQueries = [...prev.queries, result].slice(-10) // Keep last 10
       const newTotal = prev.totalQueries + 1
-      const newAvgLatency = (prev.avgLatency * prev.totalQueries + result.latency_ms) / newTotal
 
-      // Estimate tokens (rough approximation: ~4 chars per token)
-      const estimatedTokens = Math.ceil((result.answer.length + result.contexts.join('').length) / 4)
-      const newTotalTokens = prev.totalTokens + estimatedTokens
+      // Handle both old (latency_ms) and new (processing_time_ms) schema
+      const latency = result.processing_time_ms || result.latency_ms || 0
+      const newAvgLatency = (prev.avgLatency * prev.totalQueries + latency) / newTotal
 
-      // Calculate cost (OpenAI pricing)
-      const costPerToken = 0.002 / 1000
-      const queryCost = estimatedTokens * costPerToken
+      // Use token_count from API or estimate if not available
+      const tokens = result.token_count || Math.ceil((result.answer.length + (result.contexts?.join('').length || 0)) / 4)
+      const newTotalTokens = prev.totalTokens + tokens
+
+      // Use cost_usd from API or estimate if not available
+      const queryCost = result.cost_usd || (tokens * (0.002 / 1000))
       const newTotalCost = prev.totalCost + queryCost
 
       // Save to history
@@ -84,7 +86,8 @@ export function MetricsProvider({ children }: { children: React.ReactNode }) {
         ...history,
         {
           id: `query_${Date.now()}`,
-          question,
+          query: question,
+          question, // Keep for backward compatibility
           result,
           timestamp: new Date(),
         },

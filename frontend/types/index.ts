@@ -5,21 +5,34 @@
 
 // API Request Types
 export interface QueryRequest {
-  question: string;
-  k?: number; // Final number of documents to retrieve (default: 4)
-  top_k_bm25?: number; // Number of BM25 results (default: 8)
-  top_k_vec?: number; // Number of vector search results (default: 8)
-  rrf_k?: number; // RRF K parameter for fusion (default: 60)
+  query: string; // Renamed from "question"
+  metadata_filters?: Record<string, unknown>; // Optional metadata filters
+  experiment_variant?: 'baseline' | 'reranked' | 'hybrid' | null; // Optional A/B test variant
+  max_results?: number; // Optional: default 5
+  include_sources?: boolean; // Optional: default true
+  temperature?: number; // Optional: 0.0-2.0
+  max_tokens?: number; // Optional: 1-4000
 }
 
 // API Response Types
 export interface QueryResponse {
+  // New schema fields
+  query_id?: string;
   answer: string;
-  contexts: string[];
-  scores: Record<string, number>;
-  latency_ms: number;
-  metadata?: SourceMetadata[];
+  sources?: SourceMetadata[]; // Array of source documents with metadata
+  experiment_variant?: string;
+  confidence_score?: number;
+  processing_time_ms?: number;
+  token_count?: number;
+  cost_usd?: number;
+  evaluation_metrics?: RAGASMetrics; // Optional RAGAS metrics
+
+  // Legacy fields (for backward compatibility during migration)
+  contexts?: string[];
+  scores?: Record<string, number>;
+  latency_ms?: number;
   timing?: TimingMetrics;
+  metadata?: SourceMetadata[];
 }
 
 export interface HealthResponse {
@@ -31,6 +44,7 @@ export interface SourceMetadata {
   id?: string;
   source?: string;
   title?: string;
+  content?: string; // The actual text content of the source
   relevance_score?: number;
   retrieval_method?: 'bm25' | 'vector' | 'hybrid';
   snippet?: string;
@@ -124,7 +138,8 @@ export interface MetricsState {
 // Historical Query Entry
 export interface HistoricalQuery {
   id: string;
-  question: string;
+  query: string; // Renamed from "question" to match API schema
+  question?: string; // Legacy field for backward compatibility
   result: QueryResult;
   timestamp: Date;
 }

@@ -33,6 +33,7 @@ function HomeContent() {
     mutationFn: async ({
       question,
       params,
+      variant,
     }: {
       question: string
       params: QueryParams
@@ -41,11 +42,11 @@ function HomeContent() {
       setError(null)
       setCurrentQuestion(question)
       return await queryRAG({
-        question,
-        k: params.k,
-        top_k_bm25: params.top_k_bm25,
-        top_k_vec: params.top_k_vec,
-        rrf_k: params.rrf_k,
+        query: question, // Use "query" field instead of "question"
+        max_results: params.k,
+        temperature: params.temperature,
+        max_tokens: params.max_tokens,
+        experiment_variant: variant === 'auto' ? null : variant,
       })
     },
     onSuccess: (data, variables) => {

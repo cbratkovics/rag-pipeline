@@ -178,7 +178,7 @@ jobs:
           cache-from: |
             type=gha,scope=docker-build
           cache-to: |
-            type=gha,mode=max,scope=docker-build
+            type=gha,mode=min,scope=docker-build
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 

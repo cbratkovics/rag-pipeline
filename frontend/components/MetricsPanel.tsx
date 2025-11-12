@@ -21,9 +21,21 @@ export function MetricsPanel({ result }: MetricsPanelProps) {
   const metrics = useMetrics()
 
   // Calculate current query metrics
-  const currentLatency = result?.latency_ms || 0
-  const currentTokens = result ? estimateTokens(result.answer + result.contexts.join('')) : 0
-  const currentCost = currentTokens * (0.002 / 1000) // OpenAI pricing
+  const currentLatency = result ? (result.processing_time_ms || result.latency_ms || 0) : 0
+
+  // Handle both new (sources) and old (contexts) schema
+  const contentText = result
+    ? result.contexts?.join('') || result.sources?.map(s => s.content || s.snippet || '').join('') || ''
+    : '';
+
+  // Use API-provided values or estimate
+  const currentTokens = result
+    ? (result.token_count || estimateTokens(result.answer + contentText))
+    : 0;
+
+  const currentCost = result
+    ? (result.cost_usd || currentTokens * (0.002 / 1000))
+    : 0;
 
   // Calculate aggregate metrics
   const cacheHitRate = calculateCacheHitRate(metrics.cacheHits, metrics.cacheMisses)

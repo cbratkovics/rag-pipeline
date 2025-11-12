@@ -140,32 +140,47 @@ function CitationCard({ context, index, score, question }: CitationCardProps) {
 }
 
 export function SourceCitations({ result }: SourceCitationsProps) {
-  if (!result.contexts || result.contexts.length === 0) {
-    return null
+  // Handle both new (sources) and old (contexts) schema
+  const sources = result.sources || [];
+  const contexts = result.contexts || [];
+
+  // If we have sources with content, use them; otherwise fall back to contexts
+  const hasSourcesWithContent = sources.length > 0 && sources.some(s => s.content || s.snippet);
+  const citations = hasSourcesWithContent
+    ? sources.map(s => s.content || s.snippet || '')
+    : contexts;
+
+  if (citations.length === 0) {
+    return null;
   }
 
   // Extract scores for each context (if available)
   const getContextScore = (index: number): number => {
-    // Use hybrid score as base, could be enhanced with per-context scores
-    return (result.scores?.hybrid || 0.5) - (index * 0.05)
-  }
+    // Try to get score from source metadata, otherwise use hybrid score
+    if (hasSourcesWithContent && sources[index]?.relevance_score) {
+      return sources[index].relevance_score!;
+    }
+    // Use confidence score or hybrid score as base
+    const baseScore = result.confidence_score || result.scores?.hybrid || 0.5;
+    return baseScore - (index * 0.05);
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Source Citations</span>
-          <Badge variant="outline">{result.contexts.length} sources</Badge>
+          <Badge variant="outline">{citations.length} sources</Badge>
         </CardTitle>
         <p className="text-xs text-gray-500 mt-1">
           Documents retrieved from the knowledge base
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
-        {result.contexts.map((context, index) => (
+        {citations.map((citation, index) => (
           <CitationCard
             key={index}
-            context={context}
+            context={citation}
             index={index}
             score={getContextScore(index)}
             question=""
@@ -173,5 +188,5 @@ export function SourceCitations({ result }: SourceCitationsProps) {
         ))}
       </CardContent>
     </Card>
-  )
+  );
 }
