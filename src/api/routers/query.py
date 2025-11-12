@@ -4,7 +4,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request, status
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 from src.core.config import get_settings
 from src.core.models import ExperimentVariant, Query
@@ -19,16 +19,26 @@ router = APIRouter()
 
 
 class QueryRequest(BaseModel):
-    """Query request model."""
+    """Query request model (accepts 'query' or legacy 'question')."""
 
-    query: str = Field(..., description="The query text")
+    query: str = Field(
+        ...,
+        description="The query text",
+        validation_alias=AliasChoices("query", "question"),
+    )
     metadata_filters: dict[str, Any] | None = Field(
         default=None, description="Metadata filters for document retrieval"
     )
     experiment_variant: str | None = Field(
         default=None, description="Specific experiment variant to use"
     )
-    max_results: int = Field(default=5, ge=1, le=20, description="Maximum number of results")
+    max_results: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Maximum number of results",
+        validation_alias=AliasChoices("max_results", "k"),
+    )
     include_sources: bool = Field(default=True, description="Include source documents")
     temperature: float | None = Field(default=None, ge=0.0, le=2.0, description="LLM temperature")
     max_tokens: int | None = Field(
