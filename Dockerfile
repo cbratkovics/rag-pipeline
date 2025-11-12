@@ -18,8 +18,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir uv==0.5.1
 
-# Copy dependency files first (better layer caching)
-COPY pyproject.toml uv.lock ./
+# Copy dependency files AND README.md (required by hatchling)
+COPY pyproject.toml uv.lock README.md ./
 
 # Install dependencies with BuildKit cache mount
 RUN --mount=type=cache,target=/root/.cache/uv \
