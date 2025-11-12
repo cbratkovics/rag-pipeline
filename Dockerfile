@@ -1,50 +1,57 @@
 # syntax=docker/dockerfile:1.4
 # Multi-stage build for production RAG pipeline
 
-FROM python:3.12-slim-bookworm as builder
+FROM python:3.12-slim-bookworm AS builder
 
 WORKDIR /app
 
-# Install essential build dependencies only
+# Install minimal build dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Install uv with cache mount
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir uv==0.5.1
 
-# Copy dependency files AND README.md (required by hatchling)
+# Copy ONLY dependency files first (maximize cache hit rate)
 COPY pyproject.toml uv.lock README.md ./
 
-# Install dependencies with BuildKit cache mount
+# Install dependencies with aggressive caching
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=cache,target=/root/.cache/pip \
     uv sync --frozen --no-dev
+
+# Copy application code LAST (changes most frequently)
+COPY api/ ./api/
+COPY src/ ./src/
+COPY configs/ ./configs/
 
 # Production stage
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Install runtime dependencies only
+# Install ONLY runtime dependencies
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
-# Copy application code (after dependencies for better caching)
-COPY api/ ./api/
-COPY src/ ./src/
-COPY configs/ ./configs/
+# Copy application code from builder
+COPY --from=builder /app/api ./api
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/configs ./configs
 
 # Create non-root user
 RUN useradd -m -u 1000 raguser && \
