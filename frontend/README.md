@@ -128,7 +128,6 @@ Request:
   top_k_bm25?: number;     // BM25 results (default: 8)
   top_k_vec?: number;      // Vector results (default: 8)
   rrf_k?: number;          // RRF parameter (default: 60)
-  provider?: 'stub' | 'openai';  // LLM provider
 }
 ```
 
@@ -165,7 +164,6 @@ Response:
 
 Search bar with collapsible advanced settings:
 - Retrieval parameters (k, top_k_bm25, top_k_vec, rrf_k)
-- LLM provider selection (stub vs OpenAI)
 - A/B test variant selection
 - Keyboard shortcuts (Cmd/Ctrl + Enter)
 

@@ -87,9 +87,6 @@ export function QueryHistory({ onRerun }: QueryHistoryProps) {
               )}
             </div>
             <div className="flex items-center gap-2 text-xs text-gray-500">
-              <Badge variant="outline" className="text-xs">
-                {item.provider}
-              </Badge>
               <span>{item.result.latency_ms.toFixed(0)}ms</span>
               <span>•</span>
               <span>{formatDistanceToNow(new Date(item.timestamp))}</span>

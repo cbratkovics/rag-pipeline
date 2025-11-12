@@ -10,7 +10,6 @@ export interface QueryRequest {
   top_k_bm25?: number; // Number of BM25 results (default: 8)
   top_k_vec?: number; // Number of vector search results (default: 8)
   rrf_k?: number; // RRF K parameter for fusion (default: 60)
-  provider?: 'stub' | 'openai'; // LLM provider (default: 'stub')
 }
 
 // API Response Types
@@ -72,7 +71,6 @@ export interface QueryParams {
   top_k_bm25: number;
   top_k_vec: number;
   rrf_k: number;
-  provider: 'stub' | 'openai';
   temperature?: number;
   max_tokens?: number;
 }
@@ -129,5 +127,4 @@ export interface HistoricalQuery {
   question: string;
   result: QueryResult;
   timestamp: Date;
-  provider: 'stub' | 'openai';
 }

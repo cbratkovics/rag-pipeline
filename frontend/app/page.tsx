@@ -23,7 +23,6 @@ import type { QueryParams, ABVariant, QueryResponse } from '@/types'
 function HomeContent() {
 
   const [currentResult, setCurrentResult] = useState<QueryResponse | null>(null)
-  const [currentProvider, setCurrentProvider] = useState<'stub' | 'openai'>('stub')
   const [currentQuestion, setCurrentQuestion] = useState<string>('')
   const [currentVariant, setCurrentVariant] = useState<ABVariant>('baseline')
   const [error, setError] = useState<string | null>(null)
@@ -47,13 +46,12 @@ function HomeContent() {
         top_k_bm25: params.top_k_bm25,
         top_k_vec: params.top_k_vec,
         rrf_k: params.rrf_k,
-        provider: params.provider,
       })
     },
     onSuccess: (data, variables) => {
       setCurrentResult(data)
       // Record in metrics context
-      metrics.addQuery(data, variables.question, variables.params.provider)
+      metrics.addQuery(data, variables.question)
       // Simulate cache miss for demo purposes (in production, this would come from API)
       metrics.recordCacheMiss()
     },
@@ -68,7 +66,6 @@ function HomeContent() {
   })
 
   const handleQuery = (question: string, params: QueryParams, variant: ABVariant) => {
-    setCurrentProvider(params.provider)
     setCurrentVariant(variant)
     mutation.mutate({ question, params, variant })
   }
@@ -78,8 +75,7 @@ function HomeContent() {
       k: 4,
       top_k_bm25: 8,
       top_k_vec: 8,
-      rrf_k: 60,
-      provider: currentProvider
+      rrf_k: 60
     }, currentVariant)
   }
 
@@ -228,7 +224,7 @@ function HomeContent() {
           <>
             {/* Metrics Overview */}
             <section>
-              <MetricsPanel result={currentResult} provider={currentProvider} />
+              <MetricsPanel result={currentResult} />
             </section>
 
             {/* Main Results Grid */}

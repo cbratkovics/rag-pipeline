@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import type { MetricsState, QueryResult, HistoricalQuery } from '@/types'
 
 interface MetricsContextValue extends MetricsState {
-  addQuery: (result: QueryResult, question: string, provider: 'stub' | 'openai') => void
+  addQuery: (result: QueryResult, question: string) => void
   recordCacheHit: () => void
   recordCacheMiss: () => void
   recordError: () => void
@@ -63,7 +63,7 @@ export function MetricsProvider({ children }: { children: React.ReactNode }) {
     })
   }, [state])
 
-  const addQuery = useCallback((result: QueryResult, question: string, provider: 'stub' | 'openai') => {
+  const addQuery = useCallback((result: QueryResult, question: string) => {
     setState(prev => {
       const newQueries = [...prev.queries, result].slice(-10) // Keep last 10
       const newTotal = prev.totalQueries + 1
@@ -73,8 +73,8 @@ export function MetricsProvider({ children }: { children: React.ReactNode }) {
       const estimatedTokens = Math.ceil((result.answer.length + result.contexts.join('').length) / 4)
       const newTotalTokens = prev.totalTokens + estimatedTokens
 
-      // Calculate cost
-      const costPerToken = provider === 'openai' ? 0.002 / 1000 : 0.0015 / 1000
+      // Calculate cost (OpenAI pricing)
+      const costPerToken = 0.002 / 1000
       const queryCost = estimatedTokens * costPerToken
       const newTotalCost = prev.totalCost + queryCost
 
@@ -87,7 +87,6 @@ export function MetricsProvider({ children }: { children: React.ReactNode }) {
           question,
           result,
           timestamp: new Date(),
-          provider,
         },
       ].slice(-MAX_HISTORY)
       saveToStorage(HISTORY_KEY, newHistory)

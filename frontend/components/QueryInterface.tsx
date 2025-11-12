@@ -30,8 +30,7 @@ export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
         k: 4,
         top_k_bm25: 8,
         top_k_vec: 8,
-        rrf_k: 60,
-        provider: 'stub'
+        rrf_k: 60
       }, 'baseline')
     }
   }
@@ -42,8 +41,7 @@ export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
       k: 4,
       top_k_bm25: 8,
       top_k_vec: 8,
-      rrf_k: 60,
-      provider: 'stub'
+      rrf_k: 60
     }, 'baseline')
   }
 
@@ -73,11 +71,6 @@ export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
           >
             {isLoading ? 'Searching...' : 'Search'}
           </Button>
-
-          <div className="text-sm text-gray-500 flex items-center gap-2">
-            <span>Provider:</span>
-            <Badge variant="outline">Stub LLM</Badge>
-          </div>
         </div>
       </form>
 

@@ -15,16 +15,15 @@ import type { QueryResponse } from '@/types'
 
 interface MetricsPanelProps {
   result?: QueryResponse
-  provider?: string
 }
 
-export function MetricsPanel({ result, provider = 'stub' }: MetricsPanelProps) {
+export function MetricsPanel({ result }: MetricsPanelProps) {
   const metrics = useMetrics()
 
   // Calculate current query metrics
   const currentLatency = result?.latency_ms || 0
   const currentTokens = result ? estimateTokens(result.answer + result.contexts.join('')) : 0
-  const currentCost = currentTokens * (provider === 'openai' ? 0.002 / 1000 : 0.0015 / 1000)
+  const currentCost = currentTokens * (0.002 / 1000) // OpenAI pricing
 
   // Calculate aggregate metrics
   const cacheHitRate = calculateCacheHitRate(metrics.cacheHits, metrics.cacheMisses)
