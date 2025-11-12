@@ -61,8 +61,9 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           uv --version
 
-      - name: Cache uv dependencies
-        uses: actions/cache@v4
+      - name: Restore uv cache
+        id: cache-restore
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.cache/uv
@@ -71,10 +72,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}-
             ${{ runner.os }}-uv-
-          save-always: true
-          lookup-only: false
         env:
-          # Limit cache size to 2GB to prevent disk space issues
           SEGMENT_DOWNLOAD_TIMEOUT_MINS: 1
 
       - name: Install dependencies
@@ -125,6 +123,15 @@ jobs:
           echo "=== Cache directory sizes ==="
           du -sh ~/.cache/uv 2>/dev/null || echo "No uv cache"
           du -sh .venv 2>/dev/null || echo "No venv"
+
+      - name: Save uv cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cache/uv
+            .venv
+          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}-${{ hashFiles('pyproject.toml') }}
 
   docker-build:
     runs-on: ubuntu-latest

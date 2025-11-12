@@ -1,14 +1,17 @@
 """Vector store interfaces and implementations."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Mapping, Sequence
 from typing import Any, cast
 from uuid import UUID
 
+import chromadb
+from chromadb.config import Settings as ChromaSettings
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as qdrant_models
 
 from src.core.config import get_settings
-from src.core.models import Document, RetrievedDocument
+from src.core.models import Document, DocumentSource, RetrievedDocument
 from src.infrastructure.logging import LoggerMixin
 from src.retrieval.embeddings import embedding_manager
 
@@ -345,6 +348,294 @@ class QdrantVectorStore(VectorStore, LoggerMixin):
             return 0
 
 
+class ChromaDBVectorStore(VectorStore, LoggerMixin):
+    """ChromaDB vector store implementation."""
+
+    def __init__(self):
+        """Initialize ChromaDB vector store."""
+        self.settings = get_settings()
+        self.collection_name = self.settings.chromadb_collection
+        self.persist_dir = ".chroma"  # Default ChromaDB persist directory
+        self.client: chromadb.ClientAPI | None = None
+        self.collection: chromadb.Collection | None = None
+        self.dimension = self.settings.embedding_dimension
+
+    async def initialize(self) -> None:
+        """Initialize ChromaDB connection and collection."""
+        try:
+            # Create persistent client
+            self.client = chromadb.PersistentClient(
+                path=self.persist_dir,
+                settings=ChromaSettings(anonymized_telemetry=False),
+            )
+
+            # Get or create collection
+            self.collection = self.client.get_or_create_collection(
+                name=self.collection_name,
+                metadata={"hnsw:space": "cosine"},
+            )
+
+            # Check document count
+            count = self.collection.count()
+
+            self.logger.info(
+                "✓ ChromaDB initialized",
+                collection=self.collection_name,
+                persist_dir=self.persist_dir,
+                document_count=count,
+            )
+
+        except Exception as e:
+            self.logger.warning(
+                "⚠ ChromaDB unavailable - running in degraded mode (vector search disabled)",
+                error=str(e),
+                persist_dir=self.persist_dir,
+            )
+            self.client = None
+            self.collection = None
+
+    def is_available(self) -> bool:
+        """Check if ChromaDB is available and connected."""
+        return self.client is not None and self.collection is not None
+
+    async def add_documents(self, documents: list[Document]) -> list[str]:
+        """Add documents to ChromaDB."""
+        if not self.client or not self.collection:
+            await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot add documents - ChromaDB unavailable")
+            return []
+
+        try:
+            # Generate embeddings
+            contents = [doc.content for doc in documents]
+            embeddings = embedding_manager.embed_batch(contents)
+
+            # Prepare data for ChromaDB
+            ids = [str(doc.id) for doc in documents]
+            metadatas = []
+
+            for doc in documents:
+                metadata: dict[str, Any] = {
+                    "source": doc.source.value if doc.source else "unknown",
+                    "title": doc.title or "",
+                    "author": doc.author or "",
+                    "url": doc.url or "",
+                    "license": doc.license or "",
+                }
+                # Add custom metadata fields
+                if doc.metadata:
+                    metadata.update(doc.metadata)
+                metadatas.append(metadata)
+
+            # Add to collection
+            if self.collection is None:
+                raise RuntimeError("ChromaDB collection not initialized")
+
+            # Cast embeddings and metadatas to satisfy type checker
+            embeddings_list = cast(list[Sequence[float]], embeddings)
+            metadatas_list = cast(list[Mapping[str, Any]], metadatas)
+
+            self.collection.add(
+                ids=ids,
+                embeddings=embeddings_list,
+                documents=contents,
+                metadatas=metadatas_list,
+            )
+
+            self.logger.info(
+                "Added documents to ChromaDB",
+                count=len(documents),
+                collection=self.collection_name,
+            )
+
+            return ids
+
+        except Exception as e:
+            self.logger.error("Failed to add documents to ChromaDB", error=str(e))
+            return []
+
+    async def search(
+        self,
+        query_embedding: list[float],
+        top_k: int = 10,
+        metadata_filter: dict[str, Any] | None = None,
+    ) -> list[RetrievedDocument]:
+        """Search for similar documents in ChromaDB."""
+        if not self.client or not self.collection:
+            await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot search - ChromaDB unavailable")
+            return []
+
+        try:
+            if self.collection is None:
+                raise RuntimeError("ChromaDB collection not initialized")
+
+            # Build where filter if metadata_filter provided
+            where = metadata_filter if metadata_filter else None
+
+            # Cast query embedding to satisfy type checker
+            query_embeddings_list = cast(list[Sequence[float]], [query_embedding])
+
+            # Query ChromaDB
+            results = self.collection.query(
+                query_embeddings=query_embeddings_list,
+                n_results=top_k,
+                where=where,
+            )
+
+            # Convert to RetrievedDocument objects
+            retrieved_docs = []
+
+            if results["ids"] and len(results["ids"]) > 0:
+                for i in range(len(results["ids"][0])):
+                    doc_id = results["ids"][0][i]
+                    content = results["documents"][0][i] if results["documents"] else ""
+                    metadata = results["metadatas"][0][i] if results["metadatas"] else {}
+                    distance = results["distances"][0][i] if results["distances"] else 0.0
+
+                    # Convert distance to similarity score (cosine distance -> similarity)
+                    # ChromaDB returns L2 distance, but we configured cosine space
+                    # Cosine distance ranges from 0 (identical) to 2 (opposite)
+                    # Convert to similarity: 1 - (distance / 2)
+                    score = 1.0 - (distance / 2.0) if distance <= 2.0 else 0.0
+
+                    # Create Document object with proper type casting
+                    # Convert ChromaDB metadata to dict[str, Any]
+                    doc_metadata = dict(metadata) if metadata else {}
+
+                    # Convert source string to DocumentSource enum
+                    source_str = str(metadata.get("source", "custom"))
+                    try:
+                        doc_source = DocumentSource(source_str)
+                    except ValueError:
+                        doc_source = DocumentSource.CUSTOM
+
+                    doc = Document(
+                        id=UUID(doc_id),
+                        content=content,
+                        metadata=doc_metadata,
+                        source=doc_source,
+                        title=str(metadata.get("title")) if metadata.get("title") else None,
+                        author=str(metadata.get("author")) if metadata.get("author") else None,
+                        url=str(metadata.get("url")) if metadata.get("url") else None,
+                        license=str(metadata.get("license")) if metadata.get("license") else None,
+                    )
+
+                    retrieved_docs.append(
+                        RetrievedDocument(
+                            document=doc,
+                            score=float(score),
+                            semantic_score=float(score),
+                        )
+                    )
+
+            return retrieved_docs
+
+        except Exception as e:
+            self.logger.error("Failed to search ChromaDB", error=str(e))
+            return []
+
+    async def delete_documents(self, ids: list[str]) -> bool:
+        """Delete documents from ChromaDB by IDs."""
+        if not self.client or not self.collection:
+            await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot delete documents - ChromaDB unavailable")
+            return False
+
+        try:
+            if self.collection is None:
+                raise RuntimeError("ChromaDB collection not initialized")
+
+            self.collection.delete(ids=ids)
+
+            self.logger.info("Deleted documents from ChromaDB", count=len(ids))
+            return True
+
+        except Exception as e:
+            self.logger.error("Failed to delete documents from ChromaDB", error=str(e))
+            return False
+
+    async def get_document(self, doc_id: str) -> Document | None:
+        """Get a document from ChromaDB by ID."""
+        if not self.client or not self.collection:
+            await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot get document - ChromaDB unavailable")
+            return None
+
+        try:
+            if self.collection is None:
+                raise RuntimeError("ChromaDB collection not initialized")
+
+            results = self.collection.get(ids=[doc_id], include=["documents", "metadatas"])
+
+            if not results["ids"] or len(results["ids"]) == 0:
+                return None
+
+            content = results["documents"][0] if results["documents"] else ""
+            metadata = results["metadatas"][0] if results["metadatas"] else {}
+
+            # Convert ChromaDB metadata to dict[str, Any]
+            doc_metadata = dict(metadata) if metadata else {}
+
+            # Convert source string to DocumentSource enum
+            source_str = str(metadata.get("source", "custom"))
+            try:
+                doc_source = DocumentSource(source_str)
+            except ValueError:
+                doc_source = DocumentSource.CUSTOM
+
+            doc = Document(
+                id=UUID(doc_id),
+                content=content,
+                metadata=doc_metadata,
+                source=doc_source,
+                title=str(metadata.get("title")) if metadata.get("title") else None,
+                author=str(metadata.get("author")) if metadata.get("author") else None,
+                url=str(metadata.get("url")) if metadata.get("url") else None,
+                license=str(metadata.get("license")) if metadata.get("license") else None,
+            )
+
+            return doc
+
+        except Exception as e:
+            self.logger.error("Failed to get document from ChromaDB", error=str(e), doc_id=doc_id)
+            return None
+
+    async def update_document(self, document: Document) -> bool:
+        """Update a document in ChromaDB."""
+        # ChromaDB doesn't have a native update - use upsert by re-adding
+        result = await self.add_documents([document])
+        return len(result) > 0
+
+    async def count_documents(self) -> int:
+        """Count total documents in ChromaDB."""
+        if not self.client or not self.collection:
+            await self.initialize()
+
+        if not self.is_available():
+            self.logger.debug("Cannot count documents - ChromaDB unavailable")
+            return 0
+
+        try:
+            if self.collection is None:
+                raise RuntimeError("ChromaDB collection not initialized")
+
+            count = self.collection.count()
+            return count
+
+        except Exception as e:
+            self.logger.error("Failed to count documents in ChromaDB", error=str(e))
+            return 0
+
+
 class VectorStoreFactory:
     """Factory for creating vector store instances."""
 
@@ -356,7 +647,8 @@ class VectorStoreFactory:
 
         if store_type == "qdrant":
             return QdrantVectorStore()
-        # Add ChromaDB implementation here when needed
+        elif store_type == "chromadb":
+            return ChromaDBVectorStore()
         else:
             raise ValueError(f"Unknown vector store type: {store_type}")
 
