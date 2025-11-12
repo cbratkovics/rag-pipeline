@@ -1,6 +1,7 @@
 """Integration tests for ChromaDB-based RAG pipeline."""
 
 import os
+
 import pytest
 
 # Set protobuf environment before importing ChromaDB

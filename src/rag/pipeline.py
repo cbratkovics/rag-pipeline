@@ -71,7 +71,7 @@ async def answer_query(
     # Generate answer
     logger.info(f"Generating answer using {provider} provider")
     generation_start = time.time()
-    llm = get_llm(provider)
+    llm = get_llm()
     answer = llm.generate(question, retrieval_results["contexts"])
     generation_time = time.time() - generation_start
     logger.info(f"Generated answer in {generation_time:.2f}s")

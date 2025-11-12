@@ -41,10 +41,7 @@ async def lifespan(app: FastAPI):
     logger.info("Starting RAG Pipeline application")
     try:
         await vector_store.initialize()
-        if vector_store.is_available():
-            logger.info("✓ Qdrant vector store initialized")
-        else:
-            logger.warning("⚠ Qdrant unavailable - running in degraded mode")
+        logger.info("✓ Qdrant vector store initialized")
     except Exception as e:
         logger.warning(
             "⚠ Failed to initialize vector store - running in degraded mode",

@@ -1,7 +1,6 @@
 """Admin API endpoints for system management."""
 
 import os
-from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
@@ -77,8 +76,8 @@ async def initialize_vector_store(
         logger.error("Vector store initialization error", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Initialization failed: {str(e)}",
-        )
+            detail=f"Initialization failed: {e!s}",
+        ) from e
 
 
 @router.get("/admin/vector-store/status", status_code=status.HTTP_200_OK)
@@ -157,5 +156,5 @@ async def verify_vector_store() -> dict[str, Any]:
         logger.error("Vector store verification error", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Verification failed: {str(e)}",
-        )
+            detail=f"Verification failed: {e!s}",
+        ) from e

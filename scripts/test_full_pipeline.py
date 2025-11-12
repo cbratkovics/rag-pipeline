@@ -73,7 +73,7 @@ def test_bm25_search():
         logger.info(f"✓ {len(non_zero_scores)}/{len(results)} results have non-zero scores")
 
         # Display sample results
-        for i, (doc_id, text, score, metadata) in enumerate(results[:3], 1):
+        for i, (_, text, score, _) in enumerate(results[:3], 1):
             logger.info(f"  Result {i}:")
             logger.info(f"    Score: {score:.4f}")
             logger.info(f"    Text: {text[:100]}...")
@@ -114,7 +114,7 @@ def test_vector_search():
         logger.info(f"✓ {len(non_zero_scores)}/{len(results)} results have non-zero scores")
 
         # Display sample results
-        for i, (doc_id, text, score, metadata) in enumerate(results[:3], 1):
+        for i, (_, text, score, _) in enumerate(results[:3], 1):
             logger.info(f"  Result {i}:")
             logger.info(f"    Score: {score:.4f}")
             logger.info(f"    Text: {text[:100]}...")

@@ -339,7 +339,7 @@ def initialize_vector_store(
         )
 
         final_count = collection.count()
-        logger.info(f"✓ Successfully stored documents")
+        logger.info("✓ Successfully stored documents")
         logger.info(f"✓ Collection now contains {final_count} documents")
 
         logger.info("=" * 80)

@@ -6,6 +6,7 @@ from typing import Any
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
+from pydantic import SecretStr
 
 from src.core.config import get_settings
 from src.core.models import (
@@ -44,8 +45,9 @@ class RAGPipeline(LoggerMixin):
         return ChatOpenAI(
             model=llm_config.get("model", "gpt-3.5-turbo"),
             temperature=llm_config.get("temperature", 0.7),
-            max_tokens=llm_config.get("max_tokens", 512),
-            api_key=self.settings.openai_api_key,
+            api_key=SecretStr(self.settings.openai_api_key)
+            if self.settings.openai_api_key
+            else None,
         )
 
     def _create_prompt_template(self) -> PromptTemplate:

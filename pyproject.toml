@@ -96,6 +96,8 @@ fixable = ["ALL"]
 [tool.ruff.lint.per-file-ignores]
 # All files that need protobuf environment variable before imports
 "scripts/simple_ingest.py" = ["E402"]
+"scripts/initialize_vector_store.py" = ["E402"]
+"scripts/test_full_pipeline.py" = ["E402"]
 "src/rag/ingest.py" = ["E402"]
 "src/rag/retriever.py" = ["E402"]
 "tests/test_pipeline.py" = ["E402"]
@@ -162,7 +164,9 @@ exclude_lines = [
 [dependency-groups]
 dev = [
     "mypy>=1.18.2",
+    "pip-audit>=2.6.1",
     "pytest>=7.4.4",
+    "pytest-asyncio>=0.21.2",
     "pytest-cov>=4.1.0",
     "ruff>=0.14.4",
 ]
