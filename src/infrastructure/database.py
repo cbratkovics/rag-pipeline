@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from sqlalchemy import MetaData
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -16,6 +17,16 @@ from src.core.config import get_settings
 from src.infrastructure.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _redact_url(url: str) -> str:
+    """Redact password from database URL for safe logging."""
+    try:
+        parsed = make_url(url)
+        return str(parsed.set(password="***"))
+    except Exception:
+        return "<redacted>"
+
 
 # Database naming convention
 convention = {
@@ -42,7 +53,8 @@ class DatabaseManager:
     async def initialize(self) -> None:
         """Initialize database engine and session factory."""
         logger.info(
-            "Initializing database connection", database_url=str(self.settings.database_url)
+            "Initializing database connection",
+            database_url=_redact_url(str(self.settings.database_url)),
         )
 
         self.engine = create_async_engine(

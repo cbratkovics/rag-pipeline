@@ -44,7 +44,7 @@ class RAGPipeline(LoggerMixin):
         return ChatOpenAI(
             model=llm_config.get("model", "gpt-3.5-turbo"),
             temperature=llm_config.get("temperature", 0.7),
-            model_kwargs={"max_tokens": llm_config.get("max_tokens", 512)},
+            max_tokens=llm_config.get("max_tokens", 512),
             api_key=self.settings.openai_api_key,
         )
 
@@ -239,9 +239,7 @@ Answer: """
         if temperature is not None:
             self.llm.temperature = temperature
         if max_tokens is not None:
-            if not hasattr(self.llm, "model_kwargs"):
-                self.llm.model_kwargs = {}
-            self.llm.model_kwargs["max_tokens"] = max_tokens
+            self.llm.max_tokens = max_tokens
 
         # Create chain and generate
         chain = LLMChain(llm=self.llm, prompt=self.prompt_template)

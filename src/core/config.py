@@ -177,8 +177,14 @@ class Settings(BaseSettings):
     @field_validator("database_url", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str | None, info: Any) -> Any:
-        """Construct database URL from components."""
+        """Construct database URL from components with automatic scheme conversion."""
         if isinstance(v, str):
+            # Normalize scheme for SQLAlchemy async
+            # Render provides postgres://, but we need postgresql+asyncpg://
+            if v.startswith("postgres://"):
+                return "postgresql+asyncpg://" + v[len("postgres://") :]
+            elif v.startswith("postgresql://"):
+                return "postgresql+asyncpg://" + v[len("postgresql://") :]
             return v
         values = info.data
         return PostgresDsn.build(
