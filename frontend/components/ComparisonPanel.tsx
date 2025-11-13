@@ -1,15 +1,33 @@
 'use client'
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Badge } from './ui/badge'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+  Legend
+} from 'recharts'
 
 interface ComparisonPanelProps {
   result?: any
 }
 
 export function ComparisonPanel({ result }: ComparisonPanelProps) {
+  const [activeComparison, setActiveComparison] = useState('methods')
+
   // Retrieval method comparison data
   const methodComparison = [
     { method: 'BM25 Only', latency: 120, accuracy: 65, recall: 58, cost: 0.001 },
@@ -48,7 +66,7 @@ export function ComparisonPanel({ result }: ComparisonPanelProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="methods" className="w-full">
+        <Tabs value={activeComparison} onValueChange={setActiveComparison}>
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="methods">Retrieval Methods</TabsTrigger>
             <TabsTrigger value="timeline">Performance Timeline</TabsTrigger>
@@ -107,15 +125,18 @@ export function ComparisonPanel({ result }: ComparisonPanelProps) {
                       border: '1px solid #e5e7eb',
                       borderRadius: '6px'
                     }}
+                    labelFormatter={(label) => `Time: ${label}`}
+                    formatter={(value: any, name: string) => {
+                      if (name === 'latency') {
+                        return [`${value}ms`, 'Latency'];
+                      }
+                      return [value, name];
+                    }}
                   />
-                  <Bar
-                    dataKey="latency"
-                    fill="#3b82f6"
-                    name="Latency (ms)"
-                  >
+                  <Bar dataKey="latency" name="Latency (ms)">
                     {performanceTimeline.map((entry, index) => (
-                      <Bar
-                        key={`bar-${index}`}
+                      <Cell
+                        key={`cell-${index}`}
                         fill={entry.cacheHit ? '#10b981' : '#ef4444'}
                       />
                     ))}
