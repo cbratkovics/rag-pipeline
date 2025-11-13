@@ -138,6 +138,7 @@ asyncio_mode = "auto"
 markers = [
     "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
     "unit: marks tests as unit tests",
+    "contract: marks tests as contract tests to prevent API drift",
     "slow: marks tests as slow",
     "asyncio: marks tests as asyncio tests",
     "optional: marks tests requiring optional dependencies",

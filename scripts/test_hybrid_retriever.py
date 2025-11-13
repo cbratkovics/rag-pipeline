@@ -27,7 +27,7 @@ def test_hybrid_retriever():
 
     # Check document count
     doc_count = retriever.collection.count()
-    print(f"   ✓ HybridRetriever initialized")
+    print("   ✓ HybridRetriever initialized")
     print(f"   ✓ Document count: {doc_count}")
 
     if doc_count == 0:
@@ -63,7 +63,7 @@ def test_hybrid_retriever():
 
         # Check results
         if not contexts:
-            print(f"      ❌ No contexts retrieved")
+            print("      ❌ No contexts retrieved")
             all_tests_passed = False
             continue
 
@@ -75,7 +75,7 @@ def test_hybrid_retriever():
         vector_scores = scores.get("vector", [])
 
         if not hybrid_scores or all(s == 0 for s in hybrid_scores):
-            print(f"      ❌ All hybrid scores are zero!")
+            print("      ❌ All hybrid scores are zero!")
             all_tests_passed = False
         else:
             avg_hybrid = sum(hybrid_scores) / len(hybrid_scores)
@@ -99,8 +99,8 @@ def test_hybrid_retriever():
     if all_tests_passed and doc_count > 0:
         print("✅ SUCCESS: HybridRetriever is working correctly!")
         print(f"   - Document count: {doc_count}")
-        print(f"   - All queries returned non-zero scores")
-        print(f"   - Retrieval system is operational")
+        print("   - All queries returned non-zero scores")
+        print("   - Retrieval system is operational")
         return True
     else:
         print("❌ FAILURE: Some tests failed")

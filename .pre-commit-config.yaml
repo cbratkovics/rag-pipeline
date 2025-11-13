@@ -1,34 +1,40 @@
 repos:
   - repo: local
     hooks:
+      - id: uv-check
+        name: UV Environment Check
+        entry: uv run python -m pip check
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: ruff-format
         name: Ruff Format
-        entry: bash -c 'if command -v uv &> /dev/null; then uv run ruff format; else ruff format; fi'
+        entry: uv run ruff format
         language: system
         types: [python]
         pass_filenames: false
         args: ["."]
-        always_run: true
 
       - id: ruff-lint
         name: Ruff Lint
-        entry: bash -c 'if command -v uv &> /dev/null; then uv run ruff check --fix .; else ruff check --fix .; fi'
+        entry: uv run ruff check
         language: system
         types: [python]
         pass_filenames: false
-        always_run: true
+        args: [".", "--fix"]
 
       - id: mypy
         name: MyPy Type Check
-        entry: bash -c 'if command -v uv &> /dev/null; then uv run mypy src api --ignore-missing-imports; else mypy src api --ignore-missing-imports; fi'
+        entry: uv run mypy
         language: system
         types: [python]
         pass_filenames: false
-        stages: [push]
+        args: ["src", "api", "--ignore-missing-imports"]
 
       - id: pytest-fast
         name: Fast Tests
-        entry: bash -c 'if command -v uv &> /dev/null; then uv run pytest tests/ -m "not integration" --tb=short -q; else pytest tests/ -m "not integration" --tb=short -q; fi'
+        entry: uv run pytest
         language: system
         pass_filenames: false
-        stages: [push]
+        args: ["-m", "not integration", "--tb=short", "-v"]
