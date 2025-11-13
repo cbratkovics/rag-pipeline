@@ -1,21 +1,180 @@
 """Query API endpoints."""
 
+import os
+import time
 import uuid
 from typing import Any
+from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import AliasChoices, BaseModel, Field
 
+# Set protobuf environment before importing ChromaDB
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 from src.core.config import get_settings
-from src.core.models import ExperimentVariant, Query
+from src.core.models import (
+    Document,
+    DocumentSource,
+    ExperimentVariant,
+    Query,
+    QueryResult,
+    QueryStatus,
+    RetrievedDocument,
+)
 from src.evaluation.ragas_evaluator import ragas_evaluator
 from src.experiments.ab_testing import ab_test_manager
 from src.infrastructure.logging import get_logger
+from src.rag.generator import get_llm
+from src.rag.retriever import HybridRetriever
 from src.retrieval.rag_pipeline import rag_pipeline
 
 settings = get_settings()
 logger = get_logger(__name__)
 router = APIRouter()
+
+# Initialize retriever and LLM
+_hybrid_retriever = None
+_llm = None
+
+
+def get_hybrid_retriever() -> HybridRetriever:
+    """Get or create hybrid retriever instance."""
+    global _hybrid_retriever
+    if _hybrid_retriever is None:
+        _hybrid_retriever = HybridRetriever()
+    return _hybrid_retriever
+
+
+def get_llm_instance():
+    """Get or create LLM instance."""
+    global _llm
+    if _llm is None:
+        try:
+            _llm = get_llm()
+        except ValueError:
+            logger.warning("OpenAI API key not available, will fall back to rag_pipeline")
+            _llm = None
+    return _llm
+
+
+async def process_query_with_hybrid_retriever(
+    query: Query, variant: ExperimentVariant
+) -> QueryResult:
+    """Process query using HybridRetriever and OpenAI LLM.
+
+    This is the preferred method as it uses the populated ChromaDB collection.
+    """
+    start_time = time.time()
+
+    try:
+        # Get retriever and LLM
+        retriever = get_hybrid_retriever()
+        llm = get_llm_instance()
+
+        # Check if retriever has documents
+        doc_count = retriever.collection.count()
+        logger.info(f"HybridRetriever has {doc_count} documents")
+
+        if doc_count == 0:
+            logger.warning("HybridRetriever is empty, cannot process query")
+            raise ValueError("Vector store is empty")
+
+        # Perform retrieval
+        retrieval_result = retriever.retrieve(
+            query=query.text,
+            top_k_bm25=10,
+            top_k_vec=10,
+            final_k=query.max_results,
+            fusion_method="rrf",
+            rrf_k=60,
+        )
+
+        contexts = retrieval_result["contexts"]
+        scores = retrieval_result["scores"]
+        metadata_list = retrieval_result["metadata"]
+
+        logger.info(
+            f"Retrieved {len(contexts)} contexts",
+            hybrid_scores=scores["hybrid"][:3] if scores["hybrid"] else [],
+        )
+
+        # Generate answer using LLM
+        if llm and contexts:
+            answer = llm.generate(query.text, contexts)
+            # Estimate token count
+            token_count = (
+                len(query.text.split())
+                + sum(len(c.split()) for c in contexts)
+                + len(answer.split())
+            )
+        else:
+            if not contexts:
+                answer = "I couldn't find relevant information to answer your question."
+            else:
+                answer = "LLM not available. Retrieved contexts but cannot generate answer."
+            token_count = 0
+
+        # Convert to RetrievedDocument objects
+        retrieved_docs = []
+        for i, (context, metadata_dict) in enumerate(zip(contexts, metadata_list, strict=False)):
+            # Extract scores for this document
+            hybrid_score = scores["hybrid"][i] if i < len(scores["hybrid"]) else 0.0
+            bm25_score = scores["bm25"][i] if i < len(scores["bm25"]) else 0.0
+            vector_score = scores["vector"][i] if i < len(scores["vector"]) else 0.0
+
+            # Create Document object
+            doc = Document(
+                id=uuid4(),
+                content=context,
+                metadata=metadata_dict or {},
+                source=DocumentSource.CUSTOM,
+                title=metadata_dict.get("title") if metadata_dict else None,
+                url=metadata_dict.get("url") if metadata_dict else None,
+            )
+
+            # Create RetrievedDocument
+            retrieved_doc = RetrievedDocument(
+                document=doc,
+                score=float(hybrid_score),
+                bm25_score=float(bm25_score),
+                semantic_score=float(vector_score),
+            )
+            retrieved_docs.append(retrieved_doc)
+
+        # Calculate metrics
+        processing_time = (time.time() - start_time) * 1000
+        confidence_score = float(scores["hybrid"][0]) if scores["hybrid"] else 0.0
+
+        # Estimate cost (simplified)
+        cost_usd = token_count * 0.000002 if token_count > 0 else 0.0
+
+        # Create QueryResult
+        result = QueryResult(
+            query_id=query.id,
+            query_text=query.text,
+            answer=answer,
+            sources=retrieved_docs if query.include_sources else [],
+            experiment_variant=variant,
+            confidence_score=min(confidence_score, 1.0),
+            processing_time_ms=processing_time,
+            token_count=token_count,
+            cost_usd=cost_usd,
+            status=QueryStatus.COMPLETED,
+        )
+
+        logger.info(
+            "Query processed with HybridRetriever",
+            query_id=str(query.id),
+            contexts_count=len(contexts),
+            processing_time_ms=processing_time,
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(f"HybridRetriever processing failed: {e}", exc_info=True)
+        raise
 
 
 class QueryRequest(BaseModel):
@@ -91,8 +250,17 @@ async def process_query(request: QueryRequest, req: Request) -> QueryResponse:
             )
             query.experiment_variant = variant
 
-        # Process query
-        result = await rag_pipeline.process_query(query, variant)
+        # Process query - try HybridRetriever first, fallback to rag_pipeline
+        result = None
+        try:
+            logger.info("Attempting to process query with HybridRetriever")
+            result = await process_query_with_hybrid_retriever(query, variant)
+            logger.info("Successfully processed query with HybridRetriever")
+        except Exception as e:
+            logger.warning(
+                f"HybridRetriever failed, falling back to rag_pipeline: {e}", exc_info=True
+            )
+            result = await rag_pipeline.process_query(query, variant)
 
         # Evaluate if enabled
         evaluation_metrics = None

@@ -12,7 +12,7 @@ from src.api.middleware import (
     add_process_time,
     rate_limit_middleware,
 )
-from src.api.routers import admin, experiments, feedback, health, metrics, query
+from src.api.routers import admin, experiments, feedback, health, metrics, query, query_hybrid
 from src.core.config import get_settings
 from src.infrastructure.cache import cache_manager
 from src.infrastructure.database import db_manager
@@ -100,6 +100,7 @@ if settings.rate_limit_enabled:
 
 # Include routers
 app.include_router(query.router, prefix="/api/v1", tags=["Query"])
+app.include_router(query_hybrid.router, prefix="/api/v1", tags=["Query"])
 app.include_router(experiments.router, prefix="/api/v1", tags=["Experiments"])
 app.include_router(feedback.router, prefix="/api/v1", tags=["Feedback"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Metrics"])
