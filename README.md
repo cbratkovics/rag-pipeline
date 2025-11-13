@@ -2,13 +2,13 @@
 
 Enterprise-grade Retrieval-Augmented Generation implementation showcasing advanced AI engineering capabilities for portfolio demonstration.
 
-## 🚀 Live Deployments
+## Live Deployments
 
 - **Frontend**: [rag-pipeline-eta.vercel.app](https://rag-pipeline-eta.vercel.app)
 - **Backend API**: [rag-pipeline-api-hksb.onrender.com](https://rag-pipeline-api-hksb.onrender.com/docs)
 - **Repository**: [github.com/cbratkovics/rag-pipeline](https://github.com/cbratkovics/rag-pipeline)
 
-## 🎯 Key Features
+## Key Features
 
 ### Core RAG Capabilities
 - **Hybrid Search**: BM25 keyword search + dense vector embeddings using sentence-transformers
@@ -22,7 +22,7 @@ Enterprise-grade Retrieval-Augmented Generation implementation showcasing advanc
 - **Error Handling**: Retry logic with tenacity, circuit breakers, graceful degradation
 - **API Design**: FastAPI with automatic OpenAPI docs, Pydantic v2 validation, WebSocket support
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Backend
 - **Runtime**: Python 3.12, uvloop for async performance
@@ -70,7 +70,7 @@ docker run -p 8000:8000 \
   rag-pipeline:latest
 ```
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 - **Response Time**: <500ms p95 latency
 - **Throughput**: 1000+ requests/minute sustained
@@ -104,7 +104,7 @@ uv run pre-commit install
 uv run pre-commit run --all-files
 ```
 
-## 📚 Project Structure
+## Project Structure
 
 ```
 rag-pipeline/
@@ -135,7 +135,7 @@ Environment variables (see `.env.example`):
 - `CHROMA_PERSIST_DIR`: ChromaDB storage path (default: `.chroma`, Render: `/var/data/chroma`)
 - `EMBEDDING_MODEL`: Default "all-MiniLM-L6-v2"
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### POST /api/v1/query
 Query the RAG pipeline with a question and get an AI-generated answer.
@@ -210,7 +210,3 @@ This is a portfolio project demonstrating production AI engineering capabilities
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file for details.
-
-## 👤 Contact
-
-Built by AI Engineer for demonstrating production-ready AI systems architecture and implementation.
