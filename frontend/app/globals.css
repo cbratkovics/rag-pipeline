@@ -33,6 +33,13 @@
     --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
+
+    /* Premium brand colors */
+    --brand: 221.2 83.2% 53.3%;
+    --success: 142.1 76.2% 36.3%;
+    --warn: 37.7 92.1% 50.2%;
+    --danger: 0 84.2% 60.2%;
+    --info: 199 89% 48%;
   }
 
   .dark {
@@ -73,7 +80,11 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+
+  /* Ensure Inter font is loaded */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 }
 
 @layer utilities {

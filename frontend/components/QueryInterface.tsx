@@ -46,7 +46,7 @@ export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 border-2 shadow-sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="relative">
           <input
@@ -54,11 +54,13 @@ export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Ask a question about RAG, search algorithms, or AI..."
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-base"
+            className="w-full px-5 py-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-base font-medium placeholder:text-gray-400"
             disabled={isLoading}
           />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-            <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">Enter</kbd>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <kbd className="px-2.5 py-1.5 text-xs bg-gray-100 rounded-md border border-gray-200 font-semibold">
+              Enter
+            </kbd>
           </div>
         </div>
 
@@ -67,9 +69,16 @@ export function QueryInterface({ onSubmit, isLoading }: QueryInterfaceProps) {
             type="submit"
             disabled={isLoading || !query.trim()}
             size="lg"
-            className="px-8"
+            className="px-10 py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
           >
-            {isLoading ? 'Searching...' : 'Search'}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Searching...
+              </span>
+            ) : (
+              'Search'
+            )}
           </Button>
         </div>
       </form>

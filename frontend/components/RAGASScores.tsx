@@ -2,6 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Progress } from './ui/progress'
+import { Badge } from './ui/badge'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './ui/hover-card'
 import { Info, TrendingUp, TrendingDown } from 'lucide-react'
 import { calculateRAGASMetrics, getScoreColor, formatScore } from '@/lib/ragas-utils'
 import { useMetrics } from '@/contexts/MetricsContext'
@@ -32,36 +34,49 @@ function MetricRow({ label, value, description, previousValue }: MetricRowProps)
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 p-3 rounded-lg bg-gray-50/50 hover:bg-gray-50 transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">{label}</span>
-          <div className="group relative">
-            <Info className="h-3 w-3 text-gray-400 hover:text-gray-600 cursor-help" />
-            <div className="absolute left-0 top-5 w-48 p-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
-              {description}
-            </div>
-          </div>
+          <span className="text-sm font-semibold text-gray-700">{label}</span>
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                <Info className="h-3.5 w-3.5" />
+              </button>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-72">
+              <p className="text-sm text-gray-700">{description}</p>
+            </HoverCardContent>
+          </HoverCard>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-lg font-bold ${getScoreColor(value)}`}>
+          <span className={`text-xl font-bold ${getScoreColor(value)} tabular-nums`}>
             {formatScore(value)}
           </span>
           {trend !== undefined && trend !== 0 && (
-            <div className={`flex items-center ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <Badge
+              variant="outline"
+              className={`flex items-center gap-1 ${
+                trend > 0
+                  ? 'bg-green-50 text-green-700 border-green-200'
+                  : 'bg-red-50 text-red-700 border-red-200'
+              }`}
+            >
               {trend > 0 ? (
                 <TrendingUp className="h-3 w-3" />
               ) : (
                 <TrendingDown className="h-3 w-3" />
               )}
-              <span className="text-xs ml-0.5">{Math.abs(trend * 100).toFixed(0)}%</span>
-            </div>
+              <span className="text-xs font-semibold">
+                {trend > 0 ? '+' : ''}{Math.abs(trend * 100).toFixed(0)}%
+              </span>
+            </Badge>
           )}
         </div>
       </div>
       <Progress
         value={value * 100}
-        className={`h-2 ${
+        className={`h-2.5 ${
           value >= 0.8 ? 'bg-green-100' : value >= 0.6 ? 'bg-yellow-100' : 'bg-red-100'
         }`}
         indicatorClassName={getProgressColor(value)}
@@ -102,15 +117,25 @@ export function RAGASScores({ result, question = '' }: RAGASScoresProps) {
     : undefined
 
   return (
-    <Card className="border-2 border-blue-100">
+    <Card className="border-2 border-purple-100 bg-gradient-to-br from-purple-50/30 to-white">
       <CardHeader>
-        <CardTitle className="text-base font-semibold flex items-center justify-between">
-          <span>RAGAS Quality Metrics</span>
-          <div className={`text-2xl font-bold ${getScoreColor(metrics.overall_score || 0)}`}>
+        <div className="flex items-center justify-between mb-2">
+          <CardTitle className="text-base font-semibold">
+            RAGAS Quality Metrics
+          </CardTitle>
+          <Badge
+            className={`text-base font-bold px-3 py-1 ${
+              (metrics.overall_score || 0) >= 0.8
+                ? 'bg-green-500 text-white'
+                : (metrics.overall_score || 0) >= 0.6
+                ? 'bg-yellow-500 text-white'
+                : 'bg-red-500 text-white'
+            }`}
+          >
             {formatScore(metrics.overall_score || 0)}
-          </div>
-        </CardTitle>
-        <p className="text-xs text-gray-500 mt-1">
+          </Badge>
+        </div>
+        <p className="text-xs text-gray-600">
           AI-powered quality assessment of retrieval and generation
         </p>
       </CardHeader>

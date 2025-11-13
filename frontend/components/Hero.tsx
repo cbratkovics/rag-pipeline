@@ -1,73 +1,69 @@
 'use client'
 
 import { Zap, TrendingUp, Shield, Sparkles, Github, FileText } from 'lucide-react'
+import { MetricKPI } from '@/components/metrics/MetricKPI'
 
 const ImpactMetrics = () => {
-  const metrics = [
-    {
-      label: "Response Time",
-      value: "450ms",
-      change: "-85%",
-      comparison: "vs. sequential retrieval",
-      icon: Zap,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      label: "Cost per Query",
-      value: "$0.002",
-      change: "-83%",
-      comparison: "through intelligent caching",
-      icon: TrendingUp,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    {
-      label: "Answer Quality",
-      value: "92%",
-      change: "+35%",
-      comparison: "RAGAS score improvement",
-      icon: Sparkles,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
-      label: "Availability",
-      value: "99.95%",
-      change: "SLA",
-      comparison: "enterprise-grade reliability",
-      icon: Shield,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50",
-    },
-  ]
+  // Mock sparkline data (last 20 queries)
+  const latencySparkline = [520, 485, 495, 510, 490, 475, 460, 455, 450, 445, 440, 435, 430, 425, 420, 430, 440, 445, 450, 455]
+  const qualitySparkline = [0.85, 0.86, 0.87, 0.88, 0.88, 0.89, 0.90, 0.91, 0.91, 0.92, 0.92, 0.91, 0.90, 0.91, 0.92, 0.92, 0.91, 0.92, 0.92, 0.92]
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-      {metrics.map((metric) => (
-        <div
-          key={metric.label}
-          className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-shadow hover:border-gray-300"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <div className={`p-1.5 rounded-md ${metric.bgColor}`}>
-              <metric.icon className={`h-4 w-4 ${metric.color}`} />
-            </div>
-            <span className="text-xs font-semibold text-green-600">
-              {metric.change}
-            </span>
-          </div>
-          <div className={`text-2xl font-bold ${metric.color}`}>
-            {metric.value}
-          </div>
-          <div className="text-xs text-gray-600 mt-1 font-medium">
-            {metric.label}
-          </div>
-          <div className="text-xs text-gray-400 mt-2">
-            {metric.comparison}
-          </div>
-        </div>
-      ))}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <MetricKPI
+        title="Response Time"
+        value={450}
+        unit="ms"
+        decimals={0}
+        icon={Zap}
+        color="text-blue-600"
+        bgColor="bg-blue-50"
+        delta={-15}
+        deltaLabel="vs last week"
+        helpText="Average P50 latency for hybrid retrieval queries"
+        sparklineData={latencySparkline}
+        target={500}
+        targetLabel="SLA Target"
+      />
+      <MetricKPI
+        title="Cost per Query"
+        value={0.002}
+        prefix="$"
+        decimals={4}
+        icon={TrendingUp}
+        color="text-green-600"
+        bgColor="bg-green-50"
+        delta={-83}
+        deltaLabel="via caching"
+        helpText="Includes embeddings, retrieval, and LLM generation costs"
+      />
+      <MetricKPI
+        title="Answer Quality"
+        value={92}
+        unit="%"
+        decimals={0}
+        icon={Sparkles}
+        color="text-purple-600"
+        bgColor="bg-purple-50"
+        delta={+35}
+        deltaLabel="vs baseline"
+        helpText="RAGAS composite score (relevancy, faithfulness, recall)"
+        sparklineData={qualitySparkline.map(v => v * 100)}
+        target={85}
+        targetLabel="Quality Target"
+      />
+      <MetricKPI
+        title="Availability"
+        value={99.95}
+        unit="%"
+        decimals={2}
+        icon={Shield}
+        color="text-indigo-600"
+        bgColor="bg-indigo-50"
+        helpText="Enterprise-grade SLA with 99.95% uptime guarantee"
+        target={99.9}
+        targetLabel="SLA"
+      />
     </div>
   )
 }
