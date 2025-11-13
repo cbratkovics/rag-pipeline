@@ -1,212 +1,221 @@
-# RAG Pipeline - Production-Ready AI System
+# RAG Pipeline — Production‑Ready, Observable, and Measurable
 
-Enterprise-grade Retrieval-Augmented Generation implementation showcasing advanced AI engineering capabilities for portfolio demonstration.
+Retrieval‑Augmented Generation (RAG) service engineered like a real product: hybrid retrieval, streaming generation, evaluation (RAGAS), load testing, observability, and deployment artifacts. Built to demonstrate end‑to‑end AI engineering, not just a demo.
 
-## Live Deployments
+**Live Demo:** https://rag-pipeline-eta.vercel.app
+**API Docs (Swagger):** https://rag-pipeline-api-hksb.onrender.com/docs
+**Repo:** https://github.com/cbratkovics/rag-pipeline
 
-- **Frontend**: [rag-pipeline-eta.vercel.app](https://rag-pipeline-eta.vercel.app)
-- **Backend API**: [rag-pipeline-api-hksb.onrender.com](https://rag-pipeline-api-hksb.onrender.com/docs)
-- **Repository**: [github.com/cbratkovics/rag-pipeline](https://github.com/cbratkovics/rag-pipeline)
+---
 
-## Key Features
+## What This Project Demonstrates
 
-### Core RAG Capabilities
-- **Hybrid Search**: BM25 keyword search + dense vector embeddings using sentence-transformers
-- **A/B Testing Framework**: Compare retrieval strategies in production with configurable experiments
-- **RAGAS Evaluation**: Comprehensive metrics including faithfulness, relevancy, and answer correctness
-- **Smart Caching**: Redis-based multi-tier caching with TTL management and cache invalidation
+- **Hybrid Retrieval with RRF:** BM25 + dense embeddings fused with Reciprocal Rank Fusion for robust ranking across query styles.
+- **Production Observability:** `/metrics` for Prometheus, structured logging, and trace hooks via OpenTelemetry.
+- **Evaluation you can trust:** RAGAS metrics (faithfulness, relevancy, answer correctness) and scripts to A/B retrieval strategies.
+- **Real Ops Concerns:** Semantic caching (Redis), request budgets, retries/circuit breakers, typed configs, and health checks.
+- **Deployable Anywhere:** Dockerfile, `docker-compose`, and Kubernetes manifests with staging/production env examples.
 
-### Production Engineering
-- **Observability**: Prometheus metrics, structured logging via structlog, OpenTelemetry tracing
-- **Continuous Learning**: MLflow experiment tracking, model versioning, performance monitoring
-- **Error Handling**: Retry logic with tenacity, circuit breakers, graceful degradation
-- **API Design**: FastAPI with automatic OpenAPI docs, Pydantic v2 validation, WebSocket support
+---
 
-## Technology Stack
+## Architecture at a glance
 
-### Backend
-- **Runtime**: Python 3.12, uvloop for async performance
-- **Framework**: FastAPI 0.121.1, Pydantic 2.5.0
-- **Vector Store**: ChromaDB 1.3.4 with chroma-hnswlib 0.7.6
-- **LLM Integration**: OpenAI GPT-4 API, sentence-transformers 2.2.2
-- **Caching**: Redis 5.0.0 with connection pooling
-- **Search**: rank-bm25 0.2.2 for hybrid retrieval
-- **Monitoring**: Prometheus, Grafana dashboards
+```mermaid
+flowchart LR
+    A[Client / Frontend] -- REST/WebSocket --> B[FastAPI Service]
+    B -->|Query| C[Retriever]
+    C -->|BM25| D[(BM25 Index)]
+    C -->|Embeddings| E[(ChromaDB)]
+    C -->|RRF fuse| F[Ranked Contexts]
+    B -->|LLM prompt with contexts| G[Generator]
+    G -->|Answer| A
+    B <--> H[(Redis Cache)]
+    B --> I[Metrics/Tracing]
+````
 
-### Infrastructure
-- **Deployment**: Docker multi-stage builds, GitHub Actions CI/CD
-- **Backend Hosting**: Render (srv-d3neevgv73c739vsa1g)
-- **Cache Hosting**: Render Redis (red-d3nealjipnbc73b1cnsg)
-- **Frontend Hosting**: Vercel with edge functions
+**Request path (sequence):**
 
-## 📦 Installation
+```mermaid
+sequenceDiagram
+    participant User
+    participant API as FastAPI
+    participant Cache as Redis
+    participant Ret as Retriever
+    participant LLM as LLM Provider
 
-### Quick Start with uv (Recommended)
+    User->>API: POST /api/v1/query
+    API->>Cache: Check semantic cache
+    alt Cache hit
+        Cache-->>API: cached answer
+        API-->>User: stream answer
+    else Cache miss
+        API->>Ret: hybrid search (BM25 + vector)
+        Ret-->>API: top-k contexts (RRF)
+        API->>LLM: generate with retrieved contexts
+        LLM-->>API: streamed tokens
+        API->>Cache: store result
+        API-->>User: stream answer
+    end
+```
+
+---
+
+## Core Features
+
+* **Hybrid search** using BM25 and vector search (sentence-transformers) with RRF fusion.
+* **RAGAS evaluation** to quantify quality (faithfulness, relevancy, correctness).
+* **A/B testing hooks** to compare retrieval strategies in real time.
+* **Semantic cache (Redis)** with TTLs and invalidation to cut cost/latency.
+* **Production guardrails**: retries, timeouts, circuit breakers, and request budgets.
+* **Observability**: health checks, Prometheus metrics, structured logs, tracing hooks.
+* **API design**: FastAPI with Pydantic models, OpenAPI docs, and optional streaming.
+
+> See `api/`, `src/rag/`, `deployments/k8s/`, `benchmarks/locust/`, and `monitoring/` directories for full implementation.
+
+---
+
+## Quickstart (local)
+
+> Requires Python 3.12+ and [uv](https://github.com/astral-sh/uv) **or** Docker.
+
+### Option A — Python + uv
+
 ```bash
-# Clone repository
+# 1) Clone
 git clone https://github.com/cbratkovics/rag-pipeline.git
 cd rag-pipeline
 
-# Install dependencies with uv
+# 2) Install
 uv sync
 
-# Run tests
+# 3) Environment
+cp .env.example .env
+# set OPENAI_API_KEY and any Redis/Chroma vars you need
+
+# 4) Run tests (unit only)
 uv run pytest tests/ -m "not integration"
 
-# Start API server
+# 5) Launch API
 uv run uvicorn api.main:app --reload --port 8000
+# Open http://localhost:8000/docs
 ```
 
-### Docker Deployment
+### Option B — Docker Compose (API + Redis + Chroma)
+
 ```bash
-# Build production image
-docker build -t rag-pipeline:latest .
-
-# Run with environment variables
-docker run -p 8000:8000 \
-  -e OPENAI_API_KEY=$OPENAI_API_KEY \
-  -e REDIS_URL=redis://localhost:6379 \
-  -e CHROMADB_HOST=localhost \
-  rag-pipeline:latest
+# Provide OPENAI_API_KEY in your shell or .env
+docker compose up --build
+# API: http://localhost:8000/docs
+# Metrics: http://localhost:8000/metrics
 ```
 
-## Performance Metrics
+---
 
-- **Response Time**: <500ms p95 latency
-- **Throughput**: 1000+ requests/minute sustained
-- **Cache Hit Rate**: 60-80% depending on query patterns
-- **Retrieval Accuracy**: 0.85+ MRR, 0.92+ NDCG@10
-- **Uptime**: 99.9% availability SLA
+## Ingest and Query
 
-## 🧪 Development
+**Ingest documents**
 
-### Code Quality
 ```bash
-# Format code
-uv run ruff format .
-
-# Lint
-uv run ruff check . --fix
-
-# Type checking
-uv run mypy src api --ignore-missing-imports
-
-# Run all tests
-uv run pytest tests/ --cov=src --cov=api --cov-report=html
+curl -X POST http://localhost:8000/api/v1/ingest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documents": [{
+      "content": "Your document text here",
+      "metadata": {"source": "example","category":"technical"}
+    }],
+    "reset": false
+  }'
 ```
 
-### Pre-commit Hooks
+**Query**
+
 ```bash
-# Install hooks
-uv run pre-commit install
-
-# Run manually
-uv run pre-commit run --all-files
+curl -X POST http://localhost:8000/api/v1/query \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What is RAG?",
+    "k": 4,
+    "top_k_bm25": 8,
+    "top_k_vec": 8,
+    "rrf_k": 60,
+    "provider": "openai"
+  }'
 ```
+
+---
+
+## Evaluation & A/B testing
+
+* **RAGAS** – generate a test set and score outputs (faithfulness, relevancy, answer correctness).
+* **A/B hooks** – flip between retrieval configs (e.g., K values, fusion params) and compare RAGAS + latency.
+
+Suggested workflow:
+
+1. Create or synthesize a test set (e.g., ~100 Q/A with references).
+2. Run the pipeline under Strategy A vs. Strategy B.
+3. Compare RAGAS metrics and latency/throughput from load tests.
+4. Promote the champion config; keep historical results for drift tracking.
+
+---
+
+## Load testing (Locust)
+
+Spin up the API locally or in staging, then:
+
+```bash
+# From project root
+uv run locust -f benchmarks/locust/locustfile.py --host http://localhost:8000
+```
+
+Track **p50/p95 latency**, **RPS/QPS**, and **error rates**; confirm semantic cache hit rates while ramping users.
+
+---
+
+## Configuration
+
+Environment variables (see `.env.example`):
+
+* `OPENAI_API_KEY` – default provider is OpenAI
+* `OPENAI_MODEL` – e.g., `gpt-4o-mini` or similar
+* `REDIS_URL` – `redis://localhost:6379/0`
+* `CHROMADB_HOST` / `CHROMA_PERSIST_DIR` – for vector store
+* `EMBEDDING_MODEL` – e.g., `all-MiniLM-L6-v2`
+
+---
 
 ## Project Structure
 
 ```
 rag-pipeline/
 ├── api/                    # FastAPI application
-│   ├── main.py            # Application entry point
-│   ├── routes/            # API endpoints
-│   └── dependencies.py    # Dependency injection
-├── src/                    # Core RAG implementation
-│   ├── rag/               # Pipeline components
-│   │   ├── retriever.py   # Hybrid search implementation
-│   │   ├── generator.py   # LLM response generation
-│   │   └── pipeline.py    # Orchestration logic
-│   ├── eval/              # RAGAS evaluation
-│   └── monitoring/        # Observability tools
-├── configs/               # Configuration files
-├── tests/                 # Comprehensive test suite
-├── scripts/               # Utility scripts
-└── frontend/             # Next.js application
+│   ├── main.py             # Application entry point
+│   ├── routes/             # REST endpoints
+│   └── dependencies.py     # Dependency injection / settings
+├── src/
+│   ├── rag/                # Retriever, generator, pipeline orchestration
+│   ├── eval/               # RAGAS / eval utilities
+│   └── monitoring/         # Instrumentation and metrics
+├── benchmarks/locust/      # Load tests (Locust)
+├── deployments/k8s/        # Kubernetes manifests
+├── monitoring/             # Grafana/Prometheus assets
+├── docs/                   # Quick start / local setup notes
+├── tests/                  # Unit/integration tests
+├── Dockerfile
+├── docker-compose.yml
+└── render.yaml
 ```
 
-## 🔧 Configuration
+---
 
-Environment variables (see `.env.example`):
-- `OPENAI_API_KEY`: Required for OpenAI access (OpenAI is the only supported LLM provider)
-- `OPENAI_MODEL`: Default "gpt-3.5-turbo"
-- `REDIS_URL`: Cache connection string
-- `CHROMADB_HOST`: Vector database host
-- `CHROMA_PERSIST_DIR`: ChromaDB storage path (default: `.chroma`, Render: `/var/data/chroma`)
-- `EMBEDDING_MODEL`: Default "all-MiniLM-L6-v2"
+## Operations
 
-## API Endpoints
+* **Health:** `GET /healthz`
+* **Docs:** `GET /docs` (OpenAPI)
+* **Metrics:** `GET /metrics` (Prometheus format)
+* **Tracing:** OpenTelemetry exporters pluggable (e.g., Jaeger)
 
-### POST /api/v1/query
-Query the RAG pipeline with a question and get an AI-generated answer.
+---
 
-**Request:**
-```json
-{
-  "question": "What is RAG?",
-  "k": 4,
-  "top_k_bm25": 8,
-  "top_k_vec": 8,
-  "rrf_k": 60,
-  "provider": "openai"
-}
-```
+## License
 
-**Response:**
-```json
-{
-  "answer": "RAG (Retrieval-Augmented Generation) is...",
-  "contexts": ["context1", "context2"],
-  "scores": {
-    "hybrid": 0.85,
-    "bm25": 0.72,
-    "vector": 0.91
-  },
-  "latency_ms": 324.5
-}
-```
-
-### POST /api/v1/ingest
-Ingest documents into the vector store for retrieval.
-
-**Request:**
-```json
-{
-  "documents": [
-    {
-      "content": "Your document text here",
-      "metadata": {"source": "example", "category": "technical"}
-    }
-  ],
-  "reset": false
-}
-```
-
-**Response:**
-```json
-{
-  "ok": true,
-  "inserted": 1
-}
-```
-
-**Parameters:**
-- `documents`: List of documents to ingest, each with `content` (string) and optional `metadata` (dict)
-- `reset`: Set to `true` to clear existing documents before ingesting (default: `false`)
-
-**Note:** On first startup, the system automatically seeds ChromaDB with initial documents if the collection is empty. Use this endpoint to add additional documents programmatically.
-
-## 📈 Monitoring & Observability
-
-- **Metrics Endpoint**: `/metrics` (Prometheus format)
-- **Health Check**: `/healthz`
-- **API Docs**: `/docs` (Swagger UI)
-- **Tracing**: OpenTelemetry with Jaeger backend
-
-## 🤝 Contributing
-
-This is a portfolio project demonstrating production AI engineering capabilities. Feel free to explore the codebase and architecture decisions.
-
-## 📄 License
-
-MIT License - See [LICENSE](LICENSE) file for details.
+MIT — see `LICENSE`.
