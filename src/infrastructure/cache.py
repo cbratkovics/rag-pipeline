@@ -1,7 +1,10 @@
 """Redis cache management for the RAG pipeline."""
 
+import asyncio
+import hashlib
 import json
 import pickle
+import re
 from typing import Any
 
 import redis.asyncio as redis
@@ -14,7 +17,7 @@ logger = get_logger(__name__)
 
 
 class CacheManager(LoggerMixin):
-    """Manages Redis cache operations."""
+    """Manages Redis cache operations with improved key handling."""
 
     def __init__(self) -> None:
         """Initialize cache manager."""
@@ -190,6 +193,83 @@ class CacheManager(LoggerMixin):
         except Exception as e:
             self.logger.warning("Cache pattern flush failed", pattern=pattern, error=str(e))
             return 0
+
+    def normalize_query(self, query: str) -> str:
+        """Normalize query for better cache hits.
+
+        Normalizations applied:
+        - Convert to lowercase
+        - Remove extra whitespace
+        - Remove trailing punctuation (?,!,.)
+        - Normalize quotes
+        """
+        if not query:
+            return ""
+
+        # Convert to lowercase
+        normalized = query.lower().strip()
+
+        # Normalize whitespace (multiple spaces to single space)
+        normalized = re.sub(r"\s+", " ", normalized)
+
+        # Remove trailing punctuation
+        normalized = normalized.rstrip("?.!")
+
+        # Normalize quotes
+        normalized = normalized.replace('"', "'").replace(""", "'").replace(""", "'")
+
+        return normalized
+
+    def generate_cache_key(self, prefix: str, query: str, params: dict | None = None) -> str:
+        """Generate deterministic cache key from query and parameters.
+
+        Args:
+            prefix: Key prefix (e.g., "query_result")
+            query: Query text to normalize
+            params: Optional parameters to include in key
+
+        Returns:
+            Cache key string
+        """
+        # Normalize the query
+        normalized_query = self.normalize_query(query)
+
+        # Create stable key from query and params
+        key_data = {"query": normalized_query, "params": params or {}}
+
+        # Sort params for consistency
+        key_str = json.dumps(key_data, sort_keys=True)
+
+        # Generate hash for consistent length
+        key_hash = hashlib.md5(key_str.encode()).hexdigest()[:16]
+
+        return self.make_key(prefix, key_hash)
+
+    async def get_or_compute(
+        self, key: str, compute_fn, ttl: int | None = None
+    ) -> tuple[Any, bool]:
+        """Get from cache or compute and store.
+
+        Returns:
+            Tuple of (value, was_cached)
+        """
+        # Try to get from cache
+        cached = await self.get(key)
+        if cached is not None:
+            self.logger.debug(f"Cache hit for key: {key}")
+            await self.increment("metrics:cache_hits")
+            return cached, True
+
+        # Cache miss - compute new value
+        self.logger.debug(f"Cache miss for key: {key}")
+        await self.increment("metrics:cache_misses")
+
+        value = await compute_fn() if asyncio.iscoroutinefunction(compute_fn) else compute_fn()
+
+        # Store in cache
+        await self.set(key, value, ttl=ttl)
+
+        return value, False
 
     def make_key(self, *parts: str) -> str:
         """Create cache key from parts."""

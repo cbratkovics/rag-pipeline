@@ -19,6 +19,10 @@ import { Badge } from '@/components/ui/badge'
 import { MetricsProvider, useMetrics } from '@/contexts/MetricsContext'
 import { queryRAG, RAGAPIError } from '@/lib/api'
 import type { QueryParams, ABVariant, QueryResponse } from '@/types'
+import Hero from '@/components/Hero'
+import { ComparisonPanel } from '@/components/ComparisonPanel'
+import { PerformanceGraphs } from '@/components/PerformanceGraphs'
+import { GuidedDemo } from '@/components/GuidedDemo'
 
 function HomeContent() {
 
@@ -87,41 +91,8 @@ function HomeContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">R</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Production RAG Pipeline
-                </h1>
-                <p className="text-sm text-gray-500">
-                  Enterprise AI Engineering Demo
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="hidden sm:inline-flex">
-                FastAPI + Next.js
-              </Badge>
-              <a
-                href="https://github.com/cbratkovics/rag-pipeline"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <Github className="h-5 w-5" />
-                <span className="hidden sm:inline">View on GitHub</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Enhanced Hero Section */}
+      <Hero />
 
       {/* System Performance Bar */}
       <section className="border-b bg-gray-50/50">
@@ -130,7 +101,7 @@ function HomeContent() {
             <div className="flex gap-8 text-sm">
               <div>
                 <span className="text-gray-500">Avg Latency:</span>
-                <span className="font-semibold ml-1">1.2s</span>
+                <span className="font-semibold ml-1">450ms</span>
               </div>
               <div>
                 <span className="text-gray-500">Cache Hit Rate:</span>
@@ -152,38 +123,6 @@ function HomeContent() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Hero Section */}
-        <section className="text-center space-y-4 py-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-sm text-blue-700 font-medium">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            Live Demo
-          </div>
-
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 max-w-3xl mx-auto">
-            Hybrid Retrieval with{' '}
-            <span className="text-blue-600">A/B Testing</span> &{' '}
-            <span className="text-blue-600">RAGAS Evaluation</span>
-          </h2>
-
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Production-grade RAG system combining BM25 keyword search and vector embeddings
-            with Reciprocal Rank Fusion. Real-time metrics and quality assessment.
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-2 pt-4">
-            <Badge variant="default">BM25 + Vector Search</Badge>
-            <Badge variant="default">Reciprocal Rank Fusion</Badge>
-            <Badge variant="default">Redis Caching</Badge>
-            <Badge variant="default">A/B Testing</Badge>
-            <Badge variant="default">RAGAS Evaluation</Badge>
-            <Badge variant="default">Real-time Observability</Badge>
-            <Badge variant="outline">95% Test Coverage</Badge>
-            <Badge variant="outline">&lt; 1.5s P99 Latency</Badge>
-          </div>
-        </section>
 
         {/* Query Interface */}
         <section>
@@ -250,8 +189,18 @@ function HomeContent() {
             <section>
               <QueryHistory onRerun={handleRerunQuery} />
             </section>
+
+            {/* Performance Comparison Panel */}
+            <section>
+              <ComparisonPanel result={currentResult} />
+            </section>
           </>
         )}
+
+        {/* Performance Graphs - Always visible */}
+        <section>
+          <PerformanceGraphs latestMetrics={currentResult} />
+        </section>
 
         {/* Empty State */}
         {!currentResult && !mutation.isPending && !error && (
@@ -271,6 +220,12 @@ function HomeContent() {
           </section>
         )}
       </main>
+
+      {/* Guided Demo - Floating button */}
+      <GuidedDemo
+        onQuerySubmit={(query) => handleQuery(query, { k: 4, top_k_bm25: 8, top_k_vec: 8, rrf_k: 60 }, currentVariant)}
+        isQueryLoading={mutation.isPending}
+      />
 
       {/* Footer */}
       <footer className="border-t border-gray-200 bg-white mt-16">

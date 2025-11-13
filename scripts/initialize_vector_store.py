@@ -154,6 +154,61 @@ SEED_DOCUMENTS = [
         "text": """RAG systems incur costs from embeddings, vector storage, and LLM API calls. Optimization strategies include: using smaller, efficient embedding models (all-MiniLM-L6-v2 vs text-embedding-ada-002), caching common queries, batching embedding requests, implementing rate limiting, and choosing cost-effective LLM providers. Open-source models run locally eliminate API costs but require infrastructure. Monitoring token usage and setting budgets prevents unexpected expenses. The cost-quality tradeoff should align with business requirements.""",
         "metadata": {"topic": "cost optimization", "category": "optimization"},
     },
+    {
+        "id": "production_deployment_26",
+        "text": """Production-grade RAG deployment requires robust infrastructure and monitoring. Key components include: containerization with Docker for consistent environments, orchestration with Kubernetes for auto-scaling, CI/CD pipelines for automated testing and deployment, health checks and readiness probes, graceful shutdown handling, and comprehensive error tracking. Database migrations must be versioned and tested. Blue-green deployments minimize downtime. Feature flags enable safe rollouts. Infrastructure as code ensures reproducibility.""",
+        "metadata": {"topic": "deployment", "category": "operations"},
+    },
+    {
+        "id": "vector_databases_27",
+        "text": """Choosing the right vector database impacts RAG performance. ChromaDB excels for prototyping with simple API and local storage. Pinecone offers managed service with excellent scaling and low latency. Weaviate provides rich querying and hybrid search. Qdrant focuses on performance with efficient filtering. Milvus handles billion-scale deployments. Key factors: query latency (5-50ms), scalability (millions to billions of vectors), filtering capabilities, cost structure, and operational complexity. Benchmark with your specific workload before committing.""",
+        "metadata": {"topic": "vector databases", "category": "infrastructure"},
+    },
+    {
+        "id": "chunking_advanced_28",
+        "text": """Advanced chunking strategies improve retrieval quality beyond simple fixed-size splits. Semantic chunking uses NLP to identify natural boundaries (paragraphs, sections). Sliding window chunking with 10-20% overlap ensures continuity. Hierarchical chunking creates parent-child relationships enabling both broad and detailed retrieval. Context-aware chunking preserves code blocks, tables, and lists intact. Metadata enrichment adds titles, headers, and section context to each chunk. Chunk size optimization balances context preservation (larger chunks) with retrieval precision (smaller chunks). The ideal size varies by domain: 256-512 tokens for QA, 512-1024 for summarization.""",
+        "metadata": {"topic": "chunking strategies", "category": "preprocessing"},
+    },
+    {
+        "id": "multi_modal_rag_29",
+        "text": """Multi-modal RAG extends beyond text to process images, tables, and diagrams. Vision-language models like CLIP create joint embeddings for images and text, enabling semantic search across modalities. Document understanding models extract structured data from PDFs, forms, and receipts. Table parsing converts tabular data into searchable text or structured queries. Chart and diagram interpretation uses OCR and layout analysis. Multi-modal fusion combines signals from different modalities for richer retrieval. Applications include technical documentation, medical records, and e-commerce catalogs.""",
+        "metadata": {"topic": "multi-modal", "category": "advanced"},
+    },
+    {
+        "id": "query_routing_30",
+        "text": """Intelligent query routing improves RAG efficiency by directing queries to specialized subsystems. Intent classification identifies query types: factual QA, comparison, summarization, or generation. Domain routing sends queries to specialized knowledge bases (medical, legal, technical). Complexity routing uses simple keyword search for easy queries, full RAG for complex ones. Language routing handles multilingual corpora. Confidence-based routing escalates low-confidence queries to human review. Routing reduces latency by 40% and costs by 35% while maintaining quality.""",
+        "metadata": {"topic": "query routing", "category": "optimization"},
+    },
+    {
+        "id": "rag_security_31",
+        "text": """Security in RAG systems requires multi-layered protection. Input validation prevents injection attacks and malicious queries. Output sanitization removes PII and sensitive data. Access control ensures users only retrieve authorized documents. Audit logging tracks all queries and responses for compliance. Rate limiting prevents abuse and DoS attacks. Embedding isolation prevents information leakage between tenants. Encryption at rest and in transit protects data. Regular security audits and penetration testing identify vulnerabilities. GDPR and HIPAA compliance requires special attention to data retention and deletion.""",
+        "metadata": {"topic": "security", "category": "compliance"},
+    },
+    {
+        "id": "continuous_learning_32",
+        "text": """Continuous learning in RAG enables systems to improve over time. Feedback loops collect user ratings (thumbs up/down, 5-star) on answers. Click-through rates indicate relevance. Dwell time shows engagement. A/B testing compares retrieval strategies and prompts. Reinforcement learning from human feedback (RLHF) fine-tunes models. Retrieval weight optimization adjusts BM25 vs vector importance. Query reformulation learns better search queries. Document reranking improves based on click patterns. Metrics dashboards track improvement trends. Automated retraining triggers when performance degrades.""",
+        "metadata": {"topic": "continuous learning", "category": "ml_ops"},
+    },
+    {
+        "id": "latency_optimization_33",
+        "text": """Latency optimization is critical for user experience. Sub-200ms retrieval enables real-time applications. Strategies include: approximate nearest neighbor search (HNSW, IVF) trading accuracy for speed, query result caching reducing repeat query time by 95%, embedding caching avoiding recomputation, connection pooling for databases, async processing for parallel operations, batch processing for efficiency, model quantization reducing inference time, and GPU acceleration for embedding generation. Monitoring p50, p95, p99 latencies identifies bottlenecks. Each 100ms latency increase reduces user satisfaction by 7%.""",
+        "metadata": {"topic": "latency", "category": "performance"},
+    },
+    {
+        "id": "rag_evaluation_frameworks_34",
+        "text": """Comprehensive RAG evaluation requires multiple frameworks and metrics. RAGAS provides automated metrics without ground truth. BEIR benchmarks retrieval on 18 diverse datasets. KILT evaluates knowledge-intensive tasks. TriviaQA and Natural Questions offer large-scale QA evaluation. Human evaluation assesses fluency, coherence, and helpfulness. Adversarial testing checks robustness to paraphrasing and typos. Domain-specific benchmarks validate specialized performance. Continuous evaluation in production monitors real-world performance. Evaluation costs (human time, API calls) must be balanced against deployment scale.""",
+        "metadata": {"topic": "evaluation", "category": "quality"},
+    },
+    {
+        "id": "enterprise_integration_35",
+        "text": """Enterprise RAG integration connects with existing systems and workflows. REST APIs provide language-agnostic access. GraphQL enables flexible querying. Webhooks support event-driven architectures. OAuth and SSO integrate authentication. SAML enables enterprise identity management. Document ingestion pipelines connect to SharePoint, Confluence, Google Drive. Database connectors sync with SQL and NoSQL stores. Message queue integration (Kafka, RabbitMQ) enables async processing. Microservice architecture allows independent scaling. API gateways manage rate limiting and routing. Service mesh provides observability and security.""",
+        "metadata": {"topic": "enterprise integration", "category": "architecture"},
+    },
+    {
+        "id": "prompt_optimization_36",
+        "text": """Prompt optimization significantly impacts RAG answer quality and cost. Few-shot examples improve accuracy by 30% for complex tasks. Chain-of-thought prompting encourages step-by-step reasoning. Self-consistency samples multiple outputs and selects the most common answer. Prompt compression reduces token count while preserving meaning. Dynamic prompts adapt to query complexity. Role-based prompts set AI persona (expert, educator, assistant). Output format specification ensures structured responses (JSON, markdown, lists). Negative prompts prevent unwanted behaviors. Prompt versioning enables A/B testing and rollback. Prompt engineering iteration yields 2-3x quality improvement.""",
+        "metadata": {"topic": "prompt optimization", "category": "best practices"},
+    },
 ]
 
 
