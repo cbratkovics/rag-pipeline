@@ -43,6 +43,19 @@ async def lifespan(app: FastAPI):
     await cache_manager.initialize()
     await vector_store.initialize()
 
+    # Check vector store and warn if empty
+    try:
+        count = await vector_store.count_documents()
+        if count == 0:
+            logger.warning(
+                "⚠️  Vector store is EMPTY! The API will start but queries will fail. "
+                "Please initialize with: POST /api/v1/admin/initialize"
+            )
+        else:
+            logger.info(f"✓ Vector store contains {count} documents")
+    except Exception as e:
+        logger.error(f"Failed to check vector store status: {e}")
+
     # Import and initialize other components
     from src.experiments.ab_testing import ab_test_manager
 

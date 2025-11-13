@@ -38,6 +38,19 @@ async def add_process_time(request: Request, call_next: Callable) -> Response:
 
 async def rate_limit_middleware(request: Request, call_next: Callable) -> Response:
     """Rate limiting middleware."""
+    # CRITICAL: Skip rate limiting for health check endpoints
+    health_paths = [
+        "/healthz",
+        "/health",
+        "/api/v1/health",
+        "/api/v1/health/ready",
+        "/api/v1/health/live",
+        "/metrics",
+    ]
+    if request.url.path in health_paths:
+        response: Response = await call_next(request)
+        return response
+
     if not settings.rate_limit_enabled:
         response: Response = await call_next(request)
         return response
