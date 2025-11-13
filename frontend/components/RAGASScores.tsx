@@ -24,6 +24,13 @@ function MetricRow({ label, value, description, previousValue }: MetricRowProps)
     ? value - previousValue
     : undefined
 
+  // Helper to get progress bar color based on score
+  const getProgressColor = (score: number) => {
+    if (score >= 0.8) return 'bg-green-500'
+    if (score >= 0.6) return 'bg-yellow-500'
+    return 'bg-red-500'
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -57,6 +64,7 @@ function MetricRow({ label, value, description, previousValue }: MetricRowProps)
         className={`h-2 ${
           value >= 0.8 ? 'bg-green-100' : value >= 0.6 ? 'bg-yellow-100' : 'bg-red-100'
         }`}
+        indicatorClassName={getProgressColor(value)}
       />
     </div>
   )
@@ -82,13 +90,15 @@ export function RAGASScores({ result, question = '' }: RAGASScoresProps) {
     )
   }
 
-  // Calculate metrics from current result
-  const metrics = calculateRAGASMetrics(result, question)
+  // First check if backend provides real RAGAS metrics
+  // If not, calculate fallback metrics from available data
+  const usingBackendMetrics = !!result.evaluation_metrics
+  const metrics = result.evaluation_metrics || calculateRAGASMetrics(result, question)
 
   // Get previous query metrics for comparison
   const previousQuery = metricsContext.queries[metricsContext.queries.length - 2]
   const previousMetrics = previousQuery
-    ? calculateRAGASMetrics(previousQuery, '')
+    ? (previousQuery.evaluation_metrics || calculateRAGASMetrics(previousQuery, ''))
     : undefined
 
   return (
@@ -150,6 +160,13 @@ export function RAGASScores({ result, question = '' }: RAGASScoresProps) {
                 ? 'bg-yellow-100'
                 : 'bg-red-100'
             }`}
+            indicatorClassName={
+              (metrics.overall_score || 0) >= 0.8
+                ? 'bg-green-500'
+                : (metrics.overall_score || 0) >= 0.6
+                ? 'bg-yellow-500'
+                : 'bg-red-500'
+            }
           />
         </div>
 
@@ -165,6 +182,15 @@ export function RAGASScores({ result, question = '' }: RAGASScoresProps) {
           <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-xs text-yellow-700 font-medium text-center">
               Quality could be improved. Consider refining the query or documents.
+            </p>
+          </div>
+        )}
+
+        {/* Info note if using fallback metrics */}
+        {!usingBackendMetrics && (
+          <div className="pt-3 border-t border-gray-200">
+            <p className="text-xs text-gray-500 italic text-center">
+              Quality scores are estimated from response data. Enable backend RAGAS evaluation for precise metrics.
             </p>
           </div>
         )}
