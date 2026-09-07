@@ -26,11 +26,15 @@ run:  ## Run API locally with uvicorn
 	@mkdir -p /tmp/prometheus_multiproc
 	uv run uvicorn src.api.main:app --host 0.0.0.0 --port 8000
 
-eval:  ## Run RAGAS evaluation and log to MLflow
-	@echo "Running RAGAS evaluation..."
-	@mkdir -p results/ragas mlruns
-	uv run python -m src.eval.ragas_runner
-	@echo "Evaluation complete! Check results/ragas/ for reports"
+eval:  ## Show how RAGAS evaluation is run
+	@echo "RAGAS evaluation runs inside the query pipeline:"
+	@echo "  src/evaluation/ragas_evaluator.py, invoked from src/api/routers/query.py"
+	@echo ""
+	@echo "Enable it by setting ragas_enabled in your settings, start the service with"
+	@echo "'make run', then send queries to /api/v1/query. Scores are returned per query."
+	@echo ""
+	@echo "This repository ships no offline batch evaluation runner and publishes no"
+	@echo "pre-computed evaluation results."
 
 loadtest:  ## Run Locust headless and save artifacts
 	@echo "Running load tests..."

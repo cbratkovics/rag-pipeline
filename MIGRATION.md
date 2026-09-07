@@ -145,7 +145,7 @@ uv run uvicorn src.api.main:app --reload
 uv run python -m src.rag.ingest
 
 # Run evaluation
-uv run python -m src.eval.ragas_runner
+# RAGAS evaluation runs in-pipeline; see src/evaluation/ragas_evaluator.py
 ```
 
 #### 5. Add New Dependencies

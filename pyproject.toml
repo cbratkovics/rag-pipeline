@@ -75,7 +75,6 @@ dev = [
 [project.scripts]
 rag-api = "api.main:main"
 rag-ingest = "src.rag.ingest:main"
-rag-eval = "src.eval.ragas_runner:main"
 
 [build-system]
 requires = ["hatchling"]

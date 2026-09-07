@@ -178,8 +178,26 @@ def update_readme(snippet: str) -> None:
     print("Updated README.md with evidence snippet")
 
 
+def has_artifacts() -> bool:
+    """Check that real result artifacts exist before publishing any numbers."""
+    ragas_dir = get_latest_timestamped_dir(Path("results") / "ragas")
+    locust_dir = get_latest_timestamped_dir(Path("benchmarks") / "locust")
+    ragas_ok = ragas_dir is not None and (ragas_dir / "metrics.json").exists()
+    locust_ok = locust_dir is not None and (locust_dir / "stats.json").exists()
+    return ragas_ok and locust_ok
+
+
 def main():
     """Main function."""
+    if not has_artifacts():
+        print("No evaluation or load-test artifacts found.")
+        print("")
+        print("This script publishes measured numbers into README.md, so it refuses to run")
+        print("without real results. Generate them first:")
+        print("  make loadtest   (runs Locust against a live instance)")
+        print("  make eval       (explains how RAGAS evaluation is run)")
+        raise SystemExit(1)
+
     # Generate evidence snippet
     snippet = generate_evidence_snippet()
 
