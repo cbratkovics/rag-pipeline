@@ -1,10 +1,7 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '@/components/QueryProvider'
 import { Analytics } from '@vercel/analytics/react'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Production RAG Pipeline | AI Engineering Demo',
@@ -41,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <QueryProvider>{children}</QueryProvider>
         <Analytics />
       </body>
