@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { Github } from 'lucide-react'
 import { AlertCircle } from 'lucide-react'
 import { RefreshCw } from 'lucide-react'
 import { QueryInterface } from '@/components/QueryInterface'
@@ -17,10 +16,7 @@ import { SourceCitations } from '@/components/SourceCitations'
 import { SystemStatus } from '@/components/SystemStatus'
 import { HybridSearchBreakdown } from '@/components/HybridSearchBreakdown'
 import { QueryHistory } from '@/components/QueryHistory'
-import { ABTestPanel } from '@/components/ABTestPanel'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { MetricsProvider, useMetrics } from '@/contexts/MetricsContext'
 import { queryRAG, RAGAPIError } from '@/lib/api'
 import type { QueryParams, ABVariant, QueryResponse } from '@/types'
@@ -28,6 +24,7 @@ import Hero from '@/components/Hero'
 import { ComparisonPanel } from '@/components/ComparisonPanel'
 import { PerformanceGraphs } from '@/components/PerformanceGraphs'
 import { GuidedDemo } from '@/components/GuidedDemo'
+import { ProjectHighlights } from '@/components/ProjectHighlights'
 
 function HomeContent() {
 
@@ -95,15 +92,15 @@ function HomeContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Enhanced Hero Section */}
+    <div className="min-h-screen bg-[#f8f9f7]">
       <Hero />
+      <ProjectHighlights />
 
       {/* System Performance Bar */}
-      <section className="border-b bg-white shadow-sm">
+      <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex gap-8 text-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs sm:flex sm:text-sm">
               <div>
                 <span className="text-gray-500">Avg Latency:</span>
                 <span className="font-semibold ml-1 tabular-nums">
@@ -136,7 +133,13 @@ function HomeContent() {
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8 space-y-8">
+      <main id="workbench" className="container mx-auto space-y-8 px-4 py-14">
+
+        <div className="max-w-2xl">
+          <p className="section-kicker">LIVE WORKBENCH</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-slate-950">Follow an answer from query to evidence.</h2>
+          <p className="mt-3 text-slate-600">Run a sample question to inspect fused retrieval results, source citations, latency, and evaluation signals.</p>
+        </div>
 
         {/* Two-Column Layout: Search + Metrics */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -312,7 +315,7 @@ function HomeContent() {
                 Documentation
               </a>
               <span>•</span>
-              <span>© 2025</span>
+              <span>© {new Date().getFullYear()}</span>
             </div>
           </div>
         </div>
