@@ -16,9 +16,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.12"
-  # Keep this aligned with the uv version used to generate uv.lock. Older uv
-  # releases cannot read the lockfile's revision-3 format.
-  UV_VERSION: "0.7.22"
+  UV_VERSION: "0.5.1"
 
 jobs:
   backend:
@@ -26,15 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Reclaim runner disk space
-        # Torch's Linux wheel pulls CUDA runtime packages even though CI runs
-        # on CPU. GitHub's preinstalled SDKs otherwise leave too little room
-        # for the locked environment.
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
-            /opt/hostedtoolcache/CodeQL /usr/local/.ghcup /usr/share/swift
-          df -h /
-
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -116,13 +105,6 @@ jobs:
     timeout-minutes: 25
     needs: [backend, frontend]
     steps:
-      - name: Reclaim runner disk space
-        run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
-            /opt/hostedtoolcache/CodeQL /usr/local/.ghcup /usr/share/swift
-          docker system prune --all --force --volumes
-          df -h /
-
       - name: Check out repository
         uses: actions/checkout@v4
 
