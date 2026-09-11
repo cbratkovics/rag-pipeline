@@ -1,14 +1,14 @@
 """Core domain models for the RAG pipeline."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_validator
 
 
-class DocumentSource(str, Enum):
+class DocumentSource(StrEnum):
     """Supported document sources."""
 
     ARXIV = "arxiv"
@@ -19,7 +19,7 @@ class DocumentSource(str, Enum):
     CUSTOM = "custom"
 
 
-class ExperimentVariant(str, Enum):
+class ExperimentVariant(StrEnum):
     """A/B test experiment variants."""
 
     BASELINE = "baseline"
@@ -28,7 +28,7 @@ class ExperimentVariant(str, Enum):
     FINETUNED = "finetuned"
 
 
-class FeedbackType(str, Enum):
+class FeedbackType(StrEnum):
     """Types of user feedback."""
 
     THUMBS = "thumbs"
@@ -37,7 +37,7 @@ class FeedbackType(str, Enum):
     IMPLICIT = "implicit"
 
 
-class QueryStatus(str, Enum):
+class QueryStatus(StrEnum):
     """Query processing status."""
 
     PENDING = "pending"

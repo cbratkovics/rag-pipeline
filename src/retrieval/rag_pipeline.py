@@ -6,7 +6,7 @@ from typing import Any
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-from pydantic import SecretStr
+from pydantic.v1 import SecretStr
 
 from src.core.config import get_settings
 from src.core.models import (
