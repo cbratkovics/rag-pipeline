@@ -15,9 +15,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Install uv with cache mount
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --no-cache-dir uv==0.5.1
+# Pin the same lockfile-compatible uv release used by CI. Copying the official
+# binary avoids bootstrapping the package manager with pip on every build.
+COPY --from=ghcr.io/astral-sh/uv:0.7.22 /uv /uvx /bin/
 
 # Copy ONLY dependency files first (maximize cache hit rate)
 COPY pyproject.toml uv.lock README.md ./
