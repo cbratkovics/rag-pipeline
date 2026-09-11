@@ -71,9 +71,9 @@ class RAGASEvaluator(LoggerMixin):
         results_tuple = await asyncio.gather(*tasks, return_exceptions=True)
 
         # Handle any exceptions in metric calculations
-        metrics_list = []
+        metrics_list: list[float] = []
         for i, res in enumerate(results_tuple):
-            if isinstance(res, Exception):
+            if isinstance(res, BaseException):
                 self.logger.warning(f"Metric {i} calculation failed: {res}")
                 metrics_list.append(0.7)  # Default value
             else:
@@ -278,8 +278,8 @@ Questions (one per line):"""
                 pairs = [(query, gq) for gq in generated_questions[:3]]
                 similarities = cross_encoder.predict(pairs)
                 # Normalize and average
-                normalized = [1 / (1 + np.exp(-s)) for s in similarities]
-                relevancy = float(np.mean(normalized))
+                normalized_scores = [1 / (1 + np.exp(-s)) for s in similarities]
+                relevancy = float(np.mean(normalized_scores))
                 return min(max(relevancy, 0.0), 1.0)
 
             # Last resort: LLM-based scoring

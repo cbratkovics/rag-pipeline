@@ -1,7 +1,7 @@
 """API middleware for request processing."""
 
 import time
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import HTTPException, Request, Response, status
 
@@ -13,7 +13,10 @@ logger = get_logger(__name__)
 settings = get_settings()
 
 
-async def add_correlation_id(request: Request, call_next: Callable) -> Response:
+NextHandler = Callable[[Request], Awaitable[Response]]
+
+
+async def add_correlation_id(request: Request, call_next: NextHandler) -> Response:
     """Add correlation ID to requests."""
     correlation_id = request.headers.get("X-Correlation-ID")
     if not correlation_id:
@@ -27,7 +30,7 @@ async def add_correlation_id(request: Request, call_next: Callable) -> Response:
     return response
 
 
-async def add_process_time(request: Request, call_next: Callable) -> Response:
+async def add_process_time(request: Request, call_next: NextHandler) -> Response:
     """Add request processing time to response headers."""
     start_time = time.time()
     response: Response = await call_next(request)
@@ -36,7 +39,7 @@ async def add_process_time(request: Request, call_next: Callable) -> Response:
     return response
 
 
-async def rate_limit_middleware(request: Request, call_next: Callable) -> Response:
+async def rate_limit_middleware(request: Request, call_next: NextHandler) -> Response:
     """Rate limiting middleware."""
     # CRITICAL: Skip rate limiting for health check endpoints
     health_paths = [
@@ -48,12 +51,10 @@ async def rate_limit_middleware(request: Request, call_next: Callable) -> Respon
         "/metrics",
     ]
     if request.url.path in health_paths:
-        response: Response = await call_next(request)
-        return response
+        return await call_next(request)
 
     if not settings.rate_limit_enabled:
-        response: Response = await call_next(request)
-        return response
+        return await call_next(request)
 
     # Get client identifier (IP or API key)
     client_id = request.headers.get(settings.api_key_header)

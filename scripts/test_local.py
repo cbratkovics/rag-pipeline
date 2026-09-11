@@ -32,8 +32,8 @@ class LocalTester:
 
     def print_step(self, step: str, status: str = "INFO"):
         """Print test step."""
-        emoji = {"INFO": "ℹ️", "SUCCESS": "✓", "ERROR": "✗", "WARN": "⚠"}
-        print(f"\n{emoji.get(status, 'ℹ️')} {step}")
+        emoji = {"INFO": "i", "SUCCESS": "✓", "ERROR": "✗", "WARN": "⚠"}
+        print(f"\n{emoji.get(status, 'i')} {step}")
 
     def check_api_running(self) -> bool:
         """Check if API is already running."""
