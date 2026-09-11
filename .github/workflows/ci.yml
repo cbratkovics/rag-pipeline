@@ -5,217 +5,153 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   PYTHON_VERSION: "3.12"
-  UV_VERSION: "0.5.1"
-  UV_CACHE_DIR: ~/.cache/uv
-  UV_NO_CACHE: "0"
-  PYTHONUNBUFFERED: "1"
-  DOCKER_BUILDKIT: "1"
-  BUILDKIT_PROGRESS: "plain"
-  COMPOSE_DOCKER_CLI_BUILD: "1"
+  # Keep this aligned with the uv version used to generate uv.lock. Older uv
+  # releases cannot read the lockfile's revision-3 format.
+  UV_VERSION: "0.7.22"
 
 jobs:
-  qa:
+  backend:
+    name: Backend quality
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 20
     steps:
-      - name: Check disk space (start)
+      - name: Reclaim runner disk space
+        # Torch's Linux wheel pulls CUDA runtime packages even though CI runs
+        # on CPU. GitHub's preinstalled SDKs otherwise leave too little room
+        # for the locked environment.
         run: |
-          echo "=== Disk space at start ==="
-          df -h
-          echo "=== Docker images ==="
-          docker images
-          echo "=== Docker disk usage ==="
-          docker system df
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /opt/hostedtoolcache/CodeQL /usr/local/.ghcup /usr/share/swift
+          df -h /
 
-      - name: Free disk space
-        run: |
-          echo "Freeing up disk space..."
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo rm -rf /usr/local/.ghcup
-          sudo rm -rf /usr/share/swift
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-          echo "=== Disk space after cleanup ==="
-          df -h
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
+      - name: Install uv and Python
+        uses: astral-sh/setup-uv@v5
         with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
+          version: ${{ env.UV_VERSION }}
           python-version: ${{ env.PYTHON_VERSION }}
-          # No cache needed - uv handles its own caching below
+          enable-cache: true
+          cache-dependency-glob: uv.lock
 
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          uv --version
+      - name: Install locked dependencies
+        run: uv sync --frozen
 
-      - name: Restore uv cache
-        id: cache-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: |
-            ~/.cache/uv
-            .venv
-          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}-${{ hashFiles('pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}-
-            ${{ runner.os }}-uv-
-        env:
-          SEGMENT_DOWNLOAD_TIMEOUT_MINS: 1
+      - name: Check formatting
+        run: uv run ruff format --check .
 
-      - name: Install dependencies
-        run: |
-          uv venv
-          uv sync --frozen --no-dev
-          uv pip install --upgrade pip
+      - name: Lint
+        run: uv run ruff check . --output-format=github
 
-      - name: Install dev dependencies
-        run: |
-          uv sync --frozen
-
-      - name: Run ruff format check
-        run: |
-          uv run ruff format --check . || true
-        continue-on-error: false
-
-      - name: Run ruff lint
-        run: |
-          uv run ruff check . --output-format=github || true
-        continue-on-error: false
-
-      - name: Run mypy type checking
-        run: |
-          uv run mypy api src --ignore-missing-imports --no-error-summary || true
-        continue-on-error: false
+      - name: Type check
+        run: uv run mypy api src --ignore-missing-imports --no-error-summary
 
       - name: Run unit tests
-        run: |
-          uv run pytest tests/ -m "not integration" \
-            --tb=short \
-            --maxfail=5 \
-            --cov=src --cov=api \
-            --cov-report=term-missing \
-            --cov-fail-under=0 || true
-        continue-on-error: false
+        env:
+          ENVIRONMENT: test
+        run: >-
+          uv run pytest tests/ -m "not integration"
+          --tb=short --maxfail=5
+          --cov=src --cov=api
+          --cov-report=term-missing
+          --cov-report=xml:coverage.xml
 
-      - name: Security scan (optional)
-        run: |
-          uv run pip-audit --desc --fix || echo "Security scan completed with warnings"
-        continue-on-error: true
-
-      - name: Check disk space (end)
+      - name: Upload coverage report
         if: always()
-        run: |
-          echo "=== Disk space at end ==="
-          df -h
-          echo "=== Cache directory sizes ==="
-          du -sh ~/.cache/uv 2>/dev/null || echo "No uv cache"
-          du -sh .venv 2>/dev/null || echo "No venv"
-
-      - name: Save uv cache
-        if: always()
-        uses: actions/cache/save@v4
+        uses: actions/upload-artifact@v4
         with:
-          path: |
-            ~/.cache/uv
-            .venv
-          key: ${{ runner.os }}-uv-${{ hashFiles('uv.lock') }}-${{ hashFiles('pyproject.toml') }}
+          name: backend-coverage
+          path: coverage.xml
+          if-no-files-found: ignore
+          retention-days: 7
 
-  docker-build:
+  frontend:
+    name: Frontend quality
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    timeout-minutes: 20
-
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
     steps:
-      - name: Check disk space (start)
-        run: |
-          echo "=== Disk space at start ==="
-          df -h
-          echo "=== Docker images ==="
-          docker images
-          echo "=== Docker disk usage ==="
-          docker system df
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - name: Free disk space
-        run: |
-          echo "Freeing up disk space for Docker build..."
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          sudo rm -rf /opt/hostedtoolcache/CodeQL
-          sudo rm -rf /usr/local/.ghcup
-          sudo rm -rf /usr/share/swift
-          sudo apt-get clean
-          sudo rm -rf /var/lib/apt/lists/*
-          echo "Cleaning Docker system..."
-          docker system prune -af --volumes || true
-          echo "=== Disk space after cleanup ==="
-          df -h
-          echo "=== Docker disk usage after cleanup ==="
-          docker system df
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - uses: actions/checkout@v4
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build production bundle
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_API_URL: https://rag-pipeline-api-hksb.onrender.com
+        run: npm run build
+
+  container:
+    name: Container build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [backend, frontend]
+    steps:
+      - name: Reclaim runner disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /opt/hostedtoolcache/CodeQL /usr/local/.ghcup /usr/share/swift
+          docker system prune --all --force --volumes
+          df -h /
+
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            network=host
-            image=moby/buildkit:latest
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
+      - name: Build application image
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: false
-          load: false
           tags: rag-pipeline:${{ github.sha }}
-          cache-from: |
-            type=gha,scope=docker-build
-          cache-to: |
-            type=gha,mode=min,scope=docker-build
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
+          cache-from: type=gha,scope=rag-pipeline
+          cache-to: type=gha,mode=min,scope=rag-pipeline
 
-      - name: Cleanup after Docker build
-        if: always()
-        run: |
-          echo "Cleaning up Docker artifacts..."
-          docker system prune -af --volumes || true
-          docker builder prune -af || true
-          echo "=== Disk space after Docker cleanup ==="
-          df -h
-
-      - name: Check disk space (end)
-        if: always()
-        run: |
-          echo "=== Disk space at end ==="
-          df -h
-          echo "=== Docker images ==="
-          docker images
-          echo "=== Docker disk usage ==="
-          docker system df
-
-  validation:
+  ci-success:
+    name: CI success
     runs-on: ubuntu-latest
-    needs: [qa, docker-build]
     if: always()
-
+    needs: [backend, frontend, container]
     steps:
-      - name: Check job status
+      - name: Enforce required jobs
+        env:
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          CONTAINER_RESULT: ${{ needs.container.result }}
         run: |
-          echo "✅ CI Pipeline completed"
-          echo "QA Status: ${{ needs.qa.result }}"
-          echo "Docker Build Status: ${{ needs.docker-build.result }}"
+          printf 'Backend: %s\nFrontend: %s\nContainer: %s\n' \
+            "$BACKEND_RESULT" "$FRONTEND_RESULT" "$CONTAINER_RESULT"
+          test "$BACKEND_RESULT" = success
+          test "$FRONTEND_RESULT" = success
+          test "$CONTAINER_RESULT" = success

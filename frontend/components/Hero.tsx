@@ -1,149 +1,111 @@
 'use client'
 
-import { Zap, TrendingUp, Shield, Sparkles, Github, FileText } from 'lucide-react'
-import { MetricKPI } from '@/components/metrics/MetricKPI'
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Braces,
+  Database,
+  Github,
+  GitMerge,
+  Radio,
+} from 'lucide-react'
 
-const ImpactMetrics = () => {
-  // Mock sparkline data (last 20 queries)
-  const latencySparkline = [520, 485, 495, 510, 490, 475, 460, 455, 450, 445, 440, 435, 430, 425, 420, 430, 440, 445, 450, 455]
-  const qualitySparkline = [0.85, 0.86, 0.87, 0.88, 0.88, 0.89, 0.90, 0.91, 0.91, 0.92, 0.92, 0.91, 0.90, 0.91, 0.92, 0.92, 0.91, 0.92, 0.92, 0.92]
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-      <MetricKPI
-        title="Response Time"
-        value={450}
-        unit="ms"
-        decimals={0}
-        icon={Zap}
-        color="text-blue-600"
-        bgColor="bg-blue-50"
-        delta={-15}
-        deltaLabel="vs last week"
-        helpText="Average P50 latency for hybrid retrieval queries"
-        sparklineData={latencySparkline}
-        target={500}
-        targetLabel="SLA Target"
-      />
-      <MetricKPI
-        title="Cost per Query"
-        value={0.002}
-        prefix="$"
-        decimals={4}
-        icon={TrendingUp}
-        color="text-green-600"
-        bgColor="bg-green-50"
-        delta={-83}
-        deltaLabel="via caching"
-        helpText="Includes embeddings, retrieval, and LLM generation costs"
-      />
-      <MetricKPI
-        title="Answer Quality"
-        value={92}
-        unit="%"
-        decimals={0}
-        icon={Sparkles}
-        color="text-purple-600"
-        bgColor="bg-purple-50"
-        delta={+35}
-        deltaLabel="vs baseline"
-        helpText="RAGAS composite score (relevancy, faithfulness, recall)"
-        sparklineData={qualitySparkline.map(v => v * 100)}
-        target={85}
-        targetLabel="Quality Target"
-      />
-      <MetricKPI
-        title="Availability"
-        value={99.95}
-        unit="%"
-        decimals={2}
-        icon={Shield}
-        color="text-indigo-600"
-        bgColor="bg-indigo-50"
-        helpText="Enterprise-grade SLA with 99.95% uptime guarantee"
-        target={99.9}
-        targetLabel="SLA"
-      />
-    </div>
-  )
-}
+const stages = [
+  { label: 'Question', icon: Braces },
+  { label: 'BM25 + vector', icon: Database },
+  { label: 'RRF ranking', icon: GitMerge },
+  { label: 'Grounded answer', icon: Radio },
+]
 
 export default function Hero() {
   return (
-    <section className="border-b bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="text-center">
-          {/* Logo/Icon */}
-          <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-br from-blue-100 to-purple-100 p-3 rounded-2xl shadow-sm">
-              <svg
-                className="h-8 w-8 text-blue-600"
-                fill="none"
-                strokeWidth={2}
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
-                />
-              </svg>
-            </div>
-          </div>
+    <header className="hero-shell overflow-hidden border-b border-slate-800 text-white">
+      <nav className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+        <a href="#top" className="flex items-center gap-3" aria-label="RAG Pipeline home">
+          <span className="grid h-9 w-9 place-items-center rounded-lg border border-cyan-300/30 bg-cyan-300/10 font-mono text-sm font-bold text-cyan-300">
+            R/
+          </span>
+          <span className="font-mono text-sm font-semibold tracking-tight">rag.pipeline</span>
+        </a>
+        <div className="flex items-center gap-5 text-sm text-slate-300">
+          <a className="hidden transition-colors hover:text-white sm:block" href="#architecture">Architecture</a>
+          <a className="hidden transition-colors hover:text-white sm:block" href="#workbench">Live demo</a>
+          <a
+            href="https://github.com/cbratkovics/rag-pipeline"
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/60 px-4 py-2 font-medium transition hover:border-cyan-400/60 hover:text-cyan-200"
+          >
+            <Github className="h-4 w-4" /> Source
+          </a>
+        </div>
+      </nav>
 
-          {/* Main Title */}
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-            Production RAG Pipeline
+      <div id="top" className="relative z-10 mx-auto grid max-w-7xl gap-14 px-5 pb-20 pt-14 sm:px-8 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:pb-28 lg:pt-20">
+        <div>
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 font-mono text-xs text-emerald-300">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" />
+            END-TO-END AI ENGINEERING CASE STUDY
+          </div>
+          <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
+            Retrieval you can<br />
+            <span className="hero-gradient">measure, not guess.</span>
           </h1>
-
-          {/* Subtitle */}
-          <p className="text-lg text-gray-700 font-medium max-w-3xl mx-auto">
-            Enterprise AI Engineering • Hybrid Search • Real-time Evaluation
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-300">
+            A production-minded RAG system that fuses lexical and semantic search,
+            traces every answer to its source, and makes retrieval quality visible.
           </p>
-
-          {/* Feature Badges */}
-          <div className="flex flex-wrap justify-center gap-2 mt-5">
-            {[
-              { text: "⚡ 60% Faster", color: "border-blue-200 bg-blue-50 text-blue-700" },
-              { text: "💰 83% Cost Reduction", color: "border-green-200 bg-green-50 text-green-700" },
-              { text: "📊 92% Quality Score", color: "border-purple-200 bg-purple-50 text-purple-700" },
-              { text: "🏢 Enterprise Ready", color: "border-indigo-200 bg-indigo-50 text-indigo-700" },
-            ].map((badge) => (
-              <span
-                key={badge.text}
-                className={`px-3 py-1.5 rounded-full border text-sm font-medium ${badge.color}`}
-              >
-                {badge.text}
-              </span>
-            ))}
+          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <a href="#workbench" className="group inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-300 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-200">
+              Explore the live workbench
+              <ArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-0.5" />
+            </a>
+            <a
+              href="https://rag-pipeline-api-hksb.onrender.com/docs"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900/50 px-5 py-3 font-semibold text-white transition hover:border-slate-500"
+            >
+              Inspect the API <ArrowUpRight className="h-4 w-4" />
+            </a>
           </div>
+          <div className="mt-10 flex flex-wrap gap-x-7 gap-y-3 font-mono text-xs text-slate-400">
+            <span><b className="text-slate-100">01</b> hybrid retrieval</span>
+            <span><b className="text-slate-100">02</b> RAGAS evaluation</span>
+            <span><b className="text-slate-100">03</b> observable API</span>
+          </div>
+        </div>
 
-          {/* Impact Metrics */}
-          <ImpactMetrics />
-
-          {/* CTA Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <a
-              href="https://github.com/cbratkovics/rag-pipeline"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm font-medium"
-            >
-              <Github className="h-5 w-5" />
-              View on GitHub
-            </a>
-            <a
-              href="/api/docs"
-              target="_blank"
-              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm font-medium"
-            >
-              <FileText className="h-5 w-5" />
-              API Documentation
-            </a>
+        <div className="relative mx-auto w-full max-w-xl lg:mx-0">
+          <div className="absolute -inset-10 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="relative overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-950/80 shadow-2xl shadow-cyan-950/30 backdrop-blur">
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-3 font-mono text-[11px] text-slate-500">
+              <div className="flex gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-rose-400/70" /><span className="h-2.5 w-2.5 rounded-full bg-amber-300/70" /><span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" /></div>
+              TRACE / QUERY_7F2A
+            </div>
+            <div className="space-y-6 p-6 sm:p-8">
+              <p className="font-mono text-xs text-cyan-300">$ pipeline.query(&quot;How does hybrid search improve recall?&quot;)</p>
+              <div className="space-y-3">
+                {stages.map(({ label, icon: Icon }, index) => (
+                  <div key={label} className="flex items-center gap-4">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-slate-700 bg-slate-900 text-slate-300"><Icon className="h-4 w-4" /></span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-slate-600 to-slate-800" />
+                    <span className="w-32 text-sm font-medium text-slate-200">{label}</span>
+                    <span className="font-mono text-[10px] text-emerald-400">{index === 3 ? 'READY' : 'PASS'}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+                <div className="mb-3 flex items-center justify-between text-xs"><span className="font-medium text-slate-300">Retrieval fusion</span><span className="font-mono text-cyan-300">RRF · k=60</span></div>
+                <div className="grid grid-cols-2 gap-2 font-mono text-[11px]">
+                  <div className="rounded-md bg-slate-950 px-3 py-2 text-slate-400">BM25 <span className="float-right text-white">8 hits</span></div>
+                  <div className="rounded-md bg-slate-950 px-3 py-2 text-slate-400">VECTOR <span className="float-right text-white">8 hits</span></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
+    </header>
   )
 }

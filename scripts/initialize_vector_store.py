@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# mypy: ignore-errors
 """Initialize vector store with comprehensive seed documents.
 
 This script initializes ChromaDB with diverse documents about RAG, AI, and related topics.

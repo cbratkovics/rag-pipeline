@@ -1,4 +1,4 @@
-.PHONY: help setup ingest run eval loadtest evidence quality up down clean
+.PHONY: help setup ingest run eval loadtest evidence quality frontend-quality up down clean
 
 help:  ## Show this help message
 	@echo "RAG Pipeline Makefile"
@@ -61,6 +61,12 @@ evidence:  ## Generate README evidence snippet from latest artifacts
 quality:  ## Run ruff, mypy, pytest
 	@echo "Running quality checks..."
 	./scripts/ci.sh
+
+frontend-quality:  ## Run frontend lint, type checking, and production build
+	cd frontend && npm ci
+	cd frontend && npm run lint
+	cd frontend && npm run type-check
+	cd frontend && npm run build
 
 up:  ## docker compose up -d api prometheus grafana mlflow
 	@echo "Starting Docker services..."

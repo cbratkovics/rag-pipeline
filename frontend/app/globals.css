@@ -82,15 +82,25 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
-
-  /* Ensure Inter font is loaded */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  html { scroll-behavior: smooth; }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+  .hero-shell {
+    background-color: #07111f;
+    background-image: radial-gradient(circle at 78% 42%, rgba(34, 211, 238, .12), transparent 28%), radial-gradient(circle at 15% 0%, rgba(99, 102, 241, .12), transparent 25%), linear-gradient(rgba(148, 163, 184, .055) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, .055) 1px, transparent 1px);
+    background-size: auto, auto, 48px 48px, 48px 48px;
+  }
+  .hero-gradient {
+    background: linear-gradient(90deg, #67e8f9, #a5b4fc 55%, #c4b5fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .section-kicker { @apply font-mono text-xs font-semibold tracking-[0.2em] text-cyan-700; }
 }
 
 /* Custom scrollbar */
